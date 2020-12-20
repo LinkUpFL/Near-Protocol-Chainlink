@@ -69,7 +69,10 @@ pub struct FluxAggregator {
     V3_NO_DATA_ERROR: Base64String = "No data present",
     reportingRoundId: u32,
     latestRoundId: u32,
-    // add mappings
+    oracles: LookupMap<AccountId, OracleStatusc>,
+    rounds: LookupMap<u32, Round>,
+    details: LookupMap<u32, RoundDetails>,
+    requesters: LookupMap<AccountId, Requester>,
     oracleAddresses: AccountId[],
     recordedFunds: Funds
 }
@@ -78,10 +81,30 @@ pub struct FluxAggregator {
 impl FluxAggregator {
     pub fn submit(&mut self, _roundId: u256, _submission: i256) {
         // assert
+
+        self.oracleInitializeNewRound(_roundId as u32);
+        self.recordSubmission(_submission, _roundId as u32);
+        // update Answer
+        self.payOracle(_roundId as u32);
+        self.deleteRoundDetails(_roundId as u32);
+        // if for updated
     }
 
-    // changeOracles
-    
+    pub fn changeOracles(&mut self, _removed: AccountId[], _added: AccountId[], _addedAdmins: AccountId[], _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32) {
+        for i in 0.._removed.len() {
+            self.removeOracle(_removed[i]);
+        }
+
+        assert!(_added.len() == _addedAdmins.len(), "need same oracle and admin count");
+        assert!((self.oracleCount + _added.len()) as u256 <= self.MAX_ORACLE_COUNT, "max oracles allowed");
+
+        for i in 0.._added.len() {
+            self.addOracle(_added[i], _addedAdmins[i]);
+        }
+
+        self.updateFutureRounds(self.paymentAmount, _minSubmissions, _maxSubmissions, _restartDelay, self.timeout);
+    }
+
     pub fn updateFutureRounds(&mut self, _paymentAmount: u128, _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32, _timeout: u32) {
         // assert
         
