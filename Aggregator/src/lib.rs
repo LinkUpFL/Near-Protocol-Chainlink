@@ -57,6 +57,8 @@ impl Aggregator {
     }
 
     pub fn updateRequestDetails(&mut self, _paymentAmount: u128, _minimumResponses: u128, _oracles: AccountId[], _jobIds: Base64String[]) {
+        self.onlyOwner();
+        self.validateAnswerRequirements(_minimumResponses, _oracles, _jobIds);
         self.paymentAmount = _paymentAmount;
         self.minimumResponses = _minimumResponses;
         self.jobIds = _jobIds;
@@ -66,6 +68,7 @@ impl Aggregator {
     // pub fn transferLINK
     
     pub fn setAuthorization(&mut self, _requester: AccountId, _allowed: bool) {
+        self.onlyOwner();
         self.authorizedRequesters[_requester] = _allowed;
     }
 
@@ -177,5 +180,9 @@ impl Aggregator {
 
     pub fn ensureAuthorizedRequester(mut &self) {
         assert_eq!(env::predecessor_account_id(), env::current_account_id(), "Not an authorized address for creating requests");
+    }
+
+    fn onlyOwner(&mut self) {
+        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
     }
 }
