@@ -7,7 +7,7 @@ use serde_json::json;
 use std::str;
 use std::collections::HashMap;
 
-const MAX_ORACLE_COUNT: u256 = 28;
+pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]
 pub struct Answer {
@@ -15,6 +15,8 @@ pub struct Answer {
     maxResponses: u128,
     responses: i256[]
 }
+
+const MAX_ORACLE_COUNT: u256 = 28;
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
