@@ -441,4 +441,17 @@ impl FluxAggregator {
         self.oracleAddresses[index] = tail;
         self.oracleAddresses.pop();
     }
+
+    fn validateOracleRound(&self, _oracle: AccountId, _roundId: u32) -> Base64String {
+        // cache storage reads
+        let startingRound: u32 = self.oracles[_oracle].startingRound;
+        let rrId: u32 = self.reportingRoundId;
+
+        if (startingRound == 0) return "not enabled oracle";
+        if (startingRound > _roundId) return "not yet enabled oracle";
+        if (self.oracles[_oracle].endingRound < _roundId) return "no longer allowed oracle";
+        if (self.oracles[_oracle].lastReportedRound >= _roundId) return "cannot report on previous rounds";
+        if (_roundId != rrId && _roundId != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId)) return "invalid round to report";
+        if (_roundId != 1 && !self.supersedable(_roundId - 1) return "previous round not supersedable";
+    }
 }
