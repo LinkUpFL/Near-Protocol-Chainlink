@@ -7,6 +7,8 @@ use serde_json::json;
 use std::str;
 use std::collections::HashMap;
 
+pub type Base64String = String;
+
 #[derive(Serialize, Deserialize)]
 pub struct Round {
     answer: i256,
@@ -50,6 +52,12 @@ pub struct Funds {
     allocated: u128
 }
 
+const version: u256 = 3;
+const RESERVE_ROUNDS: u256 = 2;
+const MAX_ORACLE_COUNT: u256 = 77;
+const ROUND_MAX: u32 = 2.pow(32-1);
+const V3_NO_DATA_ERROR: Base64String = "No data present";
+
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct FluxAggregator {
@@ -64,11 +72,6 @@ pub struct FluxAggregator {
     pub description: Base64String,
     pub minSubmissionValue: i256,
     pub maxSubmissionValue: i256,
-    pub version: u256,
-    RESERVE_ROUNDS: u256 = 2,
-    MAX_ORACLE_COUNT: u256 = 77,
-    ROUND_MAX: u32, // add exponent
-    V3_NO_DATA_ERROR: Base64String = "No data present",
     reportingRoundId: u32,
     latestRoundId: u32,
     oracles: LookupMap<AccountId, OracleStatusc>,
