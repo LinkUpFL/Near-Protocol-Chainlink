@@ -132,7 +132,12 @@ impl FluxAggregator {
 
     pub fn updateAvailableFunds(&self) {
         let funds: Funds = self.recordedFunds;
+
         // nowAavilable
+
+        if(funds.available != nowAavilable) {
+            self.recordedFunds.available = nowAavilable as u128;
+        }
     }
 
     pub fn oracleCount(&self) -> u8 {
