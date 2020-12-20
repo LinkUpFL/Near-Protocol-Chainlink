@@ -155,34 +155,34 @@ impl Aggregator {
         }
     }
 
-    pub fn swap(&self, _a: i256[], _b: i256[]) -> (i256[], i256[]) {
+    fn swap(&self, _a: i256[], _b: i256[]) -> (i256[], i256[]) {
         return (_b, _a);
     }
 
-    pub fn deleteAnswer(&mut self, _answerId: u256) {
-        // assert all responses received
+    fn deleteAnswer(&mut self, _answerId: u256) {
+        self.ensureAllResponsesReceived(_answerId);
         self.answers[_answerId].clear();
     }
 
-    pub fn ensureMinResponsesReceived(mut &self, _answerId: u256) {
+    fn ensureMinResponsesReceived(mut &self, _answerId: u256) {
         assert!(self.answers[_answerId].responses.len() >= self.answers[_answerId].minimumResponses), "Min Responses not yet received");
     }
 
-    pub fn ensureAllResponsesReceived(mut &self, _answerId: u256) {
+    fn ensureAllResponsesReceived(mut &self, _answerId: u256) {
         assert!(self.answers[_answerId].responses.len() == self.answers[_answerId].maxResponses), "All Responses not yet received");
     }
 
-    pub fn ensureOnlyLatestAnswer(mut &self, _answerId: u256) {
+    fn ensureOnlyLatestAnswer(mut &self, _answerId: u256) {
         assert!(self.latestCompletedAnswer <= _answerId), "Not latest answer");
     }
 
-    pub fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: Base64String[]) {
+    fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: Base64String[]) {
         assert!(_oracles.len() <= self.MAX_ORACLE_COUNT, "Cannot have more than {} oracles", self.MAX_ORACLE_COUNT);
         assert!(_oracles.len() >= _minimumResponses, "must have at least as many oracles as responses");
         assert!(_oracles.len() == _jobIds.len(), "must have at least as many oracles as responses");
     }
 
-    pub fn ensureAuthorizedRequester(mut &self) {
+    fn ensureAuthorizedRequester(mut &self) {
         assert_eq!(env::predecessor_account_id(), env::current_account_id(), "Not an authorized address for creating requests");
     }
 
