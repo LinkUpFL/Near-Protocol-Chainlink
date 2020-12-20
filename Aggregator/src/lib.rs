@@ -36,6 +36,7 @@ pub struct Aggregator {
 #[near_bindgen]
 impl Aggregator {
     pub fn requestRateUpdate(&mut self) {
+        self.ensureAuthorizedRequester();
         let requestId: Base64String;
         let oraclePayment: u256 = self.paymentAmount;
         // for loop (build chainlink request??)
@@ -73,6 +74,7 @@ impl Aggregator {
     }
 
     pub fn cancelRequest(&mut self, _requestId: Base64String, _payment: u256, _expiration: u256) {
+        self.ensureAuthorizedRequester();
         let answerId: u256 = self.requestAnswers[_requestId];
         assert!(answerId < latestCompletedAnswer, "Cannot modify an in-progress answer");
 
@@ -86,6 +88,8 @@ impl Aggregator {
     // pub fn destroy
 
     fn updateLatestAnswer(&mut self, _answerId: u256) {
+        self.ensureMinResponsesReceived(_answerId);
+        self.ensureOnlyLatestAnswer(_answerId);
         let responseLength: u256 = self.answers[_answerId].responses.len();
         let middleIndex: u256 = responseLength / 2;
         let currentAnswerTemp: i256;
