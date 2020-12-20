@@ -99,14 +99,38 @@ impl Aggregator {
     }
 
     fn quickselect(&self, _a: i256[], _k: u256) -> i256 {
-        let a: i256[] = _a;
-        let k: u256 = _k;
-        let aLen: u256 = a.len();
+        let mut a: i256[] = _a;
+        let mut k: u256 = _k;
+        let mut aLen: u256 = a.len();
         // add a1 and a2
-        let a1Len: u256;
-        let a2Len: u256;
-        let pivot: i256;
-        let i: u256;
+        let mut a1Len: u256;
+        let mut a2Len: u256;
+        let mut pivot: i256;
+
+        while(true) {
+            pivot = a[aLen / 2];
+            a1Len = 0;
+            a2Len = 0;
+            for i in 0..aLen {
+                if(a[i] < pivot) {
+                    a1[a1Len] = a[i];
+                    a1Len = a1Len + 1;
+                } else if =(a[i] > pivot) {
+                    a2[a2Len] = a[i];
+                    a2Len = a2Len + 1;
+                }
+            }
+            if(k <= a1Len) {
+                aLen = a1Len;
+                a, a1 = self.swap(a, a1); // CHECK
+            } else if(k > (aLen - a2Len)) {
+                k = k - (aLen - a2Len);
+                aLen = a2Len;
+                a, a2 = self.swap(a, a2); // CHECK
+            } else {
+                return pivot;
+            }
+        }
     }
 
     pub fn swap(&self, _a: i256[], _b: i256[]) -> (i256[], i256[]) {
