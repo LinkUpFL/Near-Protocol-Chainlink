@@ -26,24 +26,32 @@ pub struct AggregatorProxy {
 
 #[near_bindgen]
 impl AggregatorProxy {
-    pub fn latestAnswer(&self) -> i256 {
+    pub fn latestAnswer(&self) -> (answer: i256) {
         self.currentPhase.aggregator.latestAnswer()
     }
 
-    pub fn latestTimestamp(&self) -> u256 {
+    pub fn latestTimestamp(&self) -> (updatedAt: u256) {
         self.currentPhase.aggregator.latestTimestamp()
     }
 
-    pub fn getAnswer(&mut self, _roundId: u256) -> i256 {
+    pub fn getAnswer(&mut self, _roundId: u256) -> (answer: i256) {
         if(_roundId > self.MAX_ID) return 0;
         // add more
     }
 
     // getTimestamp
 
-    pub fn latestRound(&mut self) -> u256 {
+    pub fn latestRound(&mut self) -> (roundId: u256) {
         let phase: Phase = self.currentPhase;
         self.addPhase(phase.id, phase.aggregator.latestRound() as u64);
+    }
+
+    // getRoundData
+
+    // latestRoundData
+
+    pub fn proposedGetRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        self.proposedAggregator.getRoundData(_roundId);
     }
 
 
