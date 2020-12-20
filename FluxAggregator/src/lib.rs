@@ -454,4 +454,29 @@ impl FluxAggregator {
         if (_roundId != rrId && _roundId != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId)) return "invalid round to report";
         if (_roundId != 1 && !self.supersedable(_roundId - 1) return "previous round not supersedable";
     }
+
+    fn supersedable(&self, _roundId: u32) -> bool {
+        self.rounds[_roundId].updatedAt > 0 || self.timedOut(_roundId)
+    }
+
+    fn oracleEnabled(&self, _oracle: AccountId) -> bool {
+        self.oracles[_oracle].endingRound == self.ROUND_MAX
+    }
+
+    fn acceptingSubmissions(&self, _roundId: u32) -> bool {
+        self.details[_roundId].maxSubmissions != 0
+    }
+
+    fn delayed(&self, _oracle: AccountId, _roundId: u32) -> bool {
+        let lastStarted: u256 = self.oracles[_oracle].lastStartedRound;
+        _roundId > (lastStarted + self.restartDelay) || lastStarted == 0
+    }
+
+    fn newRound(&self, _roundId: u32) -> bool {
+        _roundId == self.reportingRoundId + 1
+    }
+
+    fn validRoundId(&self, _roundId: u256) -> bool {
+        _roundId <= self.ROUND_MAX
+    }
 }
