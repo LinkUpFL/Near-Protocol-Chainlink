@@ -43,7 +43,7 @@ impl AggregatorProxy {
 
     pub fn latestRound(&mut self) -> (roundId: u256) {
         let phase: Phase = self.currentPhase;
-        self.addPhase(phase.id, phase.aggregator.latestRound() as u64);
+        self.addPhase(phase.id, phase.aggregator.latestRound() as u64)
     }
 
     // getRoundData
@@ -51,8 +51,71 @@ impl AggregatorProxy {
     // latestRoundData
 
     pub fn proposedGetRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
-        self.proposedAggregator.getRoundData(_roundId);
+        self.proposedAggregator.getRoundData(_roundId)
     }
 
+    pub fn proposedLatestRoundData(&self) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        self.proposedAggregator.latestRoundData()
+    }
 
+    pub fn aggregator(&self) -> AccountId {
+        self.currentPhase.aggregator as AccountId
+    }
+
+    pub fn phaseId(&self) -> u16 {
+        self.currentPhase.id
+    }
+
+    // decimals
+    
+    pub fn version(&self) -> u256 {
+        self.currentPhase.aggregator.version()
+    }
+
+    pub fn description(&self) -> Base64String {
+        self.currentPhase.aggregator.description()
+    }
+
+    pub fn proposeAggregator(&mut self, _aggregator: AccountId) {
+        self.onlyOwner();
+        self.proposeAggregator = _aggregator;
+    }
+
+    pub fn confirmAggregator(&mut self, _aggregator: AccountId) {
+        self.onlyOwner();
+        assert!(_aggregator == self.proposedAggregator as AccountId, "Invalid proposed aggregator");
+        self.proposeAggregator.clear();
+        self.setAggregator(_aggregator);
+    }
+
+    // Internal
+    
+    fn setAggregator(&mut self, _aggregator: AccountId) {
+        let id: u16 = self.currentPhase.id + 1;
+        self.currentPhase = self.Phase(id, _aggregator);
+        self.phaseAggregators[id] = _aggregator;
+    }
+
+    fn addPhase(&self, _phase: u16, _originalId: u64) -> u80 {
+        ((_phase as u256) << self.PHASE_OFFSET | _originalId) as u80
+    }
+
+    fn parseIds(&self, _roundId: u256) -> (u16, u64) {
+        let phaseId: u16 = (_roundId >> self.PHASE_OFFSET) as u16;
+        let aggregatorRoundId: u64 = _roundId as u64;
+
+        return(phaseId, aggregatorRoundId);
+    }
+
+    fn addPhaseIds(&self, roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80, phaseId: u16) -> (u80, i256, u256, u256, u80) {
+        return(self.addPhase(phaseId, roundId as u64), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound as u64));
+    }
+
+    // Modifiers 
+
+    // hasProposal
+
+    fn onlyOwner(&mut self) {
+        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
+    }
 }
