@@ -101,7 +101,7 @@ impl FluxAggregator {
         }
 
         assert!(_added.len() == _addedAdmins.len(), "need same oracle and admin count");
-        assert!((self.oracleCount + _added.len()) as u256 <= self.MAX_ORACLE_COUNT, "max oracles allowed");
+        assert!((self.oracleCount + _added.len()) as u256 <= MAX_ORACLE_COUNT, "max oracles allowed");
 
         for i in 0.._added.len() {
             self.addOracle(_added[i], _addedAdmins[i]);
@@ -417,7 +417,7 @@ impl FluxAggregator {
     }
 
     fn requiredReserve(&self, payment: u256) -> u256 {
-        return payment * (self.oracleCount() * self.RESERVE_ROUNDS);
+        return payment * (self.oracleCount() * RESERVE_ROUNDS);
     }
 
     fn addOracle(&mut self, _oracle: AccountId, _admin: AccountId) {
@@ -427,7 +427,7 @@ impl FluxAggregator {
         assert!(self.oracles[_oracle].admin == env::predecessor_account_id() || self.oracles[_oracle].admin == _admin, "owner cannot overwrite admin");
 
         self.oracles[_oracle].startingRound = self.getStartingRound(_oracle);
-        self.oracles[_oracle].endingRound = self.ROUND_MAX;
+        self.oracles[_oracle].endingRound = ROUND_MAX;
         self.oracles[_oracle].index = self.oracleAddresses.len() as u16;
         self.oracleAddresses.push(_oracle);
         self.oracles[_oracle].admin = _admin;
@@ -463,7 +463,7 @@ impl FluxAggregator {
     }
 
     fn oracleEnabled(&self, _oracle: AccountId) -> bool {
-        self.oracles[_oracle].endingRound == self.ROUND_MAX
+        self.oracles[_oracle].endingRound == ROUND_MAX
     }
 
     fn acceptingSubmissions(&self, _roundId: u32) -> bool {
@@ -480,6 +480,6 @@ impl FluxAggregator {
     }
 
     fn validRoundId(&self, _roundId: u256) -> bool {
-        _roundId <= self.ROUND_MAX
+        _roundId <= ROUND_MAX
     }
 }
