@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Serialize, Deserialize};
-use near_sdk::collections::{TreeMap, UnorderedSet};
+use near_sdk::collections::{TreeMap, UnorderedSet, LookupMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
@@ -25,16 +25,19 @@ pub struct Aggregator {
     jobIds [u8; 4],
     oracles: AccountId[],
     answerCounter: u256,
-    authorizedRequesters: UnorderedSet<AccountId>,
-    // add maps
+    authorizedRequesters: LookupMap<AccountId, bool>,
+    requestAnswers: LookupMap<[u8; 4], u256>,
+    answers: LookupMap<u256, Answer>,
+    currentAnswers: LookupMap<u256, i256>,
+    updatedTimestamps: LookupMap<u256, u256>,
     MAX_ORACLE_COUNT: u256
 }
 
 #[near_bindgen]
 impl Aggregator {
     pub fn requestRateUpdate(&mut self) {
-        // requestId
-        let oraclePayment: u256 = paymentAmount;
+        let requestId: [u8; 4];
+        let oraclePayment: u256 = self.paymentAmount;
         // add more
     }
 
