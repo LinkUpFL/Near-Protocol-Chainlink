@@ -429,4 +429,16 @@ impl FluxAggregator {
         self.oracleAddresses.push(_oracle);
         self.oracles[_oracle].admin = _admin;
     }
+
+    fn removeOracle(&mut self, _oracle: AccountId) {
+        assert!(self.oracleEnabled(_oracle), "oracle not enabled");
+
+        self.oracles[_oracle].endingRound = self.reportingRoundId + 1;
+        let tail: AccountId = self.oracleAddresses[self.oracleCount()-1 as u256];
+        let index: u16 = self.oracles[_oracle].index;
+        self.oracles[tail].index = index;
+        self.oracles[_oracle].index.clear();
+        self.oracleAddresses[index] = tail;
+        self.oracleAddresses.pop();
+    }
 }
