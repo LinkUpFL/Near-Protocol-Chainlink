@@ -106,13 +106,20 @@ impl FluxAggregator {
     }
 
     pub fn updateFutureRounds(&mut self, _paymentAmount: u128, _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32, _timeout: u32) {
-        // assert
-        
+        let oracleNum: u32 = self.oracleCount(); // Save on storage reads
+        assert!(_maxSubmissions >= _minSubmissions, "max must equal/exceed min");
+        assert!(oracleNum >= _maxSubmissions, "max cannot exceed total");
+        assert!(oracleNum == 0 || oracleNum > _restartDelay, "delay cannot exceed total");
+        assert!(self.recordedFunds.available >= self.requiredReserve(_paymentAmount), "insufficient funds for payment");
+        if(self.oracleCount() > 0) {
+            assert!(_minSubmissions > 0, "min must be greater than 0")
+        }
+
         self.paymentAmount = _paymentAmount;
         self.minSubmissionCount = _minSubmissions;
         self.maxSubmissionCount = _maxSubmissions;
         self.restartDelay = _restartDelay;
-        self. timeout = _timeout;
+        self.timeout = _timeout;
     }
 
     pub fn allocatedFunds(&self) -> u128 {
