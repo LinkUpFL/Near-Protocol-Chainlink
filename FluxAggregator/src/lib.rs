@@ -176,7 +176,9 @@ impl FluxAggregator {
 
     pub fn getRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
         let r: Round = self.rounds[_roundId as u32];
-        //require
+
+        assert!(r.answeredInRound > 0 && self.validRoundId(_roundId), V3_NO_DATA_ERROR);
+
         return(
             _roundId,
             r.answer,
@@ -194,10 +196,27 @@ impl FluxAggregator {
         self.oracles[_oracle].withdrawable
     }
 
-    //withdrawPayment
-    
-    //withdrawFunds
-    
+    pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: u256) {
+        assert!(self.oracles[_oracle].admin == env::signer_account_id(), "only callable by admin");
+
+        // Safe to downcast _amount because the total amount of LINK is less than 2^128.
+        let amount: u128 = _amount as u128;
+        let available: u128 = self.oracles[_oracle].withdrawable;
+        assert!(available >= amount, "insufficient withdrawable funds");
+
+        self.oracles[_oracle].withdrawable = available - amount;
+        self.recordedFunds.allocated = self.recordedFunds.allocated - amount;
+
+        //assert(linkToken.transfer(_recipient, uint256(amount)));
+    }
+
+    pub fn withdrawFunds(&mut self, _recipient: AccountId, _amount: u256) {
+        let available: u256 = self.recordedFunds.available as u256;
+        assert!((available - self.requiredReserve(self.paymentAmount)) >= _amount, "insufficient reserve funds");
+        // assert linktoken transfer
+        self.updateAvailableFunds();
+    }
+
     pub fn getAdmin(&self, _oracle: AccountId) -> AccountId {
         self.oracles[_oracle].admin
     }
