@@ -22,11 +22,11 @@ pub struct Aggregator {
     latestCompletedAnswer: u256,
     paymentAmount: u128,
     minimumResponses: u128,
-    jobIds: Base64String,
+    jobIds: Base64String[],
     oracles: AccountId[],
     answerCounter: u256,
     authorizedRequesters: LookupMap<AccountId, bool>,
-    requestAnswers: LookupMap<[u8; 4], u256>,
+    requestAnswers: LookupMap<Base64String, u256>,
     answers: LookupMap<u256, Answer>,
     currentAnswers: LookupMap<u256, i256>,
     updatedTimestamps: LookupMap<u256, u256>,
@@ -72,7 +72,7 @@ impl Aggregator {
         self.authorizedRequesters[_requester] = _allowed;
     }
 
-    pub fn cancelRequest(&mut self, /* requestId */, _payment: u256, _expiration: u256) {
+    pub fn cancelRequest(&mut self, _requestId: Base64String, _payment: u256, _expiration: u256) {
         let answerId: u256 = self.requestAnswers[_requestId];
         assert!(answerId < latestCompletedAnswer, "Cannot modify an in-progress answer");
 
@@ -172,7 +172,7 @@ impl Aggregator {
         assert!(self.latestCompletedAnswer <= _answerId), "Not latest answer");
     }
 
-    pub fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: Base64String) {
+    pub fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: Base64String[]) {
         assert!(_oracles.len() <= self.MAX_ORACLE_COUNT, "Cannot have more than {} oracles", self.MAX_ORACLE_COUNT);
         assert!(_oracles.len() >= _minimumResponses, "must have at least as many oracles as responses");
         assert!(_oracles.len() == _jobIds.len(), "must have at least as many oracles as responses");
