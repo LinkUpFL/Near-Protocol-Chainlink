@@ -57,15 +57,27 @@ impl Aggregator {
     pub fn cancelRequest(&mut self, /* requestId */, _payment: u256, _expiration: u256) {
         let answerId: u256 = self.requestAnswers[_requestId];
         assert!(answerId < latestCompletedAnswer, "Cannot modify an in-progress answer");
+
         self.requestAnswers[_requestId].clear();
         self.answers[answerId].responses.push(0);
-        // deleteAnswer
+        self.deleteAnswer(answerId);
+
+        // cancelChainlinkRequest
     }
 
     // pub fn destroy
 
-    // updateLatestAnswer
-    
+    fn updateLatestAnswer(&mut self, _answerId: u256) {
+        let responseLength: u256 = self.answers[_answerId].responses.len();
+        let middleIndex: u256 = responseLength / 2;
+        let currentAnswerTemp: i256;
+        // add if
+        self.currentAnswerValue = currentAnswerTemp;
+        self.latestCompletedAnswer = _answerId;
+        // add now values
+        self.currentAnswers[_answerId] = currentAnswerTemp;
+    }
+
     pub fn latestAnswer(&self) -> i256 {
         self.currentAnswers[latestCompletedAnswer]
     }
@@ -86,7 +98,16 @@ impl Aggregator {
         self.latestCompletedAnswer
     }
 
-    //quickselect
+    fn quickselect(&self, _a: i256[], _k: u256) -> i256 {
+        let a: i256[] = _a;
+        let k: u256 = _k;
+        let aLen: u256 = a.len();
+        // add a1 and a2
+        let a1Len: u256;
+        let a2Len: u256;
+        let pivot: i256;
+        let i: u256;
+    }
 
     pub fn swap(&self, _a: i256[], _b: i256[]) -> (i256[], i256[]) {
         return (_b, _a);
