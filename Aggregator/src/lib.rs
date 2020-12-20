@@ -22,7 +22,7 @@ pub struct Aggregator {
     latestCompletedAnswer: u256,
     paymentAmount: u128,
     minimumResponses: u128,
-    jobIds [u8; 4],
+    jobIds: Base64String,
     oracles: AccountId[],
     answerCounter: u256,
     authorizedRequesters: LookupMap<AccountId, bool>,
@@ -36,12 +36,27 @@ pub struct Aggregator {
 #[near_bindgen]
 impl Aggregator {
     pub fn requestRateUpdate(&mut self) {
-        let requestId: [u8; 4];
+        let requestId: Base64String;
         let oraclePayment: u256 = self.paymentAmount;
-        // add more
+        // for loop (build chainlink request??)
+        self.answers[self.answerCounter].minimumResponses = self.minimumResponses;
+        self.answers[self.answerCounter].maxResponses = self.oracles.len() as u128;
+
+        self.answerCounter = self.answerCounter + 1;
     }
 
-    pub fn updateRequestDetails(&mut self, _paymentAmount: u128, _minimumResponses: u128, _oracles: AccountId[], /* jobIds */) {
+    pub fn chainlinkCallback(&mut self, _clRequestId: Base64String, _response: i256) {
+        // validate ??
+
+        let answerId: u256 = self.requestAnswers(_clRequestId);
+        self.requestAnswers[_clRequestId].clear();
+
+        self.answers[answerId].responses.push(_response);
+        self.updateLatestAnswer(answerId);
+        self.deleteAnswer(answerId);
+    }
+
+    pub fn updateRequestDetails(&mut self, _paymentAmount: u128, _minimumResponses: u128, _oracles: AccountId[], _jobIds: Base64String[]) {
         self.paymentAmount = _paymentAmount;
         self.minimumResponses = _minimumResponses;
         self.jobIds = _jobIds;
@@ -154,7 +169,7 @@ impl Aggregator {
         assert!(self.latestCompletedAnswer <= _answerId), "Not latest answer");
     }
 
-    pub fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: [u8; 4]) {
+    pub fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: Base64String) {
         assert!(_oracles.len() <= self.MAX_ORACLE_COUNT, "Cannot have more than {} oracles", self.MAX_ORACLE_COUNT);
         assert!(_oracles.len() >= _minimumResponses, "must have at least as many oracles as responses");
         assert!(_oracles.len() == _jobIds.len(), "must have at least as many oracles as responses");
