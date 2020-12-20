@@ -7,6 +7,8 @@ use serde_json::json;
 use std::str;
 use std::collections::HashMap;
 
+const MAX_ORACLE_COUNT: u256 = 28;
+
 #[derive(Serialize, Deserialize)]
 pub struct Answer {
     minimumResponses: u128,
@@ -30,7 +32,6 @@ pub struct Aggregator {
     answers: LookupMap<u256, Answer>,
     currentAnswers: LookupMap<u256, i256>,
     updatedTimestamps: LookupMap<u256, u256>,
-    MAX_ORACLE_COUNT: u256
 }
 
 #[near_bindgen]
@@ -177,7 +178,7 @@ impl Aggregator {
     }
 
     fn validateAnswerRequirements(mut &self, _minimumResponses: u256, _oracles: AccountId[], _jobIds: Base64String[]) {
-        assert!(_oracles.len() <= self.MAX_ORACLE_COUNT, "Cannot have more than {} oracles", self.MAX_ORACLE_COUNT);
+        assert!(_oracles.len() <= MAX_ORACLE_COUNT, "Cannot have more than {} oracles", MAX_ORACLE_COUNT);
         assert!(_oracles.len() >= _minimumResponses, "must have at least as many oracles as responses");
         assert!(_oracles.len() == _jobIds.len(), "must have at least as many oracles as responses");
     }
