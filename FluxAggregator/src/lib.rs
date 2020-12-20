@@ -53,6 +53,8 @@ pub struct Funds {
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct FluxAggregator {
+    pub linkToken: AccountId,
+    pub validator: AccountId,
     pub paymentAmount: u128,
     pub maxSubmissionCount: u32,
     pub minSubmissionCount: u32,
@@ -256,7 +258,13 @@ impl FluxAggregator {
 
     //pub fn oracleRoundState(&self )
 
-    //pub fn setValidator(&mut self, _newValidator: AccountId) {
+    pub fn setValidator(&mut self, _newValidator: AccountId) {
+        let previous: AccountId = self.validator as AccountId;
+
+        if(previous != _newValidator) {
+            self.validator = _newValidator;
+        }
+    }
 
     fn initializeNewRound(&mut self, _roundId: u32) {
         self.updateTimedOutRoundInfo(_roundId - 1);
@@ -269,7 +277,7 @@ impl FluxAggregator {
             self.paymentAmount
         );
         self.details[_roundId] = nextDetails;
-        //self.rounds[_roundId].startedAt = block timestamp
+        self.rounds[_roundId].startedAt = env::block_timestamp() as u64;
     }
 
     fn oracleInitializeNewRound(&mut self, _roundId: u32) {
@@ -298,7 +306,7 @@ impl FluxAggregator {
         let prevId: u32 = _roundId - 1;
         self.rounds[_roundId].answer = self.rounds[prevId].answer;
         self.rounds[_roundId].answeredInRound = self.rounds[prevId].answeredInRound;
-        // self.rounds[_roundId].updatedAt = block timestamp
+        self.rounds[_roundId].updatedAt = env::block_timestamp() as u64;
 
         self.details[_roundId].clear();
     }
@@ -355,7 +363,7 @@ impl FluxAggregator {
 
         // let newAnswer: i256 = 
         self.rounds[_roundId].answer = newAnswer;
-        //self.rounds[_roundId].updatedAt = block.timestamp as u64;
+        self.rounds[_roundId].updatedAt = env::block_timestamp() as u64;
         rounds[_roundId].answeredInRound = _roundId;
         self.latestRoundId = _roundId;
 
@@ -390,7 +398,7 @@ impl FluxAggregator {
     fn timedOut(&mut self, _roundId: u32) -> bool {
         let startedAt: u64 = self.rounds[_roundId].startedAt;
         let roundTimeout: u32 = self.details[_roundId].timeout
-        return(startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < /*block.timestamp*/);
+        return(startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp());
     }
 
     fn getStartingRound(&self, _oracle: AccountId) -> u32 {
