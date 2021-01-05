@@ -259,7 +259,26 @@ impl FluxAggregator {
 
     // onTokenTransfer
 
-    //pub fn oracleRoundState(&self )
+    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: u32) -> (_eligibleToSubmit: bool, _roundId: u32, _latestSubmission: i256, _startedAt: u64, _timeout: u64, _availableFunds: u128, _oracleCount: u8, _paymentAmount: u128) {
+        // require
+
+        if(_queriedRoundId > 0) {
+            let round: Round = self.rounds[_queriedRoundId];
+            let details: RoundDetails = self.details[_queriedRoundId];
+            return (
+                self.eligibleForSpecificRound(_oracle, _queriedRoundId),
+                _queriedRoundId,
+                self.oracles[_oracle].latestSubmission,
+                self.round.startedAt,
+                self.details.timeout,
+                self.recordedFunds.available,
+                self.oracleCount(),
+                // ? :
+            )
+        } else {
+            return self.oracleRoundStateSuggestRound(_oracle);
+        }
+    }
 
     pub fn setValidator(&mut self, _newValidator: AccountId) {
         let previous: AccountId = self.validator as AccountId;
