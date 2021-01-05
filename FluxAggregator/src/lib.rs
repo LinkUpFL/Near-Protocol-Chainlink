@@ -392,7 +392,15 @@ impl FluxAggregator {
         return (true, newAnswer);
     }
 
-    //fn validateAnswer()
+    fn validateAnswer(&self, _roundId: u32, _newAnswer: i256) {
+        let av: AccountId = self.validator; // cache storage reads
+        // if
+        
+        let prevRound: u32 = _roundId - 1;
+        let prevAnswerRoundId: u32 = self.rounds[prevRound].answeredInRound;
+        let prevRoundAnswer: i256 = self.rounds[prevRound].answer;
+        // TRY CATCH
+    }
 
     fn payOracle(&mut self, _roundId: u32) {
         let payment: u128 = self.details[_roundId].paymentAmount;
