@@ -195,7 +195,7 @@ impl Aggregator {
     }
 
     fn ensureAuthorizedRequester(mut &self) {
-        assert_eq!(env::predecessor_account_id(), env::current_account_id(), "Not an authorized address for creating requests");
+        assert!(self.authorizedRequesters[env::current_account_id()] || env::current_account_id() == env::signer_account_id(), "Not an authorized address for creating requests");
     }
 
     fn onlyOwner(&mut self) {
