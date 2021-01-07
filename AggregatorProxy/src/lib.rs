@@ -6,6 +6,7 @@ use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
 use std::str;
 use std::collections::HashMap;
+use num_traits::pow;
 
 #[derive(Serialize, Deserialize)]
 pub struct Phase {
@@ -21,7 +22,7 @@ pub struct AggregatorProxy {
     pub phaseAggregators: LookupMap<u16, AccountId>,
     PHASE_OFFSET: u256 = 64,
     PHASE_SIZE: u256 = 16,
-    // MAX_ID
+    MAX_ID: u256 = 2.pow(PHASE_OFFSET+PHASE_SIZE) - 1;
 }
 
 #[near_bindgen]
@@ -36,7 +37,12 @@ impl AggregatorProxy {
 
     pub fn getAnswer(&mut self, _roundId: u256) -> (answer: i256) {
         if(_roundId > self.MAX_ID) return 0;
-        // add more
+
+        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(_roundId);
+        let aggregator: AccountId = self.phaseAggregators[phaseId];
+        if(aggregator == "") return 0;
+
+        return aggregator.getAnswer(aggregatorRoundId);
     }
 
     // getTimestamp
