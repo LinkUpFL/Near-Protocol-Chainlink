@@ -45,7 +45,16 @@ impl AggregatorProxy {
         return aggregator.getAnswer(aggregatorRoundId);
     }
 
-    // getTimestamp
+    pub fn getTimestamp(&self, _roundId: U128) -> (updatedAt: u256) {
+        let _roundId_u128: u128 = _roundId.into();
+        if(_roundId_u128 > self.MAX_ID) return 0;
+
+        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(_roundId_u128);
+        let aggregator: AccountId = self.phaseAggregators[phaseId];
+        if(aggregator == "") return 0;
+
+        return aggregator.getTimestamp(aggregatorRoundId);
+    }
 
     pub fn latestRound(&mut self) -> (roundId: u256) {
         let phase: Phase = self.currentPhase;
@@ -57,10 +66,12 @@ impl AggregatorProxy {
     // latestRoundData
 
     pub fn proposedGetRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        self.hasProposal();
         self.proposedAggregator.getRoundData(_roundId)
     }
 
     pub fn proposedLatestRoundData(&self) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        self.hasProposal();
         self.proposedAggregator.latestRoundData()
     }
 
@@ -95,7 +106,7 @@ impl AggregatorProxy {
     }
 
     // Internal
-    
+
     fn setAggregator(&mut self, _aggregator: AccountId) {
         let id: u16 = self.currentPhase.id + 1;
         self.currentPhase = self.Phase(id, _aggregator);
@@ -117,9 +128,11 @@ impl AggregatorProxy {
         return(self.addPhase(phaseId, roundId as u64), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound as u64));
     }
 
-    // Modifiers 
+    // Modifiers
 
-    // hasProposal
+    fn hasProposal(&mut self) {
+        assert!(self.proposedAggregator != "", "No proposed aggregator present");
+    }
 
     fn onlyOwner(&mut self) {
         assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
