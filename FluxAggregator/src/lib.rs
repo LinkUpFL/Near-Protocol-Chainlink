@@ -74,7 +74,7 @@ pub struct FluxAggregator {
     pub maxSubmissionValue: i256,
     reportingRoundId: u32,
     latestRoundId: u32,
-    oracles: LookupMap<AccountId, OracleStatusc>,
+    oracles: LookupMap<AccountId, OracleStatus>,
     rounds: LookupMap<u32, Round>,
     details: LookupMap<u32, RoundDetails>,
     requesters: LookupMap<AccountId, Requester>,
@@ -85,14 +85,19 @@ pub struct FluxAggregator {
 #[near_bindgen]
 impl FluxAggregator {
     pub fn submit(&mut self, _roundId: u256, _submission: i256) {
-        // assert
+        let error: Base64String = self.validateOracleRound(env::current_account_id(), _roundId as u32);
+        assert!(_submission >= self.minSubmissionValue, "value below minSubmissionValue");
+        assert!(_submission <= self.maxSubmissionValue, "value above maxSubmissionValue");
+        assert!(error.len() == 0, error);
 
         self.oracleInitializeNewRound(_roundId as u32);
         self.recordSubmission(_submission, _roundId as u32);
-        // update Answer
+        let (updated: bool, newAnswer: i256) = self.updateRoundAnswer(_roundId as u32);
         self.payOracle(_roundId as u32);
         self.deleteRoundDetails(_roundId as u32);
-        // if for updated
+        if(updated){
+            self.validateAnswer(_roundId as u32, newAnswer);
+        }
     }
 
     pub fn changeOracles(&mut self, _removed: AccountId[], _added: AccountId[], _addedAdmins: AccountId[], _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32) {
