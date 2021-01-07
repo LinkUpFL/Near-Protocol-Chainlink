@@ -101,6 +101,8 @@ impl FluxAggregator {
     }
 
     pub fn changeOracles(&mut self, _removed: AccountId[], _added: AccountId[], _addedAdmins: AccountId[], _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32) {
+        self.onlyOwner();
+
         for i in 0.._removed.len() {
             self.removeOracle(_removed[i]);
         }
@@ -278,7 +280,7 @@ impl FluxAggregator {
                 self.details.timeout,
                 self.recordedFunds.available,
                 self.oracleCount(),
-                // ? :
+                if self.round.startedAt > 0 { self.details.paymentAmount } else { self.paymentAmount }
             )
         } else {
             return self.oracleRoundStateSuggestRound(_oracle);
@@ -399,7 +401,7 @@ impl FluxAggregator {
 
     fn validateAnswer(&self, _roundId: u32, _newAnswer: i256) {
         let av: AccountId = self.validator; // cache storage reads
-        // if
+        if(av == "") return;
         
         let prevRound: u32 = _roundId - 1;
         let prevAnswerRoundId: u32 = self.rounds[prevRound].answeredInRound;
@@ -455,7 +457,7 @@ impl FluxAggregator {
     fn addOracle(&mut self, _oracle: AccountId, _admin: AccountId) {
         assert!(!self.oracleEnabled(_oracle), "oracle already enabled");
 
-        assert!(_admin != env::predecessor_account_id(), "cannot set admin to 0"); // double check address(0)
+        assert!(_admin != "", "cannot set admin to 0");
         assert!(self.oracles[_oracle].admin == env::predecessor_account_id() || self.oracles[_oracle].admin == _admin, "owner cannot overwrite admin");
 
         self.oracles[_oracle].startingRound = self.getStartingRound(_oracle);
@@ -513,5 +515,9 @@ impl FluxAggregator {
 
     fn validRoundId(&self, _roundId: u256) -> bool {
         _roundId <= ROUND_MAX
+    }
+
+    fn onlyOwner(&mut self) {
+        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
     }
 }
