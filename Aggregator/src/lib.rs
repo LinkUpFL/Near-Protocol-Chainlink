@@ -50,7 +50,7 @@ impl Aggregator {
     }
 
     pub fn chainlinkCallback(&mut self, _clRequestId: Base64String, _response: i256) {
-        // validate ??
+        self.validateAnswerRequirements(_clRequestId);
 
         let answerId: u256 = self.requestAnswers(_clRequestId);
         self.requestAnswers[_clRequestId].clear();
@@ -93,13 +93,21 @@ impl Aggregator {
     fn updateLatestAnswer(&mut self, _answerId: u256) {
         self.ensureMinResponsesReceived(_answerId);
         self.ensureOnlyLatestAnswer(_answerId);
+
         let responseLength: u256 = self.answers[_answerId].responses.len();
         let middleIndex: u256 = responseLength / 2;
         let currentAnswerTemp: i256;
-        // add if
+        if(responseLength % 2 == 0) {
+            let median1: i256 = self.quickselect(self.answers[_answerId].responses, middleIndex);
+            let median2: i256 = self.quickselect(self.answers[_answerId].responses, middleIndex + 1); // quickselect is 1 indexed
+            currentAnswerTemp = (median1 + median2) / 2;
+        } else {
+            currentAnswerTemp = self.quickselect(self.answers[_answerId].responses, middleIndex + 1); // quickselect is 1 indexed
+        }
         self.currentAnswerValue = currentAnswerTemp;
         self.latestCompletedAnswer = _answerId;
-        // add now values
+        self.updatedTimestampValue = env::block_timestamp();
+        self.updatedTimestamps[_answerId] = env::block_timestamp();
         self.currentAnswers[_answerId] = currentAnswerTemp;
     }
 
@@ -127,7 +135,8 @@ impl Aggregator {
         let mut a: i256[] = _a;
         let mut k: u256 = _k;
         let mut aLen: u256 = a.len();
-        // add a1 and a2
+        let mut a1: [i256; aLen];
+        let mut a2: [i256; aLen];
         let mut a1Len: u256;
         let mut a2Len: u256;
         let mut pivot: i256;
@@ -147,11 +156,11 @@ impl Aggregator {
             }
             if(k <= a1Len) {
                 aLen = a1Len;
-                a, a1 = self.swap(a, a1); // CHECK
+                (a, a1) = self.swap(a, a1);
             } else if(k > (aLen - a2Len)) {
                 k = k - (aLen - a2Len);
                 aLen = a2Len;
-                a, a2 = self.swap(a, a2); // CHECK
+                (a, a2) = self.swap(a, a2);
             } else {
                 return pivot;
             }
