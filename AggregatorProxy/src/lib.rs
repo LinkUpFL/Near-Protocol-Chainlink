@@ -63,7 +63,7 @@ impl AggregatorProxy {
 
     // getRoundData
 
-    // latestRoundData
+    //latestRoundData
 
     pub fn proposedGetRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
         self.hasProposal();
@@ -83,8 +83,10 @@ impl AggregatorProxy {
         self.currentPhase.id
     }
 
-    // decimals
-    
+    pub fn decimals(&self) -> u8 {
+        self.currentPhase.aggregator.decimals();
+    }
+
     pub fn version(&self) -> u256 {
         self.currentPhase.aggregator.version()
     }
