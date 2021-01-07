@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Serialize, Deserialize};
-use near_sdk::collections::{TreeMap, UnorderedSet};
+use near_sdk::collections::{UnorderedSet, LookupMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
@@ -50,8 +50,8 @@ pub struct Oracle {
     pub owner: AccountId,
     pub link_account: AccountId,
     pub withdrawable_tokens: u128,
-    pub nonces: TreeMap<AccountId, U128>,
-    pub requests: TreeMap<AccountId, TreeMap<u128, OracleRequest>>,
+    pub nonces: LookupMap<AccountId, U128>,
+    pub requests: LookupMap<AccountId, LookupMap<u128, OracleRequest>>,
     pub authorized_nodes: UnorderedSet<AccountId>,
 }
 
@@ -73,8 +73,8 @@ impl Oracle {
             owner: owner_id,
             link_account: link_id,
             withdrawable_tokens: 0_u128,
-            nonces: TreeMap::new(b"nonces".to_vec()),
-            requests: TreeMap::new(b"requests".to_vec()),
+            nonces: LookupMap::new(b"nonces".to_vec()),
+            requests: LookupMap::new(b"requests".to_vec()),
             authorized_nodes: UnorderedSet::new(b"authorized_nodes".to_vec()),
         }
     }
@@ -180,7 +180,7 @@ impl Oracle {
         */
         let nonce_request_entry = self.requests.get(&sender);
         let mut nonce_request = if nonce_request_entry.is_none() {
-            TreeMap::new(sender.clone().into_bytes())
+            LookupMap::new(sender.clone().into_bytes())
         } else {
             nonce_request_entry.unwrap()
         };
@@ -252,7 +252,7 @@ impl Oracle {
         let nonce_u128: u128 = nonce.into();
         let payment = account_requests.get(&nonce_u128).unwrap().payment;
         account_requests.remove(&nonce_u128);
-        // Must overwrite the new TreeMap with the account key
+        // Must overwrite the new LookupMap with the account key
         self.requests.insert(&account, &account_requests);
         env::log(b"Request has completed successfully and been removed.");
         self.withdrawable_tokens += payment;
@@ -350,7 +350,7 @@ impl Oracle {
     }
 
     /// Helper function while iterating through request summaries
-    fn _request_summary_iterate(&self, max_num_accounts: &u64, req: (AccountId, TreeMap<u128, OracleRequest>), result: &mut Vec<SummaryJSON>, counter: &mut u64) {
+    fn _request_summary_iterate(&self, max_num_accounts: &u64, req: (AccountId, LookupMap<u128, OracleRequest>), result: &mut Vec<SummaryJSON>, counter: &mut u64) {
         if *counter == *max_num_accounts || *counter > self.requests.len() {
             return
         }
