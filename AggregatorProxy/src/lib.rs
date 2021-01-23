@@ -8,6 +8,8 @@ use std::str;
 use std::collections::HashMap;
 use num_traits::pow;
 
+pub type Base64String = String;
+
 #[derive(Serialize, Deserialize)]
 pub struct Phase {
     id: u16,
