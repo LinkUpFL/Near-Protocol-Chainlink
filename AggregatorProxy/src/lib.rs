@@ -37,10 +37,11 @@ impl AggregatorProxy {
         self.currentPhase.aggregator.latestTimestamp()
     }
 
-    pub fn getAnswer(&mut self, _roundId: u256) -> (answer: i256) {
-        if(_roundId > self.MAX_ID) return 0;
+    pub fn getAnswer(&mut self, _roundId: U128) -> (answer: i256) {
+        let roundId_u128: u128 = _roundId.into();
+        if(roundId_u128 > self.MAX_ID) return 0;
 
-        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(_roundId);
+        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(roundId_u128);
         let aggregator: AccountId = self.phaseAggregators[phaseId];
         if(aggregator == "") return 0;
 
@@ -48,10 +49,10 @@ impl AggregatorProxy {
     }
 
     pub fn getTimestamp(&self, _roundId: U128) -> (updatedAt: u256) {
-        let _roundId_u128: u128 = _roundId.into();
-        if(_roundId_u128 > self.MAX_ID) return 0;
+        let roundId_u128: u128 = _roundId.into();
+        if(roundId_u128 > self.MAX_ID) return 0;
 
-        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(_roundId_u128);
+        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(roundId_u128);
         let aggregator: AccountId = self.phaseAggregators[phaseId];
         if(aggregator == "") return 0;
 
@@ -63,8 +64,9 @@ impl AggregatorProxy {
         self.addPhase(phase.id, phase.aggregator.latestRound() as u64)
     }
 
-    pub fn getRoundData(&mut self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
-        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(_roundId);
+    pub fn getRoundData(&mut self, _roundId: U128) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        let roundId_u128: u128 = _roundId.into();
+        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(roundId_u128);
 
         (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = self.phaseAggregators[phaseId].getRoundData(aggregatorRoundId);
 
@@ -79,9 +81,10 @@ impl AggregatorProxy {
         return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
     }
 
-    pub fn proposedGetRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+    pub fn proposedGetRoundData(&self, _roundId: U128) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        let roundId_u128: u128 = _roundId.into();
         self.hasProposal();
-        self.proposedAggregator.getRoundData(_roundId)
+        self.proposedAggregator.getRoundData(roundId_u128)
     }
 
     pub fn proposedLatestRoundData(&self) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
@@ -129,19 +132,26 @@ impl AggregatorProxy {
         self.phaseAggregators[id] = _aggregator;
     }
 
-    fn addPhase(&self, _phase: u16, _originalId: u64) -> u80 {
-        ((_phase as u256) << self.PHASE_OFFSET | _originalId) as u80
+    fn addPhase(&self, _phase: u64, _originalId: u128) -> u128 {
+        (_phase << self.PHASE_OFFSET | _originalId) as u128
     }
 
-    fn parseIds(&self, _roundId: u256) -> (u16, u64) {
-        let phaseId: u16 = (_roundId >> self.PHASE_OFFSET) as u16;
-        let aggregatorRoundId: u64 = _roundId as u64;
+    fn parseIds(&self, _roundId: U128) -> (u16, u128) {
+        let roundId_u128: u128 = _roundId.into();
+        let phaseId: u16 = (roundId_u128 >> self.PHASE_OFFSET) as u16;
+        let aggregatorRoundId: u128 = roundId_u128;
 
         return(phaseId, aggregatorRoundId);
     }
 
-    fn addPhaseIds(&self, roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80, phaseId: u16) -> (u80, i256, u256, u256, u80) {
-        return(self.addPhase(phaseId, roundId as u64), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound as u64));
+    fn addPhaseIds(&self, roundId: U128, answer: U128, startedAt: U128, updatedAt: U128, answeredInRound: U128, phaseId: U64) -> (u80, i256, u256, u256, u80) {
+        let roundId_u128: u128 = _roundId.into();
+        let answer_u128: u128 = answer.into();
+        let startedAt_u128: u128 = startedAt.into();
+        let updatedAt_u128: u128 = updatedAt.into();
+        let answeredInRound_u128: u128 = answeredInRound.into();
+        let phaseId_u64: u64 = phaseId.into();
+        return(self.addPhase(phaseId_u64, roundId), answer_u128, startedAt_u128, updatedAt_u128, self.addPhase(phaseId_u64, answeredInRound_u128));
     }
 
     // Modifiers
