@@ -6,6 +6,7 @@ use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
 use std::str;
 use std::collections::HashMap;
+use base64::{decode};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -38,11 +39,11 @@ impl Oracle {
         let nonce_u128: u128 = _nonce.into();
         let dataVersion_u128: u128 = _dataVersion.into();
 
-        //let requestId: Base64String
+        let requestId: Base64String = hex::encode(env::keccak256(_sender, nonce_u128));
         assert!(self.commitments[requestId] == 0, "Must use a unique ID");
         //let expiration: u256
 
-        //self.commitments[requestId]
+        self.commitments[requestId] = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
     }
 
     pub fn fulfillOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _expiration: U128, _data: Base64String) -> bool {
@@ -50,7 +51,7 @@ impl Oracle {
         let payment_u128: u128 = _payment.into();
         let expiration_u128: u128 = _expiration.into();
 
-        // let paramsHash
+        let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
         assert!(self.commitments[_requestId] == paramsHash, "Params do not match request ID");
         self.withdrawableTokens = self.withdrawableTokens + _payment;
         self.commitments[_requestId].clear();
@@ -83,10 +84,10 @@ impl Oracle {
     }
 
     pub fn cancelOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackFunc: Base64String, _expiration: U128) {
-        // paramsHash
-        assert!(paramsHash == self.commitments[_requestId], "Params do not match request ID");
         let payment_u128: u128 = _payment.into();
         let expiration_u128: u128 = _expiration.into();
+        let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
+        assert!(paramsHash == self.commitments[_requestId], "Params do not match request ID");
         // expiration
 
         self.commitments[_requestId].clear();
