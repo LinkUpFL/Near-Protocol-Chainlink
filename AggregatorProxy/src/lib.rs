@@ -63,9 +63,21 @@ impl AggregatorProxy {
         self.addPhase(phase.id, phase.aggregator.latestRound() as u64)
     }
 
-    // getRoundData
+    pub fn getRoundData(&mut self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(_roundId);
 
-    //latestRoundData
+        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = self.phaseAggregators[phaseId].getRoundData(aggregatorRoundId);
+
+        return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
+    }
+
+    pub fn latestRoundData(&mut self) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        let current: Phase = self.currentPhase; // cache storage reads
+
+        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = current.aggregator.latestRoundData();
+
+        return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
+    }
 
     pub fn proposedGetRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
         self.hasProposal();
