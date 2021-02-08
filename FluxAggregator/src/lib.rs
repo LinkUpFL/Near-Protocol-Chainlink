@@ -64,10 +64,10 @@ pub struct FluxAggregator {
     pub linkToken: AccountId,
     pub validator: AccountId,
     pub paymentAmount: u128,
-    pub maxSubmissionCount: u32,
-    pub minSubmissionCount: u32,
-    pub restartDelay: u32,
-    pub timeout: u32,
+    pub maxSubmissionCount: u64,
+    pub minSubmissionCount: u64,
+    pub restartDelay: u64,
+    pub timeout: u64,
     pub decimals: u8,
     pub description: Base64String,
     pub minSubmissionValue: i256,
@@ -75,7 +75,7 @@ pub struct FluxAggregator {
     reportingRoundId: u32,
     latestRoundId: u32,
     oracles: LookupMap<AccountId, OracleStatus>,
-    rounds: LookupMap<u32, Round>,
+    rounds: LookupMap<u64, Round>,
     details: LookupMap<u32, RoundDetails>,
     requesters: LookupMap<AccountId, Requester>,
     oracleAddresses: AccountId[],
@@ -84,24 +84,30 @@ pub struct FluxAggregator {
 
 #[near_bindgen]
 impl FluxAggregator {
-    pub fn submit(&mut self, _roundId: u256, _submission: i256) {
-        let error: Base64String = self.validateOracleRound(env::current_account_id(), _roundId as u32);
-        assert!(_submission >= self.minSubmissionValue, "value below minSubmissionValue");
-        assert!(_submission <= self.maxSubmissionValue, "value above maxSubmissionValue");
+    pub fn submit(&mut self, _roundId: U128, _submission: U128) {
+        let roundId_u128: u128 = _roundId.into();
+        let submission_u128: u128 = _submission.into();
+        let error: Base64String = self.validateOracleRound(env::current_account_id(), roundId_u128 as u64);
+        assert!(submission_u128 >= self.minSubmissionValue, "value below minSubmissionValue");
+        assert!(submission_u128 <= self.maxSubmissionValue, "value above maxSubmissionValue");
         assert!(error.len() == 0, error);
 
-        self.oracleInitializeNewRound(_roundId as u32);
-        self.recordSubmission(_submission, _roundId as u32);
-        let (updated: bool, newAnswer: i256) = self.updateRoundAnswer(_roundId as u32);
-        self.payOracle(_roundId as u32);
-        self.deleteRoundDetails(_roundId as u32);
+        self.oracleInitializeNewRound(roundId_u128 as u32);
+        self.recordSubmission(submission_u128, roundId_u128);
+        let (updated: bool, newAnswer: i256) = self.updateRoundAnswer(roundId_u128 as u32);
+        self.payOracle(roundId_u128 as u32);
+        self.deleteRoundDetails(roundId_u128 as u32);
         if(updated){
-            self.validateAnswer(_roundId as u32, newAnswer);
+            self.validateAnswer(roundId_u128 as u32, newAnswer);
         }
     }
 
-    pub fn changeOracles(&mut self, _removed: AccountId[], _added: AccountId[], _addedAdmins: AccountId[], _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32) {
+    pub fn changeOracles(&mut self, _removed: AccountId[], _added: AccountId[], _addedAdmins: AccountId[], _minSubmissions: U64, _maxSubmissions: U64, _restartDelay: U64) {
         self.onlyOwner();
+
+        let minSubmissions_u64: u64 = _minSubmissions.into();
+        let maxSubmissions_u64: u64 = _maxSubmissions.into();
+        let restartDelay_u64: u64 = _restartDelay.into();
 
         for i in 0.._removed.len() {
             self.removeOracle(_removed[i]);
@@ -114,24 +120,30 @@ impl FluxAggregator {
             self.addOracle(_added[i], _addedAdmins[i]);
         }
 
-        self.updateFutureRounds(self.paymentAmount, _minSubmissions, _maxSubmissions, _restartDelay, self.timeout);
+        self.updateFutureRounds(self.paymentAmount, minSubmissions_u64, maxSubmissions_u64, restartDelay_u64, self.timeout);
     }
 
-    pub fn updateFutureRounds(&mut self, _paymentAmount: u128, _minSubmissions: u32, _maxSubmissions: u32, _restartDelay: u32, _timeout: u32) {
+    pub fn updateFutureRounds(&mut self, _paymentAmount: U128, _minSubmissions: U64, _maxSubmissions: U64, _restartDelay: U64, _timeout: U64) {
+        let paymentAmount_u128: u128 = _paymentAmount.into();
+        let minSubmissions_u64: u64 = _minSubmissions.into();
+        let maxSubmissions_u64: u64 = _maxSubmissions.into();
+        let restartDelay_u64: u64 = _restartDelay.into();
+        let timeout_u64: u64 = _timeout.into();
+
         let oracleNum: u32 = self.oracleCount(); // Save on storage reads
-        assert!(_maxSubmissions >= _minSubmissions, "max must equal/exceed min");
-        assert!(oracleNum >= _maxSubmissions, "max cannot exceed total");
-        assert!(oracleNum == 0 || oracleNum > _restartDelay, "delay cannot exceed total");
-        assert!(self.recordedFunds.available >= self.requiredReserve(_paymentAmount), "insufficient funds for payment");
+        assert!(maxSubmissions_u64 >= minSubmissions_u64, "max must equal/exceed min");
+        assert!(oracleNum >= maxSubmissions_u64, "max cannot exceed total");
+        assert!(oracleNum == 0 || oracleNum > restartDelay_u64, "delay cannot exceed total");
+        assert!(self.recordedFunds.available >= self.requiredReserve(paymentAmount_u128), "insufficient funds for payment");
         if(self.oracleCount() > 0) {
-            assert!(_minSubmissions > 0, "min must be greater than 0")
+            assert!(minSubmissions_u64 > 0, "min must be greater than 0")
         }
 
-        self.paymentAmount = _paymentAmount;
-        self.minSubmissionCount = _minSubmissions;
-        self.maxSubmissionCount = _maxSubmissions;
-        self.restartDelay = _restartDelay;
-        self.timeout = _timeout;
+        self.paymentAmount = paymentAmount_u128;
+        self.minSubmissionCount = minSubmissions_u64;
+        self.maxSubmissionCount = maxSubmissions_u64;
+        self.restartDelay = restartDelay_u64;
+        self.timeout = timeout_u64;
     }
 
     pub fn allocatedFunds(&self) -> u128 {
@@ -172,27 +184,30 @@ impl FluxAggregator {
         self.latestRoundId
     }
 
-    pub fn getAnswer(&self, _roundId: u256) -> i256 {
+    pub fn getAnswer(&self, _roundId: U128) -> i256 {
+        let roundId_u128: u128 = _roundId.into();
         if(self.validRoundId(_roundId)) {
-            return self.rounds[_roundId as u32].answer;
+            return self.rounds[roundId_u128 as u32].answer;
         }
         return 0;
     }
 
-    pub fn getTimestamp(_roundId: u256) -> u256 {
+    pub fn getTimestamp(_roundId: U128) -> u256 {
+        let roundId_u128: u128 = _roundId.into();
         if(self.validRoundId(_roundId)) {
-            return self.rounds[_roundId as u32].answer;
+            return self.rounds[roundId_u128 as u32].answer;
         }
         return 0;
     }
 
-    pub fn getRoundData(&self, _roundId: u80) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
-        let r: Round = self.rounds[_roundId as u32];
+    pub fn getRoundData(&self, _roundId: U128) -> (roundId: u128, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        let roundId_u128: u128 = _roundId.into();
+        let r: Round = self.rounds[roundId_u128 as u64];
 
-        assert!(r.answeredInRound > 0 && self.validRoundId(_roundId), V3_NO_DATA_ERROR);
+        assert!(r.answeredInRound > 0 && self.validRoundId(roundId_u128), V3_NO_DATA_ERROR);
 
         return(
-            _roundId,
+            roundId_u128,
             r.answer,
             r.startedAt,
             r.updatedAt,
@@ -208,23 +223,24 @@ impl FluxAggregator {
         self.oracles[_oracle].withdrawable
     }
 
-    pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: u256) {
+    pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
         assert!(self.oracles[_oracle].admin == env::signer_account_id(), "only callable by admin");
 
         // Safe to downcast _amount because the total amount of LINK is less than 2^128.
-        let amount: u128 = _amount as u128;
+        let amount_u128: u128 = _amount.into();
         let available: u128 = self.oracles[_oracle].withdrawable;
-        assert!(available >= amount, "insufficient withdrawable funds");
+        assert!(available >= amount_u128, "insufficient withdrawable funds");
 
-        self.oracles[_oracle].withdrawable = available - amount;
-        self.recordedFunds.allocated = self.recordedFunds.allocated - amount;
+        self.oracles[_oracle].withdrawable = available - amount_u128;
+        self.recordedFunds.allocated = self.recordedFunds.allocated - amount_u128;
 
         //assert(linkToken.transfer(_recipient, uint256(amount)));
     }
 
-    pub fn withdrawFunds(&mut self, _recipient: AccountId, _amount: u256) {
+    pub fn withdrawFunds(&mut self, _recipient: AccountId, _amount: U128) {
         let available: u256 = self.recordedFunds.available as u256;
-        assert!((available - self.requiredReserve(self.paymentAmount)) >= _amount, "insufficient reserve funds");
+        let amount_u128: u128 = _amount.into();
+        assert!((available - self.requiredReserve(self.paymentAmount)) >= amount_u128, "insufficient reserve funds");
         // assert linktoken transfer
         self.updateAvailableFunds();
     }
@@ -266,15 +282,18 @@ impl FluxAggregator {
 
     // onTokenTransfer
 
-    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: u32) -> (_eligibleToSubmit: bool, _roundId: u32, _latestSubmission: i256, _startedAt: u64, _timeout: u64, _availableFunds: u128, _oracleCount: u8, _paymentAmount: u128) {
+    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (_eligibleToSubmit: bool, _roundId: u32, _latestSubmission: i256, _startedAt: u64, _timeout: u64, _availableFunds: u128, _oracleCount: u8, _paymentAmount: u128) {
         // require
 
-        if(_queriedRoundId > 0) {
-            let round: Round = self.rounds[_queriedRoundId];
-            let details: RoundDetails = self.details[_queriedRoundId];
+        let queriedRoundId_u64: u64 = _queriedRoundId.into();
+
+        if(queriedRoundId_u64 > 0) {
+            let round: Round = self.rounds[queriedRoundId_u64];
+            let details: RoundDetails = self.details[queriedRoundId_u64];
             return (
-                self.eligibleForSpecificRound(_oracle, _queriedRoundId),
-                _queriedRoundId,
+
+                self.eligibleForSpecificRound(_oracle, queriedRoundId_u64),
+                queriedRoundId_u64,
                 self.oracles[_oracle].latestSubmission,
                 self.round.startedAt,
                 self.details.timeout,
@@ -295,9 +314,10 @@ impl FluxAggregator {
         }
     }
 
-    fn initializeNewRound(&mut self, _roundId: u32) {
-        self.updateTimedOutRoundInfo(_roundId - 1);
-        self.reportingRoundId = _roundId;
+    fn initializeNewRound(&mut self, _roundId: U64) {
+        let roundId_u64: u64 = _roundId.into();
+        self.updateTimedOutRoundInfo(roundId_u64 - 1);
+        self.reportingRoundId = roundId_u64;
         let nextDetails: self.RoundDetails = self.RoundDetails(
             //new int
             self.maxSubmissionCount,
@@ -305,46 +325,50 @@ impl FluxAggregator {
             self.timeout,
             self.paymentAmount
         );
-        self.details[_roundId] = nextDetails;
-        self.rounds[_roundId].startedAt = env::block_timestamp() as u64;
+        self.details[roundId_u64] = nextDetails;
+        self.rounds[roundId_u64].startedAt = env::block_timestamp() as u64;
     }
 
-    fn oracleInitializeNewRound(&mut self, _roundId: u32) {
-        if(!self.newRound(_roundId)) return;
+    fn oracleInitializeNewRound(&mut self, _roundId: U64) {
+        let roundId_u64: u64 = _roundId.into();
+        if(!self.newRound(roundId_u64)) return;
         let lastStarted: u256 = self.oracles[env::signer_account_id()].lastStartedRound; // cache storage reads
-        if(_roundId <= lastStarted + self.restartDelay && lastStarted != 0) return;
+        if(roundId_u64 <= lastStarted + self.restartDelay && lastStarted != 0) return;
 
         self.initializeNewRound(_roundId);
 
-        self.oracles[env::signer_account_id()].lastStartedRound = _roundId;
+        self.oracles[env::signer_account_id()].lastStartedRound = roundId_u64;
     }
 
-    fn requesterInitializeNewRound(&mut self, _roundId: u32) {
-        if(!self.newRound(_roundId)) return;
+    fn requesterInitializeNewRound(&mut self, _roundId: U64) {
+        let roundId_u64: u64 = _roundId.into();
+        if(!self.newRound(roundId_u64)) return;
         let lastStarted: u256 = self.requesters[env::signer_account_id()].lastStartedRound; // cache storage reads
-        assert!(_roundId > lastStarted + self.requesters[env::signer_account_id()].delay || lastStarted == 0, "must delay requests");
+        assert!(roundId_u64 > lastStarted + self.requesters[env::signer_account_id()].delay || lastStarted == 0, "must delay requests");
 
-        self.initializeNewRound(_roundId);
+        self.initializeNewRound(roundId_u64);
 
-        self.requesters[env::signer_account_id()].lastStartedRound = _roundId;
+        self.requesters[env::signer_account_id()].lastStartedRound = roundId_u64;
     }
 
-    fn updateTimedOutRoundInfo(&mut self, _roundId: u32) {
-        if(!self.timedOut(_roundId)) return;
+    fn updateTimedOutRoundInfo(&mut self, _roundId: U64) {
+        let roundId_u64: u64 = _roundId.into();
+        if(!self.timedOut(roundId_u64)) return;
 
-        let prevId: u32 = _roundId - 1;
-        self.rounds[_roundId].answer = self.rounds[prevId].answer;
-        self.rounds[_roundId].answeredInRound = self.rounds[prevId].answeredInRound;
-        self.rounds[_roundId].updatedAt = env::block_timestamp() as u64;
+        let prevId: u32 = roundId_u64 - 1;
+        self.rounds[roundId_u64].answer = self.rounds[prevId].answer;
+        self.rounds[roundId_u64].answeredInRound = self.rounds[prevId].answeredInRound;
+        self.rounds[roundId_u64].updatedAt = env::block_timestamp() as u64;
 
-        self.details[_roundId].clear();
+        self.details[roundId_u64].clear();
     }
 
-    fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u32) -> bool {
-        if(self.rounds[_queriedRoundId].startedAt > 0) {
-            return self.acceptingSubmissions(_queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
+    fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: U64) -> bool {
+        let queriedRoundId_u64: u64 = _queriedRoundId.into();
+        if(self.rounds[queriedRoundId_u64].startedAt > 0) {
+            return self.acceptingSubmissions(queriedRoundId_u64) && self.validateOracleRound(_oracle, queriedRoundId_u64).len() == 0;
         } else {
-            return self.delayed(_oracle, _queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
+            return self.delayed(_oracle, queriedRoundId_u64) && self.validateOracleRound(_oracle, queriedRoundId_u64).len() == 0;
         }
     }
 
@@ -418,7 +442,7 @@ impl FluxAggregator {
         self.oracles[env::signer_account_id()].withdrawable = self.oracles[env::signer_account_id()].withdrawable + payment;
     }
 
-    fn recordSubmission(&mut self, _submission: i256, _roundId: u32) {
+    fn recordSubmission(&mut self, _submission: u128, _roundId: u128) {
         assert!(self.acceptingSubmissions(_roundId), "round not accepting submissions");
 
         self.details[_roundId].submissions.push(_submission);
@@ -446,12 +470,15 @@ impl FluxAggregator {
         return currentRound + 1;
     }
 
-    fn previousAndCurrentUnanswered(&self, _roundId: u32, _rrId: u32) -> bool {
-        return (_roundId + 1) == (_rrId && self.rounds[_rrId].updatedAt == 0);
+    fn previousAndCurrentUnanswered(&self, _roundId: U64, _rrId: U64) -> bool {
+        let roundId_u64: u64 = _roundId.into();
+        let rrId_u64: u64 = _rrId.into();
+        return (roundId_u64 + 1) == (rrId_u64 && self.rounds[rrId_u64].updatedAt == 0);
     }
 
-    fn requiredReserve(&self, payment: u256) -> u256 {
-        return payment * (self.oracleCount() * RESERVE_ROUNDS);
+    fn requiredReserve(&self, payment: U128) -> u128 {
+        let payment_u128: u128 = payment.into();
+        return payment_u128 * (self.oracleCount() * RESERVE_ROUNDS);
     }
 
     fn addOracle(&mut self, _oracle: AccountId, _admin: AccountId) {
