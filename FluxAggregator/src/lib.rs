@@ -72,7 +72,7 @@ pub struct FluxAggregator {
     pub description: Base64String,
     pub minSubmissionValue: i256,
     pub maxSubmissionValue: i256,
-    reportingRoundId: u32,
+    reportingRoundId: u64,
     latestRoundId: u32,
     oracles: LookupMap<AccountId, OracleStatus>,
     rounds: LookupMap<u64, Round>,
@@ -96,7 +96,7 @@ impl FluxAggregator {
         self.recordSubmission(submission_u128, roundId_u128);
         let (updated: bool, newAnswer: i256) = self.updateRoundAnswer(roundId_u128 as u32);
         self.payOracle(roundId_u128 as u32);
-        self.deleteRoundDetails(roundId_u128 as u32);
+        self.deleteRoundDetails(roundId_u128 as u64);
         if(updated){
             self.validateAnswer(roundId_u128 as u32, newAnswer);
         }
@@ -262,7 +262,7 @@ impl FluxAggregator {
 
     pub fn requestNewRound(&mut self) -> u80 {
         assert!(self.requesters[env::signer_account_id()].authorized, "not authorized requester");
-        let current: u32 = self.reportingRoundId;
+        let current: u64 = self.reportingRoundId;
         assert!(self.rounds[current].updatedAt > 0 || self.timedOut(current), "prev round must be supersedable");
         let newRoundId: u32 = current + 1;
         self.requesterInitializeNewRound(newRoundId);
@@ -450,35 +450,33 @@ impl FluxAggregator {
         self.oracles[env::signer_account_id()].latestSubmission = _submission;
     }
 
-    fn deleteRoundDetails(&mut self, _roundId: u32) {
+    fn deleteRoundDetails(&mut self, _roundId: u64) {
         if(self.details[_roundId].submissions.len() < self.details[_roundId].maxSubmissions) return;
 
-        self.details[_roundId].clear();
+        self.details[roundId_u64].clear();
     }
 
-    fn timedOut(&mut self, _roundId: u32) -> bool {
-        let startedAt: u64 = self.rounds[_roundId].startedAt;
-        let roundTimeout: u32 = self.details[_roundId].timeout
+    fn timedOut(&mut self, _roundId: U64) -> bool {
+        let roundId_u64: u64 = _roundId.into();
+        let startedAt: u64 = self.rounds[roundId_u64].startedAt;
+        let roundTimeout: u32 = self.details[roundId_u64].timeout
         return(startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp());
     }
 
-    fn getStartingRound(&self, _oracle: AccountId) -> u32 {
-        let currentRound: u32 = self.reportingRoundId;
+    fn getStartingRound(&self, _oracle: AccountId) -> u64 {
+        let currentRound: u64 = self.reportingRoundId;
         if(currentRound != 0 && currentRound == self.oracles[_oracle].endingRound){
             return currentRound;
         }
         return currentRound + 1;
     }
 
-    fn previousAndCurrentUnanswered(&self, _roundId: U64, _rrId: U64) -> bool {
-        let roundId_u64: u64 = _roundId.into();
-        let rrId_u64: u64 = _rrId.into();
-        return (roundId_u64 + 1) == (rrId_u64 && self.rounds[rrId_u64].updatedAt == 0);
+    fn previousAndCurrentUnanswered(&self, _roundId: u64, _rrId: u64) -> bool {
+        return (_roundId + 1) == (_rrId && self.rounds[_rrId].updatedAt == 0);
     }
 
-    fn requiredReserve(&self, payment: U128) -> u128 {
-        let payment_u128: u128 = payment.into();
-        return payment_u128 * (self.oracleCount() * RESERVE_ROUNDS);
+    fn requiredReserve(&self, payment: u128) -> u128 {
+        return payment * (self.oracleCount() * RESERVE_ROUNDS);
     }
 
     fn addOracle(&mut self, _oracle: AccountId, _admin: AccountId) {
@@ -506,18 +504,17 @@ impl FluxAggregator {
         self.oracleAddresses.pop();
     }
 
-    fn validateOracleRound(&self, _oracle: AccountId, _roundId: U64) -> Base64String {
-        let roundId_u64: u64 = _roundId.into();
+    fn validateOracleRound(&self, _oracle: AccountId, _roundId: u64) -> Base64String {
         // cache storage reads
         let startingRound: u64 = self.oracles[_oracle].startingRound;
         let rrId: u64 = self.reportingRoundId;
 
         if (startingRound == 0) return "not enabled oracle";
-        if (startingRound > roundId_u64) return "not yet enabled oracle";
-        if (self.oracles[_oracle].endingRound < roundId_u64) return "no longer allowed oracle";
-        if (self.oracles[_oracle].lastReportedRound >= roundId_u64) return "cannot report on previous rounds";
-        if (roundId_u64 != rrId && roundId_u64 != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId)) return "invalid round to report";
-        if (roundId_u64 != 1 && !self.supersedable(roundId_u64 - 1) return "previous round not supersedable";
+        if (startingRound > _roundId) return "not yet enabled oracle";
+        if (self.oracles[_oracle].endingRound < _roundId) return "no longer allowed oracle";
+        if (self.oracles[_oracle].lastReportedRound >= _roundId) return "cannot report on previous rounds";
+        if (_roundId != rrId && _roundId != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId)) return "invalid round to report";
+        if (_roundId != 1 && !self.supersedable(_roundId - 1) return "previous round not supersedable";
     }
 
     fn supersedable(&self, _roundId: U64) -> bool {
