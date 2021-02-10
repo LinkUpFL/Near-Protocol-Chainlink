@@ -17,69 +17,13 @@ pub struct Round {
     answeredInRound: u64
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct RoundDetails {
-    submissions: i256[],
-    maxSubmissions: u64,
-    minSubmissions: u64,
-    timeout: u64,
-    paymentAmount: u128
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct OracleStatus {
-    withdrawable: u128,
-    startingRound: u64,
-    endingRound: u64,
-    lastReportedRound: u64,
-    lastStartedRound: u64,
-    latestSubmission: i256,
-    index: u16,
-    admin: AccountId,
-    pendingAdmin: AccountId
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Requester {
-    authorized: bool,
-    delay: u64,
-    lastStartedRound: u64
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Funds {
-    available: u128,
-    allocated: u128
-}
-
-const version: u256 = 3;
-const RESERVE_ROUNDS: u256 = 2;
-const MAX_ORACLE_COUNT: u256 = 77;
-const ROUND_MAX: u64 = 2.pow(32-1);
 const V3_NO_DATA_ERROR: Base64String = "No data present";
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct AccessControlledAggregator {
-    pub linkToken: AccountId,
-    pub validator: AccountId,
-    pub paymentAmount: u128,
-    pub maxSubmissionCount: u64,
-    pub minSubmissionCount: u64,
-    pub restartDelay: u64,
-    pub timeout: u64,
-    pub decimals: u8,
-    pub description: Base64String,
-    pub minSubmissionValue: i256,
-    pub maxSubmissionValue: i256,
-    reportingRoundId: u64,
     latestRoundId: u64,
-    oracles: LookupMap<AccountId, OracleStatus>,
-    rounds: LookupMap<u64, Round>,
-    details: LookupMap<u64, RoundDetails>,
-    requesters: LookupMap<AccountId, Requester>,
-    oracleAddresses: AccountId[],
-    recordedFunds: Funds
+    rounds: LookupMap<u64, Round>
 }
 
 #[near_bindgen]
@@ -131,5 +75,4 @@ impl AccessControlledAggregator {
         }
         return 0;
     }
-
 }
