@@ -50,22 +50,26 @@ impl Aggregator {
         self.answerCounter = self.answerCounter + 1;
     }
 
-    pub fn chainlinkCallback(&mut self, _clRequestId: Base64String, _response: i256) {
+    pub fn chainlinkCallback(&mut self, _clRequestId: Base64String, _response: U128) {
+        let response_u128: u128 = _response.into();
         self.validateAnswerRequirements(_clRequestId);
 
         let answerId: u256 = self.requestAnswers(_clRequestId);
         self.requestAnswers[_clRequestId].clear();
 
-        self.answers[answerId].responses.push(_response);
+        self.answers[answerId].responses.push(response_u128);
         self.updateLatestAnswer(answerId);
         self.deleteAnswer(answerId);
     }
 
-    pub fn updateRequestDetails(&mut self, _paymentAmount: u128, _minimumResponses: u128, _oracles: AccountId[], _jobIds: Base64String[]) {
+    pub fn updateRequestDetails(&mut self, _paymentAmount: U128, _minimumResponses: U128, _oracles: AccountId[], _jobIds: Base64String[]) {
+        let paymentAmount_u128: u128 = _paymentAmount.into();
+        let minimumResponses_u128: u128 = _minimumResponses.into();
+
         self.onlyOwner();
-        self.validateAnswerRequirements(_minimumResponses, _oracles, _jobIds);
-        self.paymentAmount = _paymentAmount;
-        self.minimumResponses = _minimumResponses;
+        self.validateAnswerRequirements(minimumResponses_u128, _oracles, _jobIds);
+        self.paymentAmount = paymentAmount_u128;
+        self.minimumResponses = minimumResponses_u128;
         self.jobIds = _jobIds;
         self.oracles = _oracles;
     }
@@ -77,7 +81,10 @@ impl Aggregator {
         self.authorizedRequesters[_requester] = _allowed;
     }
 
-    pub fn cancelRequest(&mut self, _requestId: Base64String, _payment: u256, _expiration: u256) {
+    pub fn cancelRequest(&mut self, _requestId: Base64String, _payment: U128, _expiration: U128) {
+        let payment_u128: u128 = _payment.into();
+        let expiration_u128: u128 = _expiration.into();
+
         self.ensureAuthorizedRequester();
         let answerId: u256 = self.requestAnswers[_requestId];
         assert!(answerId < latestCompletedAnswer, "Cannot modify an in-progress answer");
