@@ -136,22 +136,15 @@ impl AggregatorProxy {
         (_phase << self.PHASE_OFFSET | _originalId) as u128
     }
 
-    fn parseIds(&self, _roundId: U128) -> (u16, u128) {
-        let roundId_u128: u128 = _roundId.into();
-        let phaseId: u16 = (roundId_u128 >> self.PHASE_OFFSET) as u16;
-        let aggregatorRoundId: u128 = roundId_u128;
+    fn parseIds(&self, _roundId: u128) -> (u16, u128) {
+        let phaseId: u16 = (_roundId >> self.PHASE_OFFSET) as u16;
+        let aggregatorRoundId: u128 = _roundId;
 
         return(phaseId, aggregatorRoundId);
     }
 
-    fn addPhaseIds(&self, roundId: U128, answer: U128, startedAt: U128, updatedAt: U128, answeredInRound: U128, phaseId: U64) -> (u80, i256, u256, u256, u80) {
-        let roundId_u128: u128 = _roundId.into();
-        let answer_u128: u128 = answer.into();
-        let startedAt_u128: u128 = startedAt.into();
-        let updatedAt_u128: u128 = updatedAt.into();
-        let answeredInRound_u128: u128 = answeredInRound.into();
-        let phaseId_u64: u64 = phaseId.into();
-        return(self.addPhase(phaseId_u64, roundId), answer_u128, startedAt_u128, updatedAt_u128, self.addPhase(phaseId_u64, answeredInRound_u128));
+    fn addPhaseIds(&self, roundId: u128, answer: u128, startedAt: u128, updatedAt: u128, answeredInRound: u128, phaseId: u128) -> (u80, i256, u256, u256, u80) {
+        return(self.addPhase(phaseId, roundId), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound));
     }
 
     // Modifiers
