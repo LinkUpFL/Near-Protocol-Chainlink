@@ -84,17 +84,37 @@ pub struct AccessControlledAggregator {
 
 #[near_bindgen]
 impl AccessControlledAggregator {
+    pub fn getRoundData(&self, _roundId: U128) -> (roundId: u128, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        let roundId_u128: u128 = _roundId.into();
+        let r: Round = self.rounds[roundId_u128 as u64];
+
+        assert!(r.answeredInRound > 0 && self.validRoundId(roundId_u128), V3_NO_DATA_ERROR);
+
+        return(
+            roundId_u128,
+            r.answer,
+            r.startedAt,
+            r.updatedAt,
+            r.answeredInRound
+        )
+    }
+
+    pub fn latestRoundData(&self) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+        self.getRoundData(self.latestRoundId)
+    }
+
     pub fn latestAnswer(&self) -> i256 {
         self.rounds[self.latestRoundId].answer
+    }
+
+    pub fn latestRound(&self) -> u256 {
+        self.latestRoundId
     }
 
     pub fn latestTimestamp(&self) -> u256 {
         self.rounds[self.latestRoundId].updatedAt
     }
 
-    pub fn latestRound(&self) -> u256 {
-        self.latestRoundId
-    }
 
     pub fn getAnswer(&self, _roundId: U128) -> i256 {
         let roundId_u128: u128 = _roundId.into();
@@ -112,18 +132,4 @@ impl AccessControlledAggregator {
         return 0;
     }
 
-    pub fn getRoundData(&self, _roundId: U128) -> (roundId: u128, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
-        let roundId_u128: u128 = _roundId.into();
-        let r: Round = self.rounds[roundId_u128 as u64];
-
-        assert!(r.answeredInRound > 0 && self.validRoundId(roundId_u128), V3_NO_DATA_ERROR);
-
-        return(
-            roundId_u128,
-            r.answer,
-            r.startedAt,
-            r.updatedAt,
-            r.answeredInRound
-        )
-    }
 }
