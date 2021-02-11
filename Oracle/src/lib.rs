@@ -116,7 +116,7 @@ impl Oracle {
     }
 
     pub fn getChainlinkToken(&self) -> AccountId {
-        self.linkToken
+        self.link_id
     }
 
     // MODIFIERS
