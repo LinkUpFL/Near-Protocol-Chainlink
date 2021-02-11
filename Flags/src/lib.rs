@@ -1,11 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Serialize, Deserialize};
-use near_sdk::collections::{LookupMap, UnorderedSet};
+use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
 use std::str;
-use std::collections::HashMap;
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
@@ -66,7 +65,7 @@ impl Flags {
 
     fn allowedToRaiseFlags(&mut self) -> bool {
         // Check owner syntax and msg.data
-        return env::predecessor_account_id() == owner || self.raisingAccessController.hasAccess(env::predecessor_account_id(), msg.data);
+        return env::predecessor_account_id() == owner || self.raisingAccessController.hasAccess(env::predecessor_account_id());
     }
 
     fn tryToRaiseFlag(&mut self, subject: AccountId) {
