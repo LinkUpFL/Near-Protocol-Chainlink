@@ -4,6 +4,7 @@ use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
+use num_traits::pow;
 use std::str;
 
 pub type Base64String = String;
