@@ -111,14 +111,13 @@ impl AccessControlledAggregator {
         Self {
             owner: owner_id,
             linkToken: link_id,
-            minSubmissionValue: minSubmissionValue_u128;
-            maxSubmissionValue: maxSubmissionValue_u128;
-            decimals: decimals_u128;
-            description: _description;
-            rounds[0].updatedAt: (env::block_timestamp - timeout_u64) as u64;
-            checkEnabled: true;
+            minSubmissionValue: minSubmissionValue_u128,
+            maxSubmissionValue: maxSubmissionValue_u128,
+            decimals: decimals_u128,
+            description: _description,
+            rounds[0].updatedAt: (env::block_timestamp - timeout_u64) as u64,
+            checkEnabled: true
         }
-
         self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
         self.setValidator(&_validator);
     }
