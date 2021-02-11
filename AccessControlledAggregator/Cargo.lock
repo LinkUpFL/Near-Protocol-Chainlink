@@ -7,6 +7,7 @@ dependencies = [
  "base64 0.12.3",
  "borsh",
  "near-sdk",
+ "num-traits",
  "serde",
  "serde_json",
  "wee_alloc",
