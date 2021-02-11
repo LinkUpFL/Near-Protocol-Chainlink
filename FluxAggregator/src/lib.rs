@@ -1,17 +1,16 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Serialize, Deserialize};
-use near_sdk::collections::{TreeMap, UnorderedSet};
+use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
 use std::str;
-use std::collections::HashMap;
 
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]
 pub struct Round {
-    answer: i256,
+    answer: u128,
     startedAt: u64,
     updatedAt: u64,
     answeredInRound: u64
@@ -19,7 +18,7 @@ pub struct Round {
 
 #[derive(Serialize, Deserialize)]
 pub struct RoundDetails {
-    submissions: i256[],
+    submissions: u128[],
     maxSubmissions: u64,
     minSubmissions: u64,
     timeout: u64,
@@ -33,7 +32,7 @@ pub struct OracleStatus {
     endingRound: u64,
     lastReportedRound: u64,
     lastStartedRound: u64,
-    latestSubmission: i256,
+    latestSubmission: u128,
     index: u16,
     admin: AccountId,
     pendingAdmin: AccountId
@@ -61,6 +60,8 @@ const V3_NO_DATA_ERROR: Base64String = "No data present";
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct FluxAggregator {
+    pub owner: AccountId,
+    pub link_account: AccountId,
     pub linkToken: AccountId,
     pub validator: AccountId,
     pub paymentAmount: u128,
@@ -82,8 +83,39 @@ pub struct FluxAggregator {
     recordedFunds: Funds
 }
 
+impl Default for FluxAggregator {
+    fn default() -> Self {
+        panic!("FluxAggregator should be initialized before usage")
+    }
+}
+
 #[near_bindgen]
 impl FluxAggregator {
+    #[init]
+    pub fn new(link_id: AccountId, owner_id: AccountId, _paymentAmount: U128, _timeout: U64, _validator: AccountId, _minSubmissionValue: U128, _maxSubmissionValue: U128, _decimals: U64, _description: Base64String) -> Self {
+        assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
+        assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
+        assert!(!env::state_exists(), "Already initialized");
+
+        let paymentAmount_u128: u128 = _paymentAmount.into();
+        let timeout_u64: u64 = _timeout.into();
+        let minSubmissionValue_u128: u128 = _minSubmissionValue.into();
+        let maxSubmissionValue_u128: u128 = _maxSubmissionValue.into();
+        let decimals_u128: u128 = _decimals.into();
+
+        Self {
+            owner: owner_id,
+            link_account: link_id,
+            self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
+            self.setValidator(&_validator);
+            self.minSubmissionValue = minSubmissionValue_u128;
+            self.maxSubmissionValue = maxSubmissionValue_u128;
+            self.decimals = decimals_u128;
+            self.description = _description;
+            self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
+        }
+    }
+
     pub fn submit(&mut self, _roundId: U128, _submission: U128) {
         let roundId_u128: u128 = _roundId.into();
         let submission_u128: u128 = _submission.into();
@@ -172,19 +204,19 @@ impl FluxAggregator {
         self.oracleAddresses
     }
 
-    pub fn latestAnswer(&self) -> i256 {
+    pub fn latestAnswer(&self) -> u128 {
         self.rounds[self.latestRoundId].answer
     }
 
-    pub fn latestTimestamp(&self) -> u256 {
+    pub fn latestTimestamp(&self) -> u64 {
         self.rounds[self.latestRoundId].updatedAt
     }
 
-    pub fn latestRound(&self) -> u256 {
+    pub fn latestRound(&self) -> u64 {
         self.latestRoundId
     }
 
-    pub fn getAnswer(&self, _roundId: U128) -> i256 {
+    pub fn getAnswer(&self, _roundId: U128) -> u128 {
         let roundId_u128: u128 = _roundId.into();
         if(self.validRoundId(_roundId)) {
             return self.rounds[roundId_u128 as u64].answer;
@@ -192,7 +224,7 @@ impl FluxAggregator {
         return 0;
     }
 
-    pub fn getTimestamp(_roundId: U128) -> u256 {
+    pub fn getTimestamp(_roundId: U128) -> u128 {
         let roundId_u128: u128 = _roundId.into();
         if(self.validRoundId(_roundId)) {
             return self.rounds[roundId_u128 as u64].answer;
@@ -200,7 +232,7 @@ impl FluxAggregator {
         return 0;
     }
 
-    pub fn getRoundData(&self, _roundId: U128) -> (roundId: u128, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+    pub fn getRoundData(&self, _roundId: U128) -> (roundId: u128, answer: u128, startedAt: u64, updatedAt: u64, answeredInRound: u64) {
         let roundId_u128: u128 = _roundId.into();
         let r: Round = self.rounds[roundId_u128 as u64];
 
@@ -215,11 +247,11 @@ impl FluxAggregator {
         )
     }
 
-    pub fn latestRoundData(&self) -> (roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+    pub fn latestRoundData(&self) -> (roundId: u128, answer: u64, startedAt: u64, updatedAt: u64, answeredInRound: u128) {
         self.getRoundData(self.latestRoundId)
     }
 
-    pub fn withdrawablePayment(&self, _oracle: AccountId) -> u256 {
+    pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
         self.oracles[_oracle].withdrawable
     }
 
