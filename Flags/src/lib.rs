@@ -10,11 +10,27 @@ use std::str;
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct Flags {
     pub raisingAccessController: AccountId,
+    pub owner: AccountId,
     flags: LookupMap<AccountId, bool>
+}
+
+impl Default for Flags {
+    fn default() -> Self {
+        panic!("Flags should be initialized before usage")
+    }
 }
 
 #[near_bindgen]
 impl Flags {
+    #[init]
+    pub fn new(owner_id: AccountId, racAddress: AccountId) -> Self {
+        assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
+        assert!(env::is_valid_account_id(recAddress.as_bytes()), "recAddress account ID is invalid");
+        assert!(!env::state_exists(), "Already initialized");
+
+        self.setRaisingAccessController(&recAddress);
+    }
+
     pub fn getFlag(&self, subject: AccountId) -> bool {
         self.flags[subject]
     }
@@ -64,8 +80,7 @@ impl Flags {
     // PRIVATE
 
     fn allowedToRaiseFlags(&mut self) -> bool {
-        // Check owner syntax and msg.data
-        return env::predecessor_account_id() == owner || self.raisingAccessController.hasAccess(env::predecessor_account_id());
+        env::predecessor_account_id() == owner || self.raisingAccessController.hasAccess(env::predecessor_account_id());
     }
 
     fn tryToRaiseFlag(&mut self, subject: AccountId) {
@@ -75,6 +90,6 @@ impl Flags {
     }
 
     fn onlyOwner(&mut self) {
-        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
+        assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 }
