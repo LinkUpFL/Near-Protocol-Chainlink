@@ -16,20 +16,46 @@ pub struct Phase {
     aggregator: AccountId
 }
 
+const PHASE_OFFSET: u256 = 64;
+const PHASE_SIZE: u256 = 16;
+const MAX_ID: u256 = 2.pow(PHASE_OFFSET+PHASE_SIZE) - 1;
+
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct EACAggregatorProxy {
-    currentPhase: Phase,
+    pub owner: AccountId,
     pub proposedAggregator: AccountId,
     pub phaseAggregators: LookupMap<u16, AccountId>,
-    PHASE_OFFSET: u128 = 64,
-    PHASE_SIZE: u128 = 16,
-    MAX_ID: u128 = 2.pow(PHASE_OFFSET+PHASE_SIZE) - 1;
     pub accessController: AccountId
+    pub checkEnabled: bool,
+    accessList: LookupMap<AccountId, bool>,
+    currentPhase: Phase
+}
+
+impl Default for EACAggregatorProxy {
+    fn default() -> Self {
+        panic!("EACAggregatorProxy should be initialized before usage")
+    }
 }
 
 #[near_bindgen]
 impl EACAggregatorProxy {
+    #[init]
+    pub fn new(link_id: AccountId, owner_id: AccountId, _aggregator: AccountId, _accessController: AccountId) -> Self {
+        assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
+        assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
+        assert!(!env::state_exists(), "Already initialized");
+
+        Self {
+            owner: owner_id,
+            link_account: link_id,
+            checkEnabled: true
+        }
+
+        self.setAggregator(_aggregator);
+        self.setController(_accessController);
+    }
+
     pub fn setController(&mut self, _accessController: AccountId) {
         self.onlyOwner();
         self.accessController = _accessController;
@@ -172,5 +198,51 @@ impl EACAggregatorProxy {
         assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
     }
 
-    // checkAccess
+    fn onlyOwner(&mut self) {
+        assert_eq!(owner, env::predecessor_account_id(), "Only contract owner can call this method.");
+    }
+
+    // Access Control
+
+    pub fn hasAccess(&self, _user: AccountId) -> bool {
+        self.accessList[_user] || !checkEnabled;
+    }
+
+    pub fn addAccess(&mut self, _user: AccountId) {
+        self.onlyOwner();
+
+        if(!self.accessList[_user]) {
+            self.accessList[_user] = true;
+        }
+    }
+
+    pub fn removeAccess(&mut self, _user: AccountId) {
+        self.onlyOwner();
+
+        if(self.accessList[_user]) {
+            self.accessList[_user] = false;
+        }
+    }
+
+    pub fn enableAccessCheck(&mut self) {
+        self.onlyOwner();
+
+        if(!self.checkEnabled) {
+            self.checkEnabled = true;
+        }
+    }
+
+    pub fn disableAccessCheck(&mut self) {
+        self.onlyOwner();
+
+        if(self.checkEnabled) {
+            self.checkEnabled = false;
+        }
+    }
+
+    fn checkAccess(&self) {
+        let ac: AccountId = self.accessController;
+        assert!(env::is_valid_account_id(ac.as_bytes()), "AC's account ID is invalid");
+        assert!(ac.hasAccess(msg.sender), "No access");
+    }
 }
