@@ -61,7 +61,6 @@ const V3_NO_DATA_ERROR: Base64String = "No data present";
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct AccessControlledAggregator {
     pub owner: AccountId,
-    pub link_account: AccountId,
     pub linkToken: AccountId,
     pub validator: AccountId,
     pub paymentAmount: u128,
@@ -107,7 +106,7 @@ impl AccessControlledAggregator {
 
         Self {
             owner: owner_id,
-            link_account: link_id,
+            linkToken: link_id,
             self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
             self.setValidator(&_validator);
             self.minSubmissionValue = minSubmissionValue_u128;
@@ -625,16 +624,42 @@ mod tests {
     use super::*;
     use near_sdk::MockedBlockchain;
     use near_sdk::{testing_env, VMContext};
-    …
+    // pub owner: AccountId,
+    pub linkToken: AccountId,
+    pub validator: AccountId,
+    pub paymentAmount: u128,
+    pub maxSubmissionCount: u64,
+    pub minSubmissionCount: u64,
+    pub restartDelay: u64,
+    pub timeout: u64,
+    pub decimals: u8,
+    pub description: Base64String,
+    pub minSubmissionValue: i256,
+    pub maxSubmissionValue: i256,
+    pub checkEnabled: bool,
+    accessList: LookupMap<AccountId, bool>,
+    reportingRoundId: u64,
+    latestRoundId: u64,
+    oracles: LookupMap<AccountId, OracleStatus>,
+    rounds: LookupMap<u64, Round>,
+    details: LookupMap<u64, RoundDetails>,
+    requesters: LookupMap<AccountId, Requester>,
+    oracleAddresses: AccountId[],
+    recordedFunds: Funds
+    fn accessControlledAggregator() -> AccountId { "accessControlledAggregator_near".to_string() }
+    fn alice() -> AccountId { "alice_near".to_string() }
+    fn bob() -> AccountId { "bob_near".to_string() }
+    // VM Context sends mock transactions with the context below, 
     fn get_context(predecessor_account_id: String, storage_usage: u64) -> VMContext {
         VMContext {
-            current_account_id: "alice.testnet".to_string(),
-            signer_account_id: "jane.testnet".to_string(),
+            current_account_id: accessControlledAggregator(),
+            signer_account_id,
             signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id,
+            predecessor_account_id: accessControlledAggregator(),
             input: vec![],
             block_index: 0,
             block_timestamp: 0,
+            epoch_height: 0,
             account_balance: 0,
             account_locked_balance: 0,
             storage_usage,
@@ -643,9 +668,34 @@ mod tests {
             random_seed: vec![0, 1, 2],
             is_view: false,
             output_data_receivers: vec![],
-            epoch_height: 19,
         }
     }
+
+    #[test]
+    fn make_request_validate_commitment() {
+        let context = get_context(accessControlledAggregator(), 0);
+        testing_env!(context);
+        let mut contract = Oracle::new(link(), alice(), );
+        let sender = alice();
+        let payment_json: U128 = 51319_u128.into();
+        let spec_id = encode("unique spec id".to_string());
+        let nonce = 1_u128;
+        let nonce_json: U128 = nonce.into();
+        let data_version_json: U128 = 131_u128.into();
+        let data = encode("BAT".to_string());
+        contract.store_request( sender, payment_json, spec_id, "callback.sender.testnet".to_string(), "my_callback_fn".to_string(), nonce_json, data_version_json, data);
+
+        // second validate the serialized requests
+        let max_requests: U64 = 1u64.into();
+        let serialized_output = contract.get_requests(alice(), max_requests);
+        let expiration_string = contract.requests.get(&alice()).unwrap().get(&nonce).unwrap().expiration.to_string();
+        let expected_before_expiration = "[{\"nonce\":\"1\",\"request\":{\"caller_account\":\"alice_near\",\"request_spec\":\"dW5pcXVlIHNwZWMgaWQ=\",\"callback_address\":\"callback.sender.testnet\",\"callback_method\":\"my_callback_fn\",\"data\":\"QkFU\",\"payment\":51319,\"expiration\":";
+        let expected_after_expiration = "}}]";
+        let expected_result = format!("{}{}{}", expected_before_expiration, expiration_string, expected_after_expiration);
+        let output_string = serde_json::to_string(serialized_output.as_slice());
+        assert_eq!(expected_result, output_string.unwrap());
+    }
+
 
     // Tests
 }
