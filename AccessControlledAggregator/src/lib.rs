@@ -573,7 +573,7 @@ impl AccessControlledAggregator {
     }
 
     fn onlyOwner(&mut self) {
-        assert_eq!(owner, env::predecessor_account_id(), "Only contract owner can call this method.");
+        assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 
     // Access Control
@@ -625,16 +625,23 @@ mod tests {
     use super::*;
     use near_sdk::MockedBlockchain;
     use near_sdk::{testing_env, VMContext};
-    fn accessControlledAggregator() -> AccountId { "accessControlledAggregator_near".to_string() }
-    fn alice() -> AccountId { "alice_near".to_string() }
-    fn bob() -> AccountId { "bob_near".to_string() }
+
+    // Necessary NEAR accounts for testing data flow
+    fn accessControlledAggregator() -> AccountId { "access_controlled_aggregator_near".to_string() }
+    fn nolanNear() -> AccountId { "nolan_near".to_string() }
+    fn linkToken() -> AccountId { "link_token_near".to_string() }
+    fn validator() -> AccountId { "validator_near".to_string() }
+    fn oracleOne() -> AccountId {"oracle_one".to_string()}
+    fn oracleTwo() -> AccountId {"oracle_two".to_string()}
+    fn oracleThree() -> AccountId {"oracle_three".to_string()}
+
     // VM Context sends mock transactions with the context below, 
     fn get_context(predecessor_account_id: String, storage_usage: u64) -> VMContext {
         VMContext {
-            current_account_id: accessControlledAggregator(),
+            current_account_id: nolanNear(),
             signer_account_id,
             signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id: accessControlledAggregator(),
+            predecessor_account_id: nolanNear(),
             input: vec![],
             block_index: 0,
             block_timestamp: 0,
@@ -651,30 +658,10 @@ mod tests {
     }
 
     #[test]
-    fn make_request_validate_commitment() {
+    fn initialize_contract() {
         let context = get_context(accessControlledAggregator(), 0);
         testing_env!(context);
-        let mut contract = Oracle::new(link(), alice(), );
-        let sender = alice();
-        let payment_json: U128 = 51319_u128.into();
-        let spec_id = encode("unique spec id".to_string());
-        let nonce = 1_u128;
-        let nonce_json: U128 = nonce.into();
-        let data_version_json: U128 = 131_u128.into();
-        let data = encode("BAT".to_string());
-        contract.store_request( sender, payment_json, spec_id, "callback.sender.testnet".to_string(), "my_callback_fn".to_string(), nonce_json, data_version_json, data);
-
-        // second validate the serialized requests
-        let max_requests: U64 = 1u64.into();
-        let serialized_output = contract.get_requests(alice(), max_requests);
-        let expiration_string = contract.requests.get(&alice()).unwrap().get(&nonce).unwrap().expiration.to_string();
-        let expected_before_expiration = "[{\"nonce\":\"1\",\"request\":{\"caller_account\":\"alice_near\",\"request_spec\":\"dW5pcXVlIHNwZWMgaWQ=\",\"callback_address\":\"callback.sender.testnet\",\"callback_method\":\"my_callback_fn\",\"data\":\"QkFU\",\"payment\":51319,\"expiration\":";
-        let expected_after_expiration = "}}]";
-        let expected_result = format!("{}{}{}", expected_before_expiration, expiration_string, expected_after_expiration);
-        let output_string = serde_json::to_string(serialized_output.as_slice());
-        assert_eq!(expected_result, output_string.unwrap());
-    }
-
-
-    // Tests
+        let mut contract = AccessControlledAggregator::new(link(), nolanNear(), 1, 100, validator(), 0, 1000, 4, "a Description");
+        assert_eq!(contract.onlyOwner(), true);
+    } 
 }
