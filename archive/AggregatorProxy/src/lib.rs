@@ -8,6 +8,9 @@ use std::str;
 use std::collections::HashMap;
 use num_traits::pow;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]

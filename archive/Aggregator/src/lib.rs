@@ -7,6 +7,9 @@ use serde_json::json;
 use std::str;
 use std::collections::HashMap;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]

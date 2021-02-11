@@ -6,6 +6,9 @@ use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use serde_json::json;
 use std::str;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]

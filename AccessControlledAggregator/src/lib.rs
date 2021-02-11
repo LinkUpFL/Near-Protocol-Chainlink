@@ -7,6 +7,9 @@ use serde_json::json;
 use num_traits::pow;
 use std::str;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]
