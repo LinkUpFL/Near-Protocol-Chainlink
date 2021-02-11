@@ -73,6 +73,8 @@ pub struct AccessControlledAggregator {
     pub description: Base64String,
     pub minSubmissionValue: i256,
     pub maxSubmissionValue: i256,
+    pub checkEnabled: bool,
+    accessList: LookupMap<AccountId, bool>,
     reportingRoundId: u64,
     latestRoundId: u64,
     oracles: LookupMap<AccountId, OracleStatus>,
@@ -113,6 +115,7 @@ impl AccessControlledAggregator {
             self.decimals = decimals_u128;
             self.description = _description;
             self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
+            self.checkEnabled = true;
         }
     }
 
@@ -570,11 +573,48 @@ impl AccessControlledAggregator {
     }
 
     fn onlyOwner(&mut self) {
-        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
+        assert_eq!(owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 
-    // ADD TO THIS
+    // Access Control
+
+    pub fn hasAccess(&self, _user: AccountId) -> bool {
+        self.accessList[_user] || !checkEnabled;
+    }
+
+    pub fn addAccess(&mut self, _user: AccountId) {
+        self.onlyOwner();
+
+        if(!self.accessList[_user]) {
+            self.accessList[_user] = true;
+        }
+    }
+
+    pub fn removeAccess(&mut self, _user: AccountId) {
+        self.onlyOwner();
+
+        if(self.accessList[_user]) {
+            self.accessList[_user] = false;
+        }
+    }
+
+    pub fn enableAccessCheck(&mut self) {
+        self.onlyOwner();
+
+        if(!self.checkEnabled) {
+            self.checkEnabled = true;
+        }
+    }
+
+    pub fn disableAccessCheck(&mut self) {
+        self.onlyOwner();
+
+        if(self.checkEnabled) {
+            self.checkEnabled = false;
+        }
+    }
+
     fn checkAccess(&self) {
-        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
+        assert!(self.hasAccess(env::predecessor_account_id()), "No access")
     }
 }
