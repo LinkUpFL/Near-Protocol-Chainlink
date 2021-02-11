@@ -625,28 +625,6 @@ mod tests {
     use super::*;
     use near_sdk::MockedBlockchain;
     use near_sdk::{testing_env, VMContext};
-    // pub owner: AccountId,
-    pub linkToken: AccountId,
-    pub validator: AccountId,
-    pub paymentAmount: u128,
-    pub maxSubmissionCount: u64,
-    pub minSubmissionCount: u64,
-    pub restartDelay: u64,
-    pub timeout: u64,
-    pub decimals: u8,
-    pub description: Base64String,
-    pub minSubmissionValue: i256,
-    pub maxSubmissionValue: i256,
-    pub checkEnabled: bool,
-    accessList: LookupMap<AccountId, bool>,
-    reportingRoundId: u64,
-    latestRoundId: u64,
-    oracles: LookupMap<AccountId, OracleStatus>,
-    rounds: LookupMap<u64, Round>,
-    details: LookupMap<u64, RoundDetails>,
-    requesters: LookupMap<AccountId, Requester>,
-    oracleAddresses: AccountId[],
-    recordedFunds: Funds
     fn accessControlledAggregator() -> AccountId { "accessControlledAggregator_near".to_string() }
     fn alice() -> AccountId { "alice_near".to_string() }
     fn bob() -> AccountId { "bob_near".to_string() }
