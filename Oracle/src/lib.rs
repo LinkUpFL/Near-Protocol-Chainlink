@@ -24,14 +24,34 @@ pub type Base64String = String;
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct Oracle {
-    // linktoken
+    pub owner: AccountId
+    pub link_account: AccountId
     commitments: LookupMap<AccountId, Base64String>,
     authorizedNodes: LookupMap<AccountId, bool>,
     withdrawableTokens: u128 // = ?
 }
 
+impl Default for Oracle {
+    fn default() -> Self {
+        panic!("Oracle should be initialized before usage")
+    }
+}
+
 #[near_bindgen]
 impl Oracle {
+    #[init]
+    pub fn new(link_id: AccountId, owner_id: AccountId) -> Self {
+        assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
+        assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
+        assert!(!env::state_exists(), "Already initialized");
+
+
+        Self {
+            owner: owner_id,
+            link_account: link_id,
+        }
+    }
+
     pub fn oracleRequest(&mut self, _sender: AccountId, _payment: U128, _specId: Base64String, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _nonce: U128, _dataVersion: U128, _data: Base64String) {
         self.onlyLINK();
         self.checkCallbackAddress(_callbackAddress);
@@ -41,7 +61,7 @@ impl Oracle {
 
         let requestId: Base64String = hex::encode(env::keccak256(_sender, nonce_u128));
         assert!(self.commitments[requestId] == 0, "Must use a unique ID");
-        //let expiration: u256
+        let expiration: u256 = env::block_timestamp() + EXPIRY_TIME;
 
         self.commitments[requestId] = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
     }
@@ -80,7 +100,7 @@ impl Oracle {
     }
 
     pub fn withdrawable(&mut self) -> u128 {
-        //return self.withdrawableTokens - ONE_FOR_CONSISTENT_GAS_COST
+        self.withdrawableTokens - ONE_FOR_CONSISTENT_GAS_COST
     }
 
     pub fn cancelOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackFunc: Base64String, _expiration: U128) {
@@ -88,7 +108,7 @@ impl Oracle {
         let expiration_u128: u128 = _expiration.into();
         let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
         assert!(paramsHash == self.commitments[_requestId], "Params do not match request ID");
-        // expiration
+        assert!(expiration_u128 <= env::block_timestamp());
 
         self.commitments[_requestId].clear();
 
@@ -96,14 +116,14 @@ impl Oracle {
     }
 
     pub fn getChainlinkToken(&self) -> AccountId {
-        //return self.LinkToken;
+        self.linkToken
     }
 
     // MODIFIERS
 
     fn hasAvailableFunds(&self, _amount: U128) {
-        //assert
         let amount_u128: u128 = _amount.into();
+        assert!(self.withdrawableTokens >= (amount_u128 + ONE_FOR_CONSISTENT_GAS_COST));
     }
 
     fn isValidRequest(&self, _requestId: Base64String) {
