@@ -7,6 +7,9 @@ use serde_json::json;
 use num_traits::pow;
 use std::str;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]
@@ -108,15 +111,15 @@ impl AccessControlledAggregator {
         Self {
             owner: owner_id,
             linkToken: link_id,
-            self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
-            self.setValidator(&_validator);
-            self.minSubmissionValue = minSubmissionValue_u128;
-            self.maxSubmissionValue = maxSubmissionValue_u128;
-            self.decimals = decimals_u128;
-            self.description = _description;
-            self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
-            self.checkEnabled = true;
+            minSubmissionValue: minSubmissionValue_u128,
+            maxSubmissionValue: maxSubmissionValue_u128,
+            decimals: decimals_u128,
+            description: _description,
+            rounds[0].updatedAt: (env::block_timestamp - timeout_u64) as u64,
+            checkEnabled: true
         }
+        self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
+        self.setValidator(&_validator);
     }
 
     pub fn submit(&mut self, _roundId: U128, _submission: U128) {
