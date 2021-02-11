@@ -106,14 +106,15 @@ impl FluxAggregator {
         Self {
             owner: owner_id,
             link_account: link_id,
-            self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
-            self.setValidator(&_validator);
-            self.minSubmissionValue = minSubmissionValue_u128;
-            self.maxSubmissionValue = maxSubmissionValue_u128;
-            self.decimals = decimals_u128;
-            self.description = _description;
-            self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
+            minSubmissionValue: minSubmissionValue_u128;
+            maxSubmissionValue: maxSubmissionValue_u128;
+            decimals: decimals_u128;
+            description: _description;
+            rounds[0].updatedAt: (env::block_timestamp - timeout_u64) as u64;
         }
+
+        self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
+        self.setValidator(&_validator);
     }
 
     pub fn submit(&mut self, _roundId: U128, _submission: U128) {
