@@ -1,16 +1,13 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap};
-use near_sdk::json_types::{U128, U64};
-use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
-use serde_json::json;
+use near_sdk::{AccountId, env, near_bindgen};
 use std::str;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Flags {
     pub raisingAccessController: AccountId,
     pub owner: AccountId,
@@ -28,17 +25,21 @@ impl Flags {
     #[init]
     pub fn new(owner_id: AccountId, racAddress: AccountId) -> Self {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
-        assert!(env::is_valid_account_id(recAddress.as_bytes()), "recAddress account ID is invalid");
+        assert!(env::is_valid_account_id(racAddress.as_bytes()), "recAddress account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-        self.setRaisingAccessController(&recAddress);
+        Self {
+            owner: owner_id,
+        };
+
+        self.setRaisingAccessController(&racAddress);
     }
 
     pub fn getFlag(&self, subject: AccountId) -> bool {
         self.flags[subject]
     }
 
-    pub fn getFlags(&self, subjects: AccountId[]) -> bool {
+    pub fn getFlags(&self, subjects: Vec<AccountId>) -> bool {
         let responses: bool[subjects.len()];
         for i in 0..subjects.len() {
             responses[i] = self.flags[subjects[i]];
@@ -52,7 +53,7 @@ impl Flags {
         self.tryToRaiseFlag(subject);
     }
 
-    pub fn raiseFlags(&mut self, subjects: AccountId[]) {
+    pub fn raiseFlags(&mut self, subjects: Vec<AccountId>) {
         assert!(self.allowedToRaiseFlags(), "Not allowed to raise flags");
 
         for i in 0..subjects.len() {
@@ -60,7 +61,7 @@ impl Flags {
         }
     }
 
-    pub fn lowerFlags(&mut self, subjects: AccountId[]) {
+    pub fn lowerFlags(&mut self, subjects: Vec<AccountId>) {
         self.onlyOwner();
         for i in 0..subjects.len() {
             let subject: AccountId = subjects[i];
