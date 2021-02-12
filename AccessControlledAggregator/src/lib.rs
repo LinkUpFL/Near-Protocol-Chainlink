@@ -2,10 +2,9 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128, U64};
-use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
-use serde_json::json;
-use num_traits::pow;
+use near_sdk::{AccountId, env, near_bindgen};
 use std::str;
+use num_traits::pow;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -22,7 +21,7 @@ pub struct Round {
 
 #[derive(Serialize, Deserialize)]
 pub struct RoundDetails {
-    submissions: u128[],
+    submissions: Vec<u128>,
     maxSubmissions: u64,
     minSubmissions: u64,
     timeout: u64,
@@ -55,14 +54,15 @@ pub struct Funds {
     allocated: u128
 }
 
-const version: u256 = 3;
-const RESERVE_ROUNDS: u256 = 2;
-const MAX_ORACLE_COUNT: u256 = 77;
-const ROUND_MAX: u64 = 2.pow(32-1);
+const version: u128 = 3;
+const RESERVE_ROUNDS: u128 = 2;
+const MAX_ORACLE_COUNT: u128 = 77;
+// Previous: 2.pow(32-1)
+const ROUND_MAX: u64 = pow(32-1, 2);
 const V3_NO_DATA_ERROR: Base64String = "No data present";
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct AccessControlledAggregator {
     pub owner: AccountId,
     pub linkToken: AccountId,
@@ -72,10 +72,10 @@ pub struct AccessControlledAggregator {
     pub minSubmissionCount: u64,
     pub restartDelay: u64,
     pub timeout: u64,
-    pub decimals: u8,
+    pub decimals: u64,
     pub description: Base64String,
-    pub minSubmissionValue: i256,
-    pub maxSubmissionValue: i256,
+    pub minSubmissionValue: u128,
+    pub maxSubmissionValue: u128,
     pub checkEnabled: bool,
     accessList: LookupMap<AccountId, bool>,
     reportingRoundId: u64,
@@ -84,13 +84,13 @@ pub struct AccessControlledAggregator {
     rounds: LookupMap<u64, Round>,
     details: LookupMap<u64, RoundDetails>,
     requesters: LookupMap<AccountId, Requester>,
-    oracleAddresses: AccountId[],
+    oracleAddresses: Vec<AccountId>,
     recordedFunds: Funds
 }
 
 impl Default for AccessControlledAggregator {
     fn default() -> Self {
-        panic!("AccessControlledAggregator should be initialized before usage")
+        panic!("AccessControlledAggregator should be initialized before usage");
     }
 }
 
@@ -114,10 +114,11 @@ impl AccessControlledAggregator {
             minSubmissionValue: minSubmissionValue_u128,
             maxSubmissionValue: maxSubmissionValue_u128,
             decimals: decimals_u128,
-            description: _description,
-            rounds[0].updatedAt: (env::block_timestamp - timeout_u64) as u64,
-            checkEnabled: true
-        }
+            description: _description
+        };
+
+        self.checkEnabled = true;
+        self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
         self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
         self.setValidator(&_validator);
     }
@@ -132,15 +133,15 @@ impl AccessControlledAggregator {
 
         self.oracleInitializeNewRound(roundId_u128 as u64);
         self.recordSubmission(submission_u128, roundId_u128);
-        let (updated: bool, newAnswer: i256) = self.updateRoundAnswer(roundId_u128 as u64);
+        let (updated, newAnswer): (bool, u128) = self.updateRoundAnswer(roundId_u128 as u64);
         self.payOracle(roundId_u128 as u64);
         self.deleteRoundDetails(roundId_u128 as u64);
-        if(updated){
+        if updated {
             self.validateAnswer(roundId_u128 as u64, newAnswer);
         }
     }
 
-    pub fn changeOracles(&mut self, _removed: AccountId[], _added: AccountId[], _addedAdmins: AccountId[], _minSubmissions: U64, _maxSubmissions: U64, _restartDelay: U64) {
+    pub fn changeOracles(&mut self, _removed: Vec<AccountId>, _added: Vec<AccountId>, _addedAdmins: Vec<AccountId>, _minSubmissions: U64, _maxSubmissions: U64, _restartDelay: U64) {
         self.onlyOwner();
 
         let minSubmissions_u64: u64 = _minSubmissions.into();
@@ -152,7 +153,7 @@ impl AccessControlledAggregator {
         }
 
         assert!(_added.len() == _addedAdmins.len(), "need same oracle and admin count");
-        assert!((self.oracleCount + _added.len()) as u256 <= MAX_ORACLE_COUNT, "max oracles allowed");
+        assert!((self.oracleCount + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
 
         for i in 0.._added.len() {
             self.addOracle(_added[i], _addedAdmins[i]);
@@ -173,7 +174,7 @@ impl AccessControlledAggregator {
         assert!(oracleNum >= maxSubmissions_u64, "max cannot exceed total");
         assert!(oracleNum == 0 || oracleNum > restartDelay_u64, "delay cannot exceed total");
         assert!(self.recordedFunds.available >= self.requiredReserve(paymentAmount_u128), "insufficient funds for payment");
-        if(self.oracleCount() > 0) {
+        if self.oracleCount() > 0 {
             assert!(minSubmissions_u64 > 0, "min must be greater than 0")
         }
 
@@ -197,16 +198,16 @@ impl AccessControlledAggregator {
 
         // nowAavilable
 
-        if(funds.available != nowAavilable) {
+        if funds.available != nowAavilable {
             self.recordedFunds.available = nowAavilable as u128;
         }
     }
 
-    pub fn oracleCount(&self) -> u8 {
-        self.oracleAddresses.len() as u8
+    pub fn oracleCount(&self) -> u64 {
+        self.oracleAddresses.len() as u64
     }
 
-    pub fn getOracles(&self) -> AccountId[] {
+    pub fn getOracles(&self) -> Vec<AccountId> {
         self.oracleAddresses
     }
 
@@ -224,21 +225,21 @@ impl AccessControlledAggregator {
 
     pub fn getAnswer(&self, _roundId: U128) -> u128 {
         let roundId_u128: u128 = _roundId.into();
-        if(self.validRoundId(_roundId)) {
+        if self.validRoundId(_roundId) {
             return self.rounds[roundId_u128 as u64].answer;
         }
         return 0;
     }
 
-    pub fn getTimestamp(_roundId: U128) -> u128 {
+    pub fn getTimestamp(&self, _roundId: U128) -> u128 {
         let roundId_u128: u128 = _roundId.into();
-        if(self.validRoundId(_roundId)) {
+        if self.validRoundId(_roundId) {
             return self.rounds[roundId_u128 as u64].answer;
         }
         return 0;
     }
 
-    pub fn getRoundData(&self, _roundId: U128) -> (roundId: u128, answer: u128, startedAt: u64, updatedAt: u64, answeredInRound: u64) {
+    pub fn getRoundData(&self, _roundId: U128) -> ( u128, u128,  u64, u64, u64) {
         let roundId_u128: u128 = _roundId.into();
         let r: Round = self.rounds[roundId_u128 as u64];
 
@@ -253,7 +254,7 @@ impl AccessControlledAggregator {
         )
     }
 
-    pub fn latestRoundData(&self) -> (roundId: u128, answer: u64, startedAt: u64, updatedAt: u64, answeredInRound: u128) {
+    pub fn latestRoundData(&self) -> ( u128, u64, u64, u64, u128) {
         self.getRoundData(self.latestRoundId)
     }
 
@@ -276,7 +277,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn withdrawFunds(&mut self, _recipient: AccountId, _amount: U128) {
-        let available: u256 = self.recordedFunds.available as u256;
+        let available: u128 = self.recordedFunds.available as u128;
         let amount_u128: u128 = _amount.into();
         assert!((available - self.requiredReserve(self.paymentAmount)) >= amount_u128, "insufficient reserve funds");
         // assert linktoken transfer
@@ -298,7 +299,7 @@ impl AccessControlledAggregator {
         self.oracles[_oracle].adming = env::signer_account_id(); // DOUBLE CHECK
     }
 
-    pub fn requestNewRound(&mut self) -> u80 {
+    pub fn requestNewRound(&mut self) -> u64 {
         assert!(self.requesters[env::signer_account_id()].authorized, "not authorized requester");
         let current: u64 = self.reportingRoundId;
         assert!(self.rounds[current].updatedAt > 0 || self.timedOut(current), "prev round must be supersedable");
@@ -309,9 +310,11 @@ impl AccessControlledAggregator {
 
     pub fn setRequesterPermissions(&mut self, _requester: AccountId, _authorized: bool, _delay: U64) {
         let delay_u64: u64 = _delay.into();
-        if(self.requester[_requester].authorized == _authorized) return;
+        if self.requester[_requester].authorized == _authorized {
+            return;
+        }
 
-        if(_authorized) {
+        if _authorized {
             self.requesters[_requester].authorized = _authorized;
             self.requesters[_requester].delay = delay_u64;
         } else {
@@ -321,12 +324,12 @@ impl AccessControlledAggregator {
 
     // onTokenTransfer
 
-    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (_eligibleToSubmit: bool, _roundId: u64, _latestSubmission: i256, _startedAt: u64, _timeout: u64, _availableFunds: u128, _oracleCount: u8, _paymentAmount: u128) {
+    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64,  u64, u128,  u64, u128) {
         // require
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
 
-        if(queriedRoundId_u64 > 0) {
+        if queriedRoundId_u64 > 0 {
             let round: Round = self.rounds[queriedRoundId_u64];
             let details: RoundDetails = self.details[queriedRoundId_u64];
             return (
@@ -348,7 +351,7 @@ impl AccessControlledAggregator {
     pub fn setValidator(&mut self, _newValidator: AccountId) {
         let previous: AccountId = self.validator as AccountId;
 
-        if(previous != _newValidator) {
+        if previous != _newValidator {
             self.validator = _newValidator;
         }
     }
@@ -356,7 +359,8 @@ impl AccessControlledAggregator {
     fn initializeNewRound(&mut self, _roundId: u64) {
         self.updateTimedOutRoundInfo(_roundId - 1);
         self.reportingRoundId = _roundId;
-        let nextDetails: self.RoundDetails = self.RoundDetails(
+        let mut round: Round = self.rounds[0];
+        let mut nextDetails: RoundDetails = self.RoundDetails(
             //new int
             self.maxSubmissionCount,
             self.minSubmissionCount,
@@ -368,18 +372,23 @@ impl AccessControlledAggregator {
     }
 
     fn oracleInitializeNewRound(&mut self, _roundId: u64) {
-        if(!self.newRound(_roundId)) return;
-        let lastStarted: u256 = self.oracles[env::signer_account_id()].lastStartedRound; // cache storage reads
-        if(_roundId <= lastStarted + self.restartDelay && lastStarted != 0) return;
-
+        if !self.newRound(_roundId) {
+            return;
+        }
+        let lastStarted: u64 = self.oracles[env::signer_account_id()].lastStartedRound; // cache storage reads
+        if _roundId <= lastStarted + self.restartDelay && lastStarted != 0 {
+            return;
+        }
         self.initializeNewRound(_roundId);
 
         self.oracles[env::signer_account_id()].lastStartedRound = _roundId;
     }
 
     fn requesterInitializeNewRound(&mut self, _roundId: u64) {
-        if(!self.newRound(_roundId)) return;
-        let lastStarted: u256 = self.requesters[env::signer_account_id()].lastStartedRound; // cache storage reads
+        if !self.newRound(_roundId) {
+            return;
+        }
+        let lastStarted: u128 = self.requesters[env::signer_account_id()].lastStartedRound; // cache storage reads
         assert!(_roundId > lastStarted + self.requesters[env::signer_account_id()].delay || lastStarted == 0, "must delay requests");
 
         self.initializeNewRound(_roundId);
@@ -388,7 +397,9 @@ impl AccessControlledAggregator {
     }
 
     fn updateTimedOutRoundInfo(&mut self, _roundId: u64) {
-        if(!self.timedOut(_roundId)) return;
+        if !self.timedOut(_roundId) {
+            return;
+        }
 
         let prevId: u64 = _roundId - 1;
         self.rounds[_roundId].answer = self.rounds[prevId].answer;
@@ -399,14 +410,14 @@ impl AccessControlledAggregator {
     }
 
     fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u64) -> bool {
-        if(self.rounds[_queriedRoundId].startedAt > 0) {
+        if self.rounds[_queriedRoundId].startedAt > 0 {
             return self.acceptingSubmissions(_queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
         } else {
             return self.delayed(_oracle, _queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
         }
     }
 
-    fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> (_eligibleToSubmit: bool, _roundId: u64, _latestSubmission: i256, _startedAt:u64, _timeout: u64, _availableFunds: u128, _oracleCount: u8, _paymentAmount: u128) {
+    fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> ( bool,  u64,  u128, u64, u64,  u128, u64, u128) {
         let round: Round = self.rounds[0];
         let oracle: OracleStatus = self.oracles[_oracle];
 
@@ -414,22 +425,22 @@ impl AccessControlledAggregator {
         // Instead of nudging oracles to submit to the next round, the inclusion of
         // the shouldSupersede bool in the if condition pushes them towards
         // submitting in a currently open round.
-        if(self.supersedable(self.reportingRoundId) && self.shouldSupersede) {
-            _roundId = self.reportingRoundId + 1;
+        if self.supersedable(self.reportingRoundId) && self.shouldSupersede {
+            let _roundId: u64 = self.reportingRoundId + 1;
             self.round = self.rounds[_roundId];
 
-            _paymentAmount = self.paymentAmount;
-            _eligibleToSubmit = self.delayed(_oracle, _roundId);
+            let _paymentAmount: u128 = self.paymentAmount;
+            let _eligibleToSubmit: bool = self.delayed(_oracle, _roundId);
         } else {
-            _roundId = self.reportingRoundId;
+            let _roundId: u64 = self.reportingRoundId;
             self.round = self.rounds[_roundId];
 
-            _paymentAmount = self.details[_roundId].paymentAmount;
-            _eligibleToSubmit = self.acceptingSubmissions(_roundId);
+            let _paymentAmount: u128 = self.details[_roundId].paymentAmount;
+            let _eligibleToSubmit: bool = self.acceptingSubmissions(_roundId);
         }
 
-        if(self.validateOracleRound(_oracle, _roundId).len() != 0) {
-            _eligibleToSubmit = false;
+        if self.validateOracleRound(_oracle, _roundId).len() != 0 {
+            let _eligibleToSubmit: bool = false;
         }
 
         return (
@@ -443,27 +454,29 @@ impl AccessControlledAggregator {
         );
     }
 
-    fn updateRoundAnswer(&mut self, _roundId: u64) -> (bool, i256) {
-        if(self.details[_roundId].submissions.len() < self.details[_roundId].minSubmissions){
+    fn updateRoundAnswer(&mut self, _roundId: u64) -> (bool, u128) {
+        if self.details[_roundId].submissions.len() < self.details[_roundId].minSubmissions {
             return (false, 0);
         }
 
-        // let newAnswer: i256 = 
+        // let newAnswer: u128 = 
         self.rounds[_roundId].answer = newAnswer;
         self.rounds[_roundId].updatedAt = env::block_timestamp() as u64;
-        rounds[_roundId].answeredInRound = _roundId;
+        self.rounds[_roundId].answeredInRound = _roundId;
         self.latestRoundId = _roundId;
 
         return (true, newAnswer);
     }
 
-    fn validateAnswer(&self, _roundId: u64, _newAnswer: i256) {
+    fn validateAnswer(&self, _roundId: u64, _newAnswer: u128) {
         let av: AccountId = self.validator; // cache storage reads
-        if(av == "") return;
+        if av == "" {
+            return;
+        }
         
         let prevRound: u64 = _roundId - 1;
         let prevAnswerRoundId: u64 = self.rounds[prevRound].answeredInRound;
-        let prevRoundAnswer: i256 = self.rounds[prevRound].answer;
+        let prevRoundAnswer: u128 = self.rounds[prevRound].answer;
         // TRY CATCH
     }
 
@@ -485,20 +498,22 @@ impl AccessControlledAggregator {
     }
 
     fn deleteRoundDetails(&mut self, _roundId: u64) {
-        if(self.details[_roundId].submissions.len() < self.details[_roundId].maxSubmissions) return;
+        if self.details[_roundId].submissions.len() < self.details[_roundId].maxSubmissions {
+            return;
+        }
 
-        self.details[roundId_u64].clear();
+        self.details[_roundId].clear();
     }
 
     fn timedOut(&mut self, _roundId: u64) -> bool {
         let startedAt: u64 = self.rounds[_roundId].startedAt;
-        let roundTimeout: u64 = self.details[_roundId].timeout
-        return(startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp());
+        let roundTimeout: u64 = self.details[_roundId].timeout;
+        return startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp();
     }
 
     fn getStartingRound(&self, _oracle: AccountId) -> u64 {
         let currentRound: u64 = self.reportingRoundId;
-        if(currentRound != 0 && currentRound == self.oracles[_oracle].endingRound){
+        if currentRound != 0 && currentRound == self.oracles[_oracle].endingRound{
             return currentRound;
         }
         return currentRound + 1;
@@ -529,7 +544,7 @@ impl AccessControlledAggregator {
         assert!(self.oracleEnabled(_oracle), "oracle not enabled");
 
         self.oracles[_oracle].endingRound = self.reportingRoundId + 1;
-        let tail: AccountId = self.oracleAddresses[self.oracleCount()-1 as u256];
+        let tail: AccountId = self.oracleAddresses[self.oracleCount()-1];
         let index: u16 = self.oracles[_oracle].index;
         self.oracles[tail].index = index;
         self.oracles[_oracle].index.clear();
@@ -542,14 +557,25 @@ impl AccessControlledAggregator {
         let startingRound: u64 = self.oracles[_oracle].startingRound;
         let rrId: u64 = self.reportingRoundId;
 
-        if (startingRound == 0) return "not enabled oracle";
-        if (startingRound > _roundId) return "not yet enabled oracle";
-        if (self.oracles[_oracle].endingRound < _roundId) return "no longer allowed oracle";
-        if (self.oracles[_oracle].lastReportedRound >= _roundId) return "cannot report on previous rounds";
-        if (_roundId != rrId && _roundId != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId)) return "invalid round to report";
-        if (_roundId != 1 && !self.supersedable(_roundId - 1) return "previous round not supersedable";
+        if startingRound == 0 {
+            return "not enabled oracle";
+        }
+        else if startingRound > _roundId {
+            return "not yet enabled oracle";
+        }
+        else if self.oracles[_oracle].endingRound < _roundId {
+            return "no longer allowed oracle";
+        }
+        else if self.oracles[_oracle].lastReportedRound >= _roundId {
+            return "cannot report on previous rounds";
+        }
+        else if _roundId != rrId && _roundId != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId) {
+            return "invalid round to report";
+        }
+        else {
+            return "previous round not supersedable";
+        }
     }
-
     fn supersedable(&self, _roundId: u64) -> bool {
         self.rounds[_roundId].updatedAt > 0 || self.timedOut(_roundId)
     }
@@ -563,7 +589,7 @@ impl AccessControlledAggregator {
     }
 
     fn delayed(&self, _oracle: AccountId, _roundId: u64) -> bool {
-        let lastStarted: u256 = self.oracles[_oracle].lastStartedRound;
+        let lastStarted: u64 = self.oracles[_oracle].lastStartedRound;
         _roundId > (lastStarted + self.restartDelay) || lastStarted == 0
     }
 
@@ -582,13 +608,13 @@ impl AccessControlledAggregator {
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
-        self.accessList[_user] || !checkEnabled;
+        self.accessList[_user] || !self.checkEnabled;
     }
 
     pub fn addAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if(!self.accessList[_user]) {
+        if !self.accessList[_user] {
             self.accessList[_user] = true;
         }
     }
@@ -596,7 +622,7 @@ impl AccessControlledAggregator {
     pub fn removeAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if(self.accessList[_user]) {
+        if self.accessList[_user] {
             self.accessList[_user] = false;
         }
     }
@@ -604,7 +630,7 @@ impl AccessControlledAggregator {
     pub fn enableAccessCheck(&mut self) {
         self.onlyOwner();
 
-        if(!self.checkEnabled) {
+        if !self.checkEnabled {
             self.checkEnabled = true;
         }
     }
@@ -612,7 +638,7 @@ impl AccessControlledAggregator {
     pub fn disableAccessCheck(&mut self) {
         self.onlyOwner();
 
-        if(self.checkEnabled) {
+        if self.checkEnabled {
             self.checkEnabled = false;
         }
     }
@@ -620,51 +646,4 @@ impl AccessControlledAggregator {
     fn checkAccess(&self) {
         assert!(self.hasAccess(env::predecessor_account_id()), "No access")
     }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use near_sdk::MockedBlockchain;
-    use near_sdk::{testing_env, VMContext};
-
-    // Necessary NEAR accounts for testing data flow
-    fn accessControlledAggregator() -> AccountId { "access_controlled_aggregator_near".to_string() }
-    fn nolanNear() -> AccountId { "nolan_near".to_string() }
-    fn linkToken() -> AccountId { "link_token_near".to_string() }
-    fn validator() -> AccountId { "validator_near".to_string() }
-    fn oracleOne() -> AccountId {"oracle_one".to_string()}
-    fn oracleTwo() -> AccountId {"oracle_two".to_string()}
-    fn oracleThree() -> AccountId {"oracle_three".to_string()}
-
-    // VM Context sends mock transactions with the context below, 
-    fn get_context(predecessor_account_id: String, storage_usage: u64) -> VMContext {
-        VMContext {
-            current_account_id: nolanNear(),
-            signer_account_id,
-            signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id: nolanNear(),
-            input: vec![],
-            block_index: 0,
-            block_timestamp: 0,
-            epoch_height: 0,
-            account_balance: 0,
-            account_locked_balance: 0,
-            storage_usage,
-            attached_deposit: 0,
-            prepaid_gas: 10u64.pow(18),
-            random_seed: vec![0, 1, 2],
-            is_view: false,
-            output_data_receivers: vec![],
-        }
-    }
-
-    #[test]
-    fn initialize_contract() {
-        let context = get_context(accessControlledAggregator(), 0);
-        testing_env!(context);
-        let mut contract = AccessControlledAggregator::new(link(), nolanNear(), 1, 100, validator(), 0, 1000, 4, "a Description");
-        assert_eq!(contract.onlyOwner(), true);
-    } 
 }
