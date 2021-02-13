@@ -61,12 +61,12 @@ impl EACAggregatorProxy {
         self.accessController = _accessController;
     }
 
-    pub fn latestAnswer(&self) -> U128 {
+    pub fn latestAnswer(&self) -> u128 {
         self.checkAccess();
         self.currentPhase.aggregator.latestAnswer()
     }
 
-    pub fn latestTimestamp(&self) -> (u128) {
+    pub fn latestTimestamp(&self) -> u128 {
         self.checkAccess();
         self.currentPhase.aggregator.latestTimestamp()
     }
@@ -127,7 +127,7 @@ impl EACAggregatorProxy {
         return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
     }
 
-    pub fn proposedGetRoundData(&self, _roundId: U128) -> (u128, u128, u128, u128, u64) {
+    pub fn proposedGetRoundData(&self, _roundId: U128) -> (u128, u128, u128, u128, u128) {
         self.checkAccess();
         self.hasProposal();
         
@@ -181,8 +181,8 @@ impl EACAggregatorProxy {
         self.phaseAggregators[id] = _aggregator;
     }
 
-    fn addPhase(&self, _phase: u64, _originalId: u64) -> u64 {
-        ((_phase as u128) << self.PHASE_OFFSET | _originalId) as u64
+    fn addPhase(&self, _phase: u64, _originalId: u64) -> u128 {
+        ((_phase as u128) << self.PHASE_OFFSET | _originalId) as u128
     }
 
     fn parseIds(&self, _roundId: u128) -> (u64, u64) {
@@ -192,7 +192,7 @@ impl EACAggregatorProxy {
         return(phaseId, aggregatorRoundId);
     }
 
-    fn addPhaseIds(&self, roundId: u64, answer: u128, startedAt: u128, updatedAt: u128, answeredInRound: u64, phaseId: u64) -> (u64, u128, u128, u128, u64) {
+    fn addPhaseIds(&self, roundId: u128, answer: u128, startedAt: u128, updatedAt: u128, answeredInRound: u128, phaseId: u64) -> (u128, u128, u128, u128, u128) {
         return(self.addPhase(phaseId, roundId as u64), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound as u64));
     }
 
