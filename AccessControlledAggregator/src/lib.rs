@@ -108,6 +108,11 @@ impl AccessControlledAggregator {
         let maxSubmissionValue_u128: u128 = _maxSubmissionValue.into();
         let decimals_u128: u128 = _decimals.into();
 
+        self.checkEnabled = true;
+        self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
+        self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
+        self.setValidator(&_validator);
+
         Self {
             owner: owner_id,
             linkToken: link_id,
@@ -115,12 +120,7 @@ impl AccessControlledAggregator {
             maxSubmissionValue: maxSubmissionValue_u128,
             decimals: decimals_u128,
             description: _description
-        };
-
-        self.checkEnabled = true;
-        self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
-        self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
-        self.setValidator(&_validator);
+        }
     }
 
     pub fn submit(&mut self, _roundId: U128, _submission: U128) {

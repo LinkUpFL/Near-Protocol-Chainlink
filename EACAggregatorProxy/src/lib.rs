@@ -46,14 +46,14 @@ impl EACAggregatorProxy {
         assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-        Self {
-            owner: owner_id,
-            link_account: link_id,
-        }
-
         self.checkEnabled = true;
         self.setAggregator(&_aggregator);
         self.setController(&_accessController);
+
+        Self {
+            owner: owner_id,
+            link_account: link_id
+        }
     }
 
     pub fn setController(&mut self, _accessController: AccountId) {

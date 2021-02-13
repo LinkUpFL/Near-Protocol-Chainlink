@@ -28,11 +28,11 @@ impl Flags {
         assert!(env::is_valid_account_id(racAddress.as_bytes()), "recAddress account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-        Self {
-            owner: owner_id,
-        };
-
         self.setRaisingAccessController(&racAddress);
+
+        Self {
+            owner: owner_id
+        }
     }
 
     pub fn getFlag(&self, subject: AccountId) -> bool {
