@@ -1,10 +1,11 @@
-use borsh::{BorshDeserialize, BorshSerialize};
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::{AccountId, env, near_bindgen};
+use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -28,11 +29,12 @@ impl Flags {
         assert!(env::is_valid_account_id(racAddress.as_bytes()), "recAddress account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-        self.setRaisingAccessController(&racAddress);
+        let mut result = Self {
+            owner: owner_id,
+        };
 
-        Self {
-            owner: owner_id
-        }
+        result.setRaisingAccessController(&racAddress);
+        result
     }
 
     pub fn getFlag(&self, subject: AccountId) -> bool {
@@ -40,7 +42,7 @@ impl Flags {
     }
 
     pub fn getFlags(&self, subjects: Vec<AccountId>) -> bool {
-        let responses: bool[subjects.len()];
+        let responses: Vec::<bool>::with_capacity(subjects.len());
         for i in 0..subjects.len() {
             responses[i] = self.flags[subjects[i]];
         }
