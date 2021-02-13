@@ -1,15 +1,16 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-use serde::{Serialize, Deserialize};
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128};
 use near_sdk::{AccountId, env, near_bindgen};
+use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
 use num_traits::pow;
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 pub type Base64String = String;
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Phase {
     id: u64,
@@ -46,14 +47,15 @@ impl EACAggregatorProxy {
         assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-        self.checkEnabled = true;
-        self.setAggregator(&_aggregator);
-        self.setController(&_accessController);
-
-        Self {
+        let mut result: = Self {
             owner: owner_id,
             link_account: link_id
-        }
+        };
+
+        result.checkEnabled = true;
+        result.setAggregator(&_aggregator);
+        result.setController(&_accessController);
+        result
     }
 
     pub fn setController(&mut self, _accessController: AccountId) {
@@ -209,7 +211,7 @@ impl EACAggregatorProxy {
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
-        self.accessList[_user] || !checkEnabled;
+        self.accessList[_user] || !self.checkEnabled;
     }
 
     pub fn addAccess(&mut self, _user: AccountId) {
