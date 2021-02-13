@@ -53,6 +53,7 @@ pub struct Requester {
     lastStartedRound: u64
 }
 
+#[derive(BorshDeserialize, BorshSerialize)]
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Funds {
