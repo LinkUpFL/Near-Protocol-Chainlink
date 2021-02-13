@@ -1,35 +1,32 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Serialize, Deserialize};
-use near_sdk::collections::{TreeMap, UnorderedSet, LookupMap};
-use near_sdk::json_types::{U128, U64};
-use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
-use serde_json::json;
+use near_sdk::collections::{LookupMap};
+use near_sdk::json_types::{U128};
+use near_sdk::{AccountId, env, near_bindgen};
 use std::str;
-use std::collections::HashMap;
 use num_traits::pow;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 pub type Base64String = String;
-
-#[derive(Serialize, Deserialize)]
+#[derive(BorshSerialize, BorshDeserialize)]
 pub struct Phase {
-    id: u16,
+    id: u64,
     aggregator: AccountId
 }
 
-const PHASE_OFFSET: u256 = 64;
-const PHASE_SIZE: u256 = 16;
-const MAX_ID: u256 = 2.pow(PHASE_OFFSET+PHASE_SIZE) - 1;
+const PHASE_OFFSET: u128 = 64;
+const PHASE_SIZE: u128 = 16;
+const MAX_ID: u128 = pow(PHASE_OFFSET+PHASE_SIZE, 2) - 1;
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
+#[derive(BorshSerialize, BorshDeserialize)]
 pub struct EACAggregatorProxy {
     pub owner: AccountId,
     pub proposedAggregator: AccountId,
-    pub phaseAggregators: LookupMap<u16, AccountId>,
-    pub accessController: AccountId
+    pub phaseAggregators: LookupMap<u64, AccountId>,
+    pub accessController: AccountId,
     pub checkEnabled: bool,
     accessList: LookupMap<AccountId, bool>,
     currentPhase: Phase
@@ -52,11 +49,11 @@ impl EACAggregatorProxy {
         Self {
             owner: owner_id,
             link_account: link_id,
-            checkEnabled: true
         }
 
-        self.setAggregator(_aggregator);
-        self.setController(_accessController);
+        self.checkEnabled = true;
+        self.setAggregator(&_aggregator);
+        self.setController(&_accessController);
     }
 
     pub fn setController(&mut self, _accessController: AccountId) {
@@ -64,65 +61,73 @@ impl EACAggregatorProxy {
         self.accessController = _accessController;
     }
 
-    pub fn latestAnswer(&self) -> (answer: i256) {
+    pub fn latestAnswer(&self) -> U128 {
         self.checkAccess();
         self.currentPhase.aggregator.latestAnswer()
     }
 
-    pub fn latestTimestamp(&self) -> (updatedAt: u256) {
+    pub fn latestTimestamp(&self) -> (u128) {
         self.checkAccess();
         self.currentPhase.aggregator.latestTimestamp()
     }
 
-    pub fn getAnswer(&mut self, _roundId: U128) -> (answer: i256) {
+    pub fn getAnswer(&mut self, _roundId: U128) -> u128 {
         self.checkAccess();
 
         let roundId_u128: u128 = _roundId.into();
-        if(roundId_u128 > self.MAX_ID) return 0;
+        if roundId_u128 > self.MAX_ID {
+            return 0;
+        }
 
-        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(roundId_u128);
+        let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
         let aggregator: AccountId = self.phaseAggregators[phaseId];
-        if(aggregator == "") return 0;
+        if aggregator == "" {
+            return 0;
+        } 
 
         return aggregator.getAnswer(aggregatorRoundId);
     }
 
-    pub fn getTimestamp(&self, _roundId: U128) -> (updatedAt: u256) {
+    pub fn getTimestamp(&self, _roundId: U128) -> u128 {
         self.checkAccess();
         let roundId_u128: u128 = _roundId.into();
-        if(roundId_u128 > self.MAX_ID) return 0;
+        if roundId_u128 > self.MAX_ID {
+            return 0;
+        }
 
-        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(roundId_u128);
+        let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
         let aggregator: AccountId = self.phaseAggregators[phaseId];
-        if(aggregator == "") return 0;
+        if aggregator == "" {
+            return 0;
+        }
 
         return aggregator.getTimestamp(aggregatorRoundId);
     }
 
-    pub fn latestRound(&mut self) -> (roundId: u256) {
+    pub fn latestRound(&mut self) -> (u128) {
         self.checkAccess();
         let phase: Phase = self.currentPhase;
         self.addPhase(phase.id, phase.aggregator.latestRound() as u64)
     }
 
-    pub fn getRoundData(&mut self, _roundId: U128) -> (roundId: u128, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+    pub fn getRoundData(&mut self, _roundId: U128) -> (u128, u128, u128, u128, u64) {
         let roundId_u128: u128 = _roundId.into();
-        let (phaseId: u16, aggregatorRoundId: u64) = self.parseIds(roundId_u128);
+        let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
 
         (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = self.phaseAggregators[phaseId].getRoundData(aggregatorRoundId);
 
         return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
     }
 
-    pub fn latestRoundData(&mut self) -> (roundId: u128, answer: i256, startedAt: u128, updatedAt: u128, answeredInRound: u128) {
+    pub fn latestRoundData(&mut self) -> (u128, u128, u128, u128, u128) {
         let current: Phase = self.currentPhase; // cache storage reads
 
-        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = current.aggregator.latestRoundData();
+        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = current.aggregator.latestRoundata();
 
         return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
     }
 
-    pub fn proposedGetRoundData(&self, _roundId: U128) -> (roundId: u128, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80) {
+    pub fn proposedGetRoundData(&self, _roundId: U128) -> (u128, u128, u128, u128, u64) {
         self.checkAccess();
         self.hasProposal();
         
@@ -130,7 +135,7 @@ impl EACAggregatorProxy {
         self.proposedAggregator.getRoundData(roundId_u128)
     }
 
-    pub fn proposedLatestRoundData(&self) -> (roundId: u128, answer: i256, startedAt: u128, updatedAt: u128, answeredInRound: u128) {
+    pub fn proposedLatestRoundData(&self) -> (u128, u128, u128, u128,  u128) {
         self.checkAccess();
         self.hasProposal();
         self.proposedAggregator.latestRoundData()
@@ -140,11 +145,11 @@ impl EACAggregatorProxy {
         self.currentPhase.aggregator as AccountId
     }
 
-    pub fn phaseId(&self) -> u16 {
+    pub fn phaseId(&self) -> u64 {
         self.currentPhase.id
     }
 
-    pub fn decimals(&self) -> u8 {
+    pub fn decimals(&self) -> u64 {
         self.currentPhase.aggregator.decimals();
     }
 
@@ -171,23 +176,23 @@ impl EACAggregatorProxy {
     // Internal
 
     fn setAggregator(&mut self, _aggregator: AccountId) {
-        let id: u16 = self.currentPhase.id + 1;
+        let id: u64 = self.currentPhase.id + 1;
         self.currentPhase = self.Phase(id, _aggregator);
         self.phaseAggregators[id] = _aggregator;
     }
 
-    fn addPhase(&self, _phase: u16, _originalId: u64) -> u80 {
-        ((_phase as u256) << self.PHASE_OFFSET | _originalId) as u80
+    fn addPhase(&self, _phase: u64, _originalId: u64) -> u64 {
+        ((_phase as u128) << self.PHASE_OFFSET | _originalId) as u64
     }
 
-    fn parseIds(&self, _roundId: u128) -> (u16, u64) {
-        let phaseId: u16 = (_roundId >> self.PHASE_OFFSET) as u16;
+    fn parseIds(&self, _roundId: u128) -> (u64, u64) {
+        let phaseId: u64 = (_roundId >> self.PHASE_OFFSET) as u64;
         let aggregatorRoundId: u64 = _roundId as u64;
 
         return(phaseId, aggregatorRoundId);
     }
 
-    fn addPhaseIds(&self, roundId: u80, answer: i256, startedAt: u256, updatedAt: u256, answeredInRound: u80, phaseId: u16) -> (u80, i256, u256, u256, u80) {
+    fn addPhaseIds(&self, roundId: u64, answer: u128, startedAt: u128, updatedAt: u128, answeredInRound: u64, phaseId: u64) -> (u64, u128, u128, u128, u64) {
         return(self.addPhase(phaseId, roundId as u64), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound as u64));
     }
 
@@ -198,11 +203,7 @@ impl EACAggregatorProxy {
     }
 
     fn onlyOwner(&mut self) {
-        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
-    }
-
-    fn onlyOwner(&mut self) {
-        assert_eq!(owner, env::predecessor_account_id(), "Only contract owner can call this method.");
+        assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 
     // Access Control
@@ -214,7 +215,7 @@ impl EACAggregatorProxy {
     pub fn addAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if(!self.accessList[_user]) {
+        if !self.accessList[_user] {
             self.accessList[_user] = true;
         }
     }
@@ -222,7 +223,7 @@ impl EACAggregatorProxy {
     pub fn removeAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if(self.accessList[_user]) {
+        if self.accessList[_user] {
             self.accessList[_user] = false;
         }
     }
@@ -230,7 +231,7 @@ impl EACAggregatorProxy {
     pub fn enableAccessCheck(&mut self) {
         self.onlyOwner();
 
-        if(!self.checkEnabled) {
+        if !self.checkEnabled {
             self.checkEnabled = true;
         }
     }
@@ -238,7 +239,7 @@ impl EACAggregatorProxy {
     pub fn disableAccessCheck(&mut self) {
         self.onlyOwner();
 
-        if(self.checkEnabled) {
+        if self.checkEnabled {
             self.checkEnabled = false;
         }
     }
@@ -246,6 +247,6 @@ impl EACAggregatorProxy {
     fn checkAccess(&self) {
         let ac: AccountId = self.accessController;
         assert!(env::is_valid_account_id(ac.as_bytes()), "AC's account ID is invalid");
-        assert!(ac.hasAccess(msg.sender), "No access");
+        assert!(ac.hasAccess(env::predecessor_account_id()), "No access");
     }
 }
