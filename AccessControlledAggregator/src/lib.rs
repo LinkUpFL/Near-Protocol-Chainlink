@@ -1,17 +1,19 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-use serde::{Serialize, Deserialize};
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen};
+use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
 use num_traits::pow;
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 pub type Base64String = String;
 
 #[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Round {
     answer: u128,
     startedAt: u64,
@@ -20,6 +22,7 @@ pub struct Round {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct RoundDetails {
     submissions: Vec<u128>,
     maxSubmissions: u64,
@@ -29,6 +32,7 @@ pub struct RoundDetails {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct OracleStatus {
     withdrawable: u128,
     startingRound: u64,
@@ -42,6 +46,7 @@ pub struct OracleStatus {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Requester {
     authorized: bool,
     delay: u64,
@@ -49,6 +54,7 @@ pub struct Requester {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Funds {
     available: u128,
     allocated: u128
@@ -108,19 +114,19 @@ impl AccessControlledAggregator {
         let maxSubmissionValue_u128: u128 = _maxSubmissionValue.into();
         let decimals_u128: u128 = _decimals.into();
 
-        self.checkEnabled = true;
-        self.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
-        self.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
-        self.setValidator(&_validator);
-
-        Self {
+        let mut result = Self {
             owner: owner_id,
             linkToken: link_id,
             minSubmissionValue: minSubmissionValue_u128,
             maxSubmissionValue: maxSubmissionValue_u128,
             decimals: decimals_u128,
             description: _description
-        }
+        };
+        result.checkEnabled = true;
+        result.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
+        result.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
+        result.setValidator(&_validator);
+        result
     }
 
     pub fn submit(&mut self, _roundId: U128, _submission: U128) {
@@ -425,22 +431,27 @@ impl AccessControlledAggregator {
         // Instead of nudging oracles to submit to the next round, the inclusion of
         // the shouldSupersede bool in the if condition pushes them towards
         // submitting in a currently open round.
+
+        let mut _roundId: u64;
+        let mut _paymentAmount: u128;
+        let mut _eligibleToSubmit: bool;
+
         if self.supersedable(self.reportingRoundId) && self.shouldSupersede {
-            let _roundId: u64 = self.reportingRoundId + 1;
+            _roundId = self.reportingRoundId + 1;
             self.round = self.rounds[_roundId];
 
-            let _paymentAmount: u128 = self.paymentAmount;
-            let _eligibleToSubmit: bool = self.delayed(_oracle, _roundId);
+            _paymentAmount = self.paymentAmount;
+            _eligibleToSubmit = self.delayed(_oracle, _roundId);
         } else {
-            let _roundId: u64 = self.reportingRoundId;
+            _roundId = self.reportingRoundId;
             self.round = self.rounds[_roundId];
 
-            let _paymentAmount: u128 = self.details[_roundId].paymentAmount;
-            let _eligibleToSubmit: bool = self.acceptingSubmissions(_roundId);
+            _paymentAmount = self.details[_roundId].paymentAmount;
+            _eligibleToSubmit = self.acceptingSubmissions(_roundId);
         }
 
         if self.validateOracleRound(_oracle, _roundId).len() != 0 {
-            let _eligibleToSubmit: bool = false;
+            _eligibleToSubmit = false;
         }
 
         return (
