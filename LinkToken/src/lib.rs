@@ -1,5 +1,5 @@
 /**
-* Fungible Token implementation with JSON serialization.
+* LinkToken Token implementation with JSON serialization.
 * NOTES:
 *  - The maximum balance value is limited by U128 (2**128 - 1).
 *  - JSON calls should pass U128 as a base-10 string. E.g. "100".
@@ -15,13 +15,13 @@
 *  - To prevent the deployed contract from being modified or deleted, it should not have any access
 *    keys on its account.
 */
-use borsh::{BorshDeserialize, BorshSerialize};
-use near_sdk::collections::UnorderedMap;
-use near_sdk::json_types::U128;
+use borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::collections::{UnorderedMap};
+use near_sdk::json_types::{U128};
 use near_sdk::{env, near_bindgen, AccountId, Balance, Promise, StorageUsage};
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 /// Price per 1 byte of storage from mainnet genesis config.
 const STORAGE_PRICE_PER_BYTE: Balance = 100000000000000000000;
@@ -62,7 +62,7 @@ impl Account {
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct FungibleToken {
+pub struct LinkToken {
     /// sha256(AccountID) -> Account details.
     pub accounts: UnorderedMap<Vec<u8>, Account>,
 
@@ -70,14 +70,14 @@ pub struct FungibleToken {
     pub total_supply: Balance,
 }
 
-impl Default for FungibleToken {
+impl Default for LinkToken {
     fn default() -> Self {
         panic!("Fun token should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl FungibleToken {
+impl LinkToken {
     /// Initializes the contract with the given total supply owned by the given `owner_id`.
     #[init]
     pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
@@ -223,7 +223,7 @@ impl FungibleToken {
     }
 }
 
-impl FungibleToken {
+impl LinkToken {
     /// Helper method to get the account details for `owner_id`.
     fn get_account(&self, owner_id: &AccountId) -> Account {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
@@ -309,7 +309,7 @@ mod tests {
         let context = get_context(carol());
         testing_env!(context);
         let total_supply = 1_000_000_000_000_000u128;
-        let contract = FungibleToken::new(bob(), total_supply.into());
+        let contract = LinkToken::new(bob(), total_supply.into());
         assert_eq!(contract.get_total_supply().0, total_supply);
         assert_eq!(contract.get_balance(bob()).0, total_supply);
     }
@@ -321,9 +321,9 @@ mod tests {
         testing_env!(context);
         let total_supply = 1_000_000_000_000_000u128;
         {
-            let _contract = FungibleToken::new(bob(), total_supply.into());
+            let _contract = LinkToken::new(bob(), total_supply.into());
         }
-        FungibleToken::new(bob(), total_supply.into());
+        LinkToken::new(bob(), total_supply.into());
     }
 
     #[test]
@@ -331,7 +331,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.storage_usage = env::storage_usage();
 
         context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
@@ -354,7 +354,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.storage_usage = env::storage_usage();
 
         context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
@@ -369,7 +369,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.inc_allowance(carol(), (total_supply / 2).into());
@@ -381,7 +381,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.dec_allowance(carol(), (total_supply / 2).into());
@@ -392,7 +392,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.dec_allowance(bob(), (total_supply / 2).into());
@@ -404,7 +404,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = std::u128::MAX;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.inc_allowance(bob(), total_supply.into());
@@ -420,7 +420,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.attached_deposit = 0;
         testing_env!(context.clone());
         contract.inc_allowance(bob(), (total_supply / 2).into());
@@ -432,7 +432,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.storage_usage = env::storage_usage();
 
         context.is_view = true;
@@ -476,7 +476,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.storage_usage = env::storage_usage();
 
         context.is_view = true;
@@ -520,7 +520,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = LinkToken::new(carol(), total_supply.into());
         context.storage_usage = env::storage_usage();
 
         let initial_balance = context.account_balance;

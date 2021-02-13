@@ -1,18 +1,14 @@
 [package]
-name = "near-link-token"
-version = "0.2.0"
-authors = ["Near Inc <hello@nearprotocol.com>"]
+name = "LinkToken"
+version = "0.1.0"
+authors = ["kwsantiago <kwsantiago@usf.edu>"]
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-serde = { version = "*", features = ["derive"] }
-serde_json = "*"
-near-sdk = "0.11.0"
-borsh = "*"
-wee_alloc = { version = "0.4.5", default-features = false, features = [] }
+near-sdk = "2.0.1"
 
 [profile.release]
 codegen-units = 1
