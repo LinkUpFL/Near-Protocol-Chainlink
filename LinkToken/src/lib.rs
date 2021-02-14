@@ -15,13 +15,16 @@
 *  - To prevent the deployed contract from being modified or deleted, it should not have any access
 *    keys on its account.
 */
-use borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{UnorderedMap};
 use near_sdk::json_types::{U128};
 use near_sdk::{env, near_bindgen, AccountId, Balance, Promise, StorageUsage};
+use std::str;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
+
+pub type Base64String = String;
 
 /// Price per 1 byte of storage from mainnet genesis config.
 const STORAGE_PRICE_PER_BYTE: Balance = 100000000000000000000;
@@ -221,9 +224,7 @@ impl LinkToken {
         );
         self.get_account(&owner_id).get_allowance(&escrow_account_id).into()
     }
-}
 
-impl LinkToken {
     /// Helper method to get the account details for `owner_id`.
     fn get_account(&self, owner_id: &AccountId) -> Account {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
@@ -262,6 +263,23 @@ impl LinkToken {
             env::log(format!("Refunding {} tokens for storage", refund_amount).as_bytes());
             Promise::new(env::predecessor_account_id()).transfer(refund_amount);
         }
+    }
+
+    // 677
+
+    pub fn transferAndCall(&self, _to: AccountId, _value: U128, _data: Base64String) -> bool {
+        let value_u128: u128 = _value.into();
+        self.transfer(&_to, &value_u128);
+        // FIX THIS  -- How to tell if an address is a contract?
+        if _to.isContract {
+            self.contractFallback(&_to, &value_u128, &_data);
+        }
+        return true;
+    }
+
+    fn contractFallback(&self, _to: AccountId, _value: U128, _data: Base64String) {
+        let receiver: AccountId = _to;
+        // onTokenTransfer
     }
 }
 
