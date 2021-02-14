@@ -7,6 +7,12 @@ use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
 use num_traits::pow;
 
+fn median(numbers: &mut [u32]) -> u32 {
+    numbers.sort();
+    let mid = numbers.len() / 2;
+    numbers[mid]
+}
+
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
@@ -21,6 +27,7 @@ pub struct Round {
     answeredInRound: u64
 }
 
+#[derive(BorshDeserialize, BorshSerialize)]
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct RoundDetails {
@@ -203,10 +210,11 @@ impl AccessControlledAggregator {
     pub fn updateAvailableFunds(&self) {
         let funds: Funds = self.recordedFunds;
 
-        // nowAavilable
-
-        if funds.available != nowAavilable {
-            self.recordedFunds.available = nowAavilable as u128;
+        // uint256 nowAvailable = linkToken.balanceOf(address(this)).sub(funds.allocated);
+        let nowAvailable: u128 = funds.available - funds.allocated;
+        
+        if funds.available != nowAvailable {
+            self.recordedFunds.available = nowAvailable as u128;
         }
     }
 
@@ -467,9 +475,18 @@ impl AccessControlledAggregator {
     }
 
     fn updateRoundAnswer(&mut self, _roundId: u64) -> (bool, u128) {
-        if self.details[_roundId].submissions.len() < self.details[_roundId].minSubmissions {
-            return (false, 0);
-        }
+        // LookupMap cannot be indexed as it does not implement the index trait: https://doc.rust-lang.org/std/ops/trait.Index.html
+        // let indexedRound: Option<RoundDetails> = self.details.get(&_roundId);
+        // let indexedRound: RoundDetails = self.details.get(&_roundId) {
+        //     Some(value) => {
+        //     value;
+        // }, None => RoundDetails
+        // };
+        // if  indexedRound < self.details[_roundId].minSubmissions {
+        //     return (false, 0);
+        // }
+        // numbers: &mut [u32]
+        let newAnswer: i128 = median(self.details[_roundId].submissions).into();
 
         // let newAnswer: u128 = 
         self.rounds[_roundId].answer = newAnswer;
