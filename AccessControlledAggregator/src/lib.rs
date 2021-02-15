@@ -274,7 +274,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
-        self.oracles[_oracle].withdrawable
+        self.oracles.get(&_oracle).withdrawable
     }
 
     pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
