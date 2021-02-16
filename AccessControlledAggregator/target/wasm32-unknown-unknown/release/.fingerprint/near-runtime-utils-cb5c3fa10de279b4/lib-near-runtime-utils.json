@@ -1,1 +1,0 @@
-{"rustc":6339714466149818003,"features":"[]","target":5147354201259567210,"profile":13498264855441852122,"path":8775558874200540355,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"wasm32-unknown-unknown/release/.fingerprint/near-runtime-utils-cb5c3fa10de279b4/dep-lib-near-runtime-utils"}}],"rustflags":["-C","link-arg=-s"],"metadata":17726511919013672169,"config":0}

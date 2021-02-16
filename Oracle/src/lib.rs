@@ -1,15 +1,15 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-use serde::{Serialize, Deserialize};
+use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
+use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap, UnorderedSet};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
+use near_sdk::wee_alloc::{WeeAlloc};
 use serde_json::json;
 use std::str;
-use std::collections::HashMap;
 use base64::{decode};
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 const EXPIRY_TIME: u64 = 5 * 60 * 1_000_000_000;
 
