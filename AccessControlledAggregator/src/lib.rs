@@ -186,10 +186,10 @@ impl AccessControlledAggregator {
         let restartDelay_u64: u64 = _restartDelay.into();
         let timeout_u64: u64 = _timeout.into();
 
-        let oracleNum: u64 = self.oracleCount(); // Save on storage reads
+        let oracleNum: u128 = self.oracleCount(); // Save on storage reads
         assert!(maxSubmissions_u64 >= minSubmissions_u64, "max must equal/exceed min");
-        assert!(oracleNum >= maxSubmissions_u64, "max cannot exceed total");
-        assert!(oracleNum == 0 || oracleNum > restartDelay_u64, "delay cannot exceed total");
+        assert!(oracleNum >= maxSubmissions_u64.into(), "max cannot exceed total");
+        assert!(oracleNum == 0 || oracleNum > restartDelay_u64.into(), "delay cannot exceed total");
         assert!(self.recordedFunds.available >= self.requiredReserve(paymentAmount_u128), "insufficient funds for payment");
         if self.oracleCount() > 0 {
             assert!(minSubmissions_u64 > 0, "min must be greater than 0")
@@ -222,7 +222,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn oracleCount(&self) -> u128 {
-        self.oracleAddresses.len()
+        self.oracleAddresses.len() as u128
     }
 
     pub fn getOracles(&self) -> Vec<AccountId> {
