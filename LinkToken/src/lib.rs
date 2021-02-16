@@ -19,6 +19,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{UnorderedMap};
 use near_sdk::json_types::{U128};
 use near_sdk::{env, near_bindgen, AccountId, Balance, Promise, StorageUsage};
+use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
 
 #[global_allocator]

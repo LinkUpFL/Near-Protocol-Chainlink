@@ -1,0 +1,1 @@
+{"rustc":6339714466149818003,"features":"[]","target":15530058044987665258,"profile":13498264855441852122,"path":8953136652969823103,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"wasm32-unknown-unknown/release/.fingerprint/memory_units-0af3cd975ec813fd/dep-lib-memory_units"}}],"rustflags":["-C","link-arg=-s"],"metadata":16366510313631463741,"config":0}

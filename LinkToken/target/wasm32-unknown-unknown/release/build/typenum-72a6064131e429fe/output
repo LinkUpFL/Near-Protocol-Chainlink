@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/kyle/Projects/Near-Protocol-Chainlink/LinkToken/target/wasm32-unknown-unknown/release/build/typenum-72a6064131e429fe/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/home/kyle/Projects/Near-Protocol-Chainlink/LinkToken/target/wasm32-unknown-unknown/release/build/typenum-72a6064131e429fe/out/op.rs
