@@ -18,6 +18,7 @@ static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 pub type Base64String = String;
 
+#[derive(BorshDeserialize, BorshSerialize)]
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Round {
@@ -38,6 +39,7 @@ pub struct RoundDetails {
     paymentAmount: u128
 }
 
+#[derive(BorshDeserialize, BorshSerialize)]
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct OracleStatus {
@@ -52,6 +54,7 @@ pub struct OracleStatus {
     pendingAdmin: AccountId
 }
 
+#[derive(BorshDeserialize, BorshSerialize)]
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Requester {
@@ -274,7 +277,12 @@ impl AccessControlledAggregator {
     }
 
     pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
-        self.oracles.get(&_oracle).withdrawable
+        let withdrawable_option = self.oracles.get(&_oracle).withdrawable;
+        if withdrawable_option.is_none() {
+            env::panic(b"Did not find the withdrawable request to fulfill.");
+        }
+        let withdrawable = withdrawable_option.unwrap();
+        withdrawable
     }
 
     pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
