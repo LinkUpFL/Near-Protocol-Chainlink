@@ -3,7 +3,7 @@ use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128};
 use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::wee_alloc::{WeeAlloc};
-use near_sdk::base64::{decode}
+use near_sdk::base64::{decode};
 use std::str;
 use num_traits::pow;
 
@@ -19,6 +19,33 @@ const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
 const TRANSFER_FROM_NEAR_COST: u128 = 36_500_000_000_000_000_000_000; // 365 x 10^20
 
 pub type Base64String = String;
+
+#[derive(Default, BorshDeserialize, BorshSerialize, Debug, Clone)]
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct OracleRequest {
+    caller_account: AccountId,
+    request_spec: Base64String,
+    callback_address: AccountId,
+    callback_method: String,
+    data: Base64String,
+    payment: u128,
+    expiration: u64
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct SummaryJSON {
+    account: AccountId,
+    total_requests: u16, // TODO: choosing u16? need to enforce if so
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct RequestsJSON {
+    nonce: U128,
+    request: OracleRequest,
+}
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
