@@ -75,7 +75,7 @@ const version: u128 = 3;
 const RESERVE_ROUNDS: u128 = 2;
 const MAX_ORACLE_COUNT: u128 = 77;
 // Previous: 2.pow(32-1)
-const ROUND_MAX: u64 = pow(32-1, 2);
+const ROUND_MAX: u128 = pow(32-1, 2);
 const V3_NO_DATA_ERROR: Base64String = "No data present";
 
 #[near_bindgen]
@@ -221,8 +221,8 @@ impl AccessControlledAggregator {
         }
     }
 
-    pub fn oracleCount(&self) -> u64 {
-        self.oracleAddresses.len() as u64
+    pub fn oracleCount(&self) -> u128 {
+        self.oracleAddresses.len()
     }
 
     pub fn getOracles(&self) -> Vec<AccountId> {
@@ -349,9 +349,12 @@ impl AccessControlledAggregator {
         }
     }
 
-    // onTokenTransfer
+    pub fn onTokenTransfer(&mut self, address: AccountId, num: U128, _data: Base64String) {
+        assert!(_data.len() == 0, "transfer doesn't accept calldata");
+        self.updateAvailableFunds();
+    }
 
-    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64,  u64, u128,  u64, u128) {
+    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
         // require
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
@@ -436,7 +439,7 @@ impl AccessControlledAggregator {
         self.details[_roundId].clear();
     }
 
-    fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u64) -> bool {
+    fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u128) -> bool {
         if self.rounds[_queriedRoundId].startedAt > 0 {
             return self.acceptingSubmissions(_queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
         } else {
@@ -444,11 +447,11 @@ impl AccessControlledAggregator {
         }
     }
 
-    fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> ( bool,  u64,  u128, u64, u64,  u128, u64, u128) {
+    fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> ( bool,  u64,  u128, u64, u64,  u128, u128) {
         let round: Round = self.rounds[0];
         let oracle: OracleStatus = self.oracles[_oracle];
 
-        let shouldSupersede: bool = self.oracle.lastReportedRound == self.reportingRoundId || !self.acceptingSubmissions(self.reportingRoundId);
+        let shouldSupersede: bool = self.oracle.lastReportedRound == self.reportingRoundId || !self.acceptingSubmissions(self.reportingRoundId as u128);
         // Instead of nudging oracles to submit to the next round, the inclusion of
         // the shouldSupersede bool in the if condition pushes them towards
         // submitting in a currently open round.
@@ -524,10 +527,10 @@ impl AccessControlledAggregator {
     fn payOracle(&mut self, _roundId: u64) {
         let payment: u128 = self.details[_roundId].paymentAmount;
         let funds: Funds = self.recordedFunds;
-        self.funds.available = self.funds.available - payment;
-        self.funds.allocated = self.funds.allocated - payment;
-        self.recordedFunds = funds;
-        self.oracles[env::signer_account_id()].withdrawable = self.oracles[env::signer_account_id()].withdrawable + payment;
+        funds.available = funds.available - payment;
+        funds.allocated = funds.allocated - payment;
+        recordedFunds = funds;
+        oracles[env::signer_account_id()].withdrawable = self.oracles[env::signer_account_id()].withdrawable + payment;
     }
 
     fn recordSubmission(&mut self, _submission: u128, _roundId: u128) {
@@ -625,7 +628,7 @@ impl AccessControlledAggregator {
         self.oracles[_oracle].endingRound == ROUND_MAX
     }
 
-    fn acceptingSubmissions(&self, _roundId: u64) -> bool {
+    fn acceptingSubmissions(&self, _roundId: u128) -> bool {
         self.details[_roundId].maxSubmissions != 0
     }
 
@@ -649,14 +652,25 @@ impl AccessControlledAggregator {
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
+        let oracle_id_option = self.accessList.get(&_user);
+        if oracle_id_option.is_none() {
+            env::panic(b"Did not find the oracle account to remove.");
+        }
+        let oracle_id = oracle_id_option.unwrap();
         self.accessList[_user] || !self.checkEnabled;
     }
 
     pub fn addAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if !self.accessList[_user] {
-            self.accessList[_user] = true;
+        let oracle_id_option = self.accessList.get(&_user);
+        if oracle_id_option.is_none() {
+            env::panic(b"Did not find the oracle account to remove.");
+        }
+        let oracle_id = oracle_id_option.unwrap();
+
+        if !oracle_id {
+            oracle_id = true;
         }
     }
 
