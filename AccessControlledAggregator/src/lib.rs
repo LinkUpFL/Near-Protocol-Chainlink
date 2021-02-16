@@ -114,7 +114,7 @@ impl Default for AccessControlledAggregator {
 #[near_bindgen]
 impl AccessControlledAggregator {
     #[init]
-    pub fn new(link_id: AccountId, owner_id: AccountId, _paymentAmount: U128, _timeout: U64, _validator: AccountId, _minSubmissionValue: U128, _maxSubmissionValue: U128, _decimals: U64, _description: Base64String) -> Self {
+    pub fn new(link_id: AccountId, owner_id: AccountId, _paymentAmount: U128, _timeout: U64, _validator: AccountId, _minSubmissionValue: U128, _maxSubmissionValue: U128, _decimals: U128, _description: Base64String) -> Self {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
         assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
@@ -134,7 +134,7 @@ impl AccessControlledAggregator {
             description: _description
         };
         result.checkEnabled = true;
-        result.rounds[0].updatedAt = (env::block_timestamp - timeout_u64) as u64;
+        result.rounds[0].updatedAt = (env::block_timestamp() - timeout_u64) as u64;
         result.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
         result.setValidator(&_validator);
         result
@@ -355,7 +355,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
-        // require
+        assert!(env::predecessor_account_id() == env::sender(), "off-chain reading only");
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
 
