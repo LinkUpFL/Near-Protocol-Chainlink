@@ -277,7 +277,11 @@ impl AccessControlledAggregator {
     }
 
     pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
-        let withdrawable_option = self.oracles.get(&_oracle).withdrawable;
+        let oracles_result = self.oracles.get(&_oracle);
+        if oracles_result.is_none() {
+            env::panic(b"Did not find the oracle account to fulfill.");
+        }
+        let withdrawable_option = oracles_result.unwrap().get(&_oracle);
         if withdrawable_option.is_none() {
             env::panic(b"Did not find the withdrawable request to fulfill.");
         }
@@ -659,8 +663,14 @@ impl AccessControlledAggregator {
     pub fn removeAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if self.accessList[_user] {
-            self.accessList[_user] = false;
+        let oracle_id_option = self.oracles.get(&_user);
+        if oracle_id_option.is_none() {
+            env::panic(b"Did not find the oracle account to remove.");
+        }
+        let oracle_id = oracle_id_option.unwrap();
+
+        if oracle_id {
+            oracle_id = false;
         }
     }
 
