@@ -1,8 +1,7 @@
-use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
+use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::wee_alloc::{WeeAlloc};
-use std::str;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
@@ -12,7 +11,9 @@ static ALLOC: WeeAlloc = WeeAlloc::INIT;
 pub struct Flags {
     pub raisingAccessController: AccountId,
     pub owner: AccountId,
-    flags: LookupMap<AccountId, bool>
+    flags: LookupMap<AccountId, bool>,
+    pub checkEnabled: bool,
+    accessList: LookupMap<AccountId, bool>
 }
 
 impl Default for Flags {
@@ -31,9 +32,10 @@ impl Flags {
 
         let mut result = Self {
             owner: owner_id,
+            checkEnabled: true
         };
 
-        result.setRaisingAccessController(&racAddress);
+        result.setRaisingAccessController(racAddress);
         result
     }
 
@@ -41,8 +43,8 @@ impl Flags {
         self.flags[subject]
     }
 
-    pub fn getFlags(&self, subjects: Vec<AccountId>) -> bool {
-        let responses: Vec::<bool>::with_capacity(subjects.len());
+    pub fn getFlags(&self, subjects: Vec<AccountId>) -> Vec::<bool> {
+        let mut responses: Vec::<bool>;
         for i in 0..subjects.len() {
             responses[i] = self.flags[subjects[i]];
         }
@@ -68,7 +70,7 @@ impl Flags {
         for i in 0..subjects.len() {
             let subject: AccountId = subjects[i];
 
-            if(self.flags[subject]) {
+            if self.flags[subject] {
                 self.flags[subject] = false;
             }
         }
@@ -78,19 +80,28 @@ impl Flags {
         self.onlyOwner();
         let previous: AccountId = self.raisingAccessController;
 
-        if(previous != racAddress) {
+        if previous != racAddress {
             self.raisingAccessController = racAddress;
         }
     }
 
     // PRIVATE
 
-    fn allowedToRaiseFlags(&mut self) -> bool {
-        env::predecessor_account_id() == owner || self.raisingAccessController.hasAccess(env::predecessor_account_id());
+    pub fn hasAccess(&self, _user: AccountId) -> bool {
+        let oracle_id_option = self.accessList.get(&_user);
+        if oracle_id_option.is_none() {
+            env::panic(b"Did not find the oracle account to remove.");
+        }
+        let oracle_id = oracle_id_option.unwrap();
+        self.accessList[_user] || !self.checkEnabled
+    }
+
+    fn allowedToRaiseFlags(&self) -> bool {
+        env::predecessor_account_id() == self.owner || self.hasAccess(env::predecessor_account_id()
     }
 
     fn tryToRaiseFlag(&mut self, subject: AccountId) {
-        if(!self.flags[subject]) {
+        if !self.flags[subject] {
             self.flags[subject] = true;
         }
     }
