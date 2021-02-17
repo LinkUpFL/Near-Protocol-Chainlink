@@ -573,15 +573,21 @@ impl AccessControlledAggregator {
 
     fn addOracle(&mut self, _oracle: AccountId, _admin: AccountId) {
         assert!(!self.oracleEnabled(_oracle), "oracle already enabled");
-
         assert!(_admin != "", "cannot set admin to 0");
-        assert!(self.oracles[_oracle].admin == env::predecessor_account_id() || self.oracles[_oracle].admin == _admin, "owner cannot overwrite admin");
 
-        self.oracles[_oracle].startingRound = self.getStartingRound(_oracle);
-        self.oracles[_oracle].endingRound = ROUND_MAX;
-        self.oracles[_oracle].index = self.oracleAddresses.len() as u16;
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        assert!(oracle.admin == env::predecessor_account_id() || oracle.admin == _admin, "owner cannot overwrite admin");
+
+        oracle.startingRound = self.getStartingRound(_oracle);
+        oracle.endingRound = ROUND_MAX;
+        oracle.index = self.oracleAddresses.len() as u64;
         self.oracleAddresses.push(_oracle);
-        self.oracles[_oracle].admin = _admin;
+        oracle.admin = _admin;
     }
 
     fn removeOracle(&mut self, _oracle: AccountId) {
@@ -602,9 +608,23 @@ impl AccessControlledAggregator {
         oracle.endingRound = (self.reportingRoundId + 1).into();
         let tail: AccountId = lastOracle.to_string();
         let index: u64 = oracle.index;
-        self.oracles[tail].index = index;
-        self.oracles[_oracle].index.clear();
-        self.oracleAddresses[index] = tail;
+
+        let oracleTail_option = self.oracles.get(&tail);
+        if oracleTail_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracleTail = oracleTail_option.unwrap();
+
+        oracleTail.index = index;
+        oracle.index.clear(); // FIX THIS
+
+        let oracleIndex_option = self.oracleAddresses[index];
+        if oracleIndex_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracleIndex = oracleIndex_option.unwrap();
+
+        oracleIndex = tail;
         self.oracleAddresses.pop();
     }
 
