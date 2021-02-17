@@ -224,11 +224,21 @@ impl AccessControlledAggregator {
     }
 
     pub fn latestAnswer(&self) -> u128 {
-        self.rounds[self.latestRoundId].answer
+        let round_option = self.rounds.get(&self.latestRoundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let round = round_option.unwrap();
+        round.answer
     }
 
     pub fn latestTimestamp(&self) -> u64 {
-        self.rounds[self.latestRoundId].updatedAt
+        let round_option = self.rounds.get(&self.latestRoundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let round = round_option.unwrap();
+        round.updatedAt
     }
 
     pub fn latestRound(&self) -> u64 {
@@ -237,24 +247,44 @@ impl AccessControlledAggregator {
 
     pub fn getAnswer(&self, _roundId: U128) -> u128 {
         let roundId_u128: u128 = _roundId.into();
+
+        let round_option = self.rounds.get(&(roundId_u128 as u64));
+        if round_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let round = round_option.unwrap();
+
         if self.validRoundId(_roundId) {
-            return self.rounds[roundId_u128 as u64].answer;
+            return round.answer;
         }
         return 0;
     }
 
     pub fn getTimestamp(&self, _roundId: U128) -> u128 {
         let roundId_u128: u128 = _roundId.into();
+
+        let round_option = self.rounds.get(&(roundId_u128 as u64));
+        if round_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let round = round_option.unwrap();
+
         if self.validRoundId(_roundId) {
-            return self.rounds[roundId_u128 as u64].answer;
+            return round.answer;
         }
         return 0;
     }
 
     pub fn getRoundData(&self, _roundId: U128) -> ( u128, u128,  u64, u64, u64) {
         let roundId_u128: u128 = _roundId.into();
-        let r: Round = self.rounds[roundId_u128 as u64];
 
+        let round_option = self.rounds.get(&(roundId_u128 as u64));
+        if round_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let round = round_option.unwrap();
+
+        let r: Round = round;
         assert!(r.answeredInRound > 0 && self.validRoundId(roundId_u128), V3_NO_DATA_ERROR);
 
         return(
@@ -284,14 +314,19 @@ impl AccessControlledAggregator {
     }
 
     pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
-        assert!(self.oracles[_oracle].admin == env::signer_account_id(), "only callable by admin");
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
 
         // Safe to downcast _amount because the total amount of LINK is less than 2^128.
         let amount_u128: u128 = _amount.into();
-        let available: u128 = self.oracles[_oracle].withdrawable;
+        let available: u128 = oracle.withdrawable;
         assert!(available >= amount_u128, "insufficient withdrawable funds");
 
-        self.oracles[_oracle].withdrawable = available - amount_u128;
+        oracle.withdrawable = available - amount_u128;
         self.recordedFunds.allocated = self.recordedFunds.allocated - amount_u128;
 
         //assert(linkToken.transfer(_recipient, uint256(amount)));
@@ -306,24 +341,51 @@ impl AccessControlledAggregator {
     }
 
     pub fn getAdmin(&self, _oracle: AccountId) -> AccountId {
-        self.oracles[_oracle].admin
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        oracle.oracles[_oracle].admin
     }
 
     pub fn transferAdmin(&mut self, _oracle: AccountId, _newAdmin: AccountId) {
-        assert!(self.oracles[_oracle].admin == env::signer_account_id(), "only callable by admin");
-        self.oracles[_oracle].pendingAdmin = _newAdmin;
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
+        oracle.pendingAdmin = _newAdmin;
     }
 
     pub fn acceptAdmin(&mut self, _oracle: AccountId) {
-        assert!(self.oracles[_oracle].pendingAdmin == env::signer_account_id(), "only callable by pending admin");
-        self.oracles[_oracle].pendingAdmin = env::predecessor_account_id();
-        self.oracles[_oracle].adming = env::signer_account_id(); // DOUBLE CHECK
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        assert!(oracle.pendingAdmin == env::predecessor_account_id(), "only callable by pending admin");
+        oracle.pendingAdmin = "".to_string();
+        oracle.admin = env::predecessor_account_id();
     }
 
     pub fn requestNewRound(&mut self) -> u64 {
-        assert!(self.requesters[env::signer_account_id()].authorized, "not authorized requester");
+        let requester_option = self.requesters.get(&env::predecessor_account_id());
+        if requester_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let requester = requester_option.unwrap();
+        assert!(requester.authorized, "not authorized requester");
+
         let current: u64 = self.reportingRoundId;
-        assert!(self.rounds[current].updatedAt > 0 || self.timedOut(current), "prev round must be supersedable");
+        let round_option = self.rounds.get(&current);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+        assert!(round.updatedAt > 0 || self.timedOut(current), "prev round must be supersedable");
+
         let newRoundId: u64 = current + 1;
         self.requesterInitializeNewRound(newRoundId);
         return newRoundId;
@@ -331,15 +393,22 @@ impl AccessControlledAggregator {
 
     pub fn setRequesterPermissions(&mut self, _requester: AccountId, _authorized: bool, _delay: U64) {
         let delay_u64: u64 = _delay.into();
-        if self.requester[_requester].authorized == _authorized {
+
+        let requester_option = self.requesters.get(&_requester);
+        if requester_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let requester = requester_option.unwrap();
+
+        if requester.authorized == _authorized {
             return;
         }
 
         if _authorized {
-            self.requesters[_requester].authorized = _authorized;
-            self.requesters[_requester].delay = delay_u64;
+            requester.authorized = _authorized;
+            requester.delay = delay_u64;
         } else {
-            self.requesters[_requester].clear();
+            requester.clear();
         }
     }
 
@@ -353,18 +422,35 @@ impl AccessControlledAggregator {
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
 
-        if queriedRoundId_u64 > 0 {
-            let round: Round = self.rounds[queriedRoundId_u64];
-            let details: RoundDetails = self.details[queriedRoundId_u64];
-            return (
+        let round_option = self.rounds.get(&queriedRoundId_u64);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
 
+        let detail_option = self.details.get(&(queriedRoundId_u64 as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let detail = detail_option.unwrap();
+
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        if queriedRoundId_u64 > 0 {
+            let round: Round = round;
+            let details: RoundDetails = detail;
+            return (
                 self.eligibleForSpecificRound(_oracle, queriedRoundId_u64),
                 queriedRoundId_u64,
-                self.oracles[_oracle].latestSubmission,
+                oracle.latestSubmission,
                 self.round.startedAt,
                 self.details.timeout,
                 self.recordedFunds.available,
-                self.oracleCount(),
+                self.oracleCount() as u64,
                 if self.round.startedAt > 0 { self.details.paymentAmount } else { self.paymentAmount }
             )
         } else {
@@ -383,29 +469,53 @@ impl AccessControlledAggregator {
     fn initializeNewRound(&mut self, _roundId: u64) {
         self.updateTimedOutRoundInfo(_roundId - 1);
         self.reportingRoundId = _roundId;
-        let mut round: Round = self.rounds[0];
-        let mut nextDetails: RoundDetails = self.RoundDetails(
-            //new int
+
+        let firstRound_option = self.rounds.get(&0);
+        if firstRound_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let firstRound = firstRound_option.unwrap();
+
+        let round_option = self.rounds.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let detail = detail_option.unwrap();
+
+        let mut round: Round = firstRound;
+        let mut nextDetails: RoundDetails = RoundDetails(
+            Vec::<u128>,
             self.maxSubmissionCount,
             self.minSubmissionCount,
             self.timeout,
             self.paymentAmount
         );
-        self.details[_roundId] = nextDetails;
-        self.rounds[_roundId].startedAt = env::block_timestamp() as u64;
+        detail = nextDetails;
+        round.startedAt = env::block_timestamp() as u64;
     }
 
     fn oracleInitializeNewRound(&mut self, _roundId: u64) {
         if !self.newRound(_roundId) {
             return;
         }
-        let lastStarted: u64 = self.oracles[env::signer_account_id()].lastStartedRound; // cache storage reads
+        let oracle_option = self.oracles.get(&env::predecessor_account_id());
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        let lastStarted: u64 = oracle.lastStartedRound; // cache storage reads
         if _roundId <= lastStarted + self.restartDelay && lastStarted != 0 {
             return;
         }
         self.initializeNewRound(_roundId);
-
-        self.oracles[env::signer_account_id()].lastStartedRound = _roundId;
+        oracle.lastStartedRound = _roundId;
     }
 
     fn requesterInitializeNewRound(&mut self, _roundId: u64) {
