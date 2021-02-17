@@ -7,12 +7,6 @@ use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
 use num_traits::pow;
 
-fn median(numbers: &mut [u32]) -> u32 {
-    numbers.sort();
-    let mid = numbers.len() / 2;
-    numbers[mid]
-}
-
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
@@ -418,30 +412,60 @@ impl AccessControlledAggregator {
         if !self.newRound(_roundId) {
             return;
         }
-        let lastStarted: u128 = self.requesters[env::signer_account_id()].lastStartedRound; // cache storage reads
-        assert!(_roundId > lastStarted + self.requesters[env::signer_account_id()].delay || lastStarted == 0, "must delay requests");
+        let requester_option = self.requesters.get(&env::predecessor_account_id());
+        if requester_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let requester = requester_option.unwrap();
+
+        let lastStarted: u128 = requester.lastStartedRound.into(); // cache storage reads
+        assert!((_roundId as u128) > lastStarted + (requester.delay as u128) || lastStarted == 0, "must delay requests");
 
         self.initializeNewRound(_roundId);
 
-        self.requesters[env::signer_account_id()].lastStartedRound = _roundId;
+        requester.lastStartedRound = _roundId;
     }
 
     fn updateTimedOutRoundInfo(&mut self, _roundId: u64) {
         if !self.timedOut(_roundId) {
             return;
         }
-
         let prevId: u64 = _roundId - 1;
-        self.rounds[_roundId].answer = self.rounds[prevId].answer;
-        self.rounds[_roundId].answeredInRound = self.rounds[prevId].answeredInRound;
-        self.rounds[_roundId].updatedAt = env::block_timestamp() as u64;
 
-        self.details[_roundId].clear();
+        let round_option = self.rounds.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+
+        let prev_option = self.rounds.get(&prevId);
+        if prev_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let prev = prev_option.unwrap();
+
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let detail = detail_option.unwrap();
+
+        round.answer = prev.answer;
+        round.answeredInRound = prev.answeredInRound;
+        round.updatedAt = env::block_timestamp() as u64;
+
+        detail.clear();
     }
 
-    fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u128) -> bool {
-        if self.rounds[_queriedRoundId].startedAt > 0 {
-            return self.acceptingSubmissions(_queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
+    fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u64) -> bool {
+        let round_option = self.rounds.get(&_queriedRoundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+
+        if round.startedAt > 0 {
+            return self.acceptingSubmissions(_queriedRoundId.into()) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
         } else {
             return self.delayed(_oracle, _queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
         }
@@ -490,23 +514,22 @@ impl AccessControlledAggregator {
     }
 
     fn updateRoundAnswer(&mut self, _roundId: u64) -> (bool, u128) {
-        // LookupMap cannot be indexed as it does not implement the index trait: https://doc.rust-lang.org/std/ops/trait.Index.html
-        // let indexedRound: Option<RoundDetails> = self.details.get(&_roundId);
-        // let indexedRound: RoundDetails = self.details.get(&_roundId) {
-        //     Some(value) => {
-        //     value;
-        // }, None => RoundDetails
-        // };
-        // if  indexedRound < self.details[_roundId].minSubmissions {
-        //     return (false, 0);
-        // }
-        // numbers: &mut [u32]
-        let newAnswer: i128 = median(self.details[_roundId].submissions).into();
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let detail = detail_option.unwrap();
 
-        // let newAnswer: u128 = 
-        self.rounds[_roundId].answer = newAnswer;
-        self.rounds[_roundId].updatedAt = env::block_timestamp() as u64;
-        self.rounds[_roundId].answeredInRound = _roundId;
+        let round_option = self.rounds.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+
+        let newAnswer: u128 = median(detail.submissions).into();
+        round.answer = newAnswer;
+        round.updatedAt = env::block_timestamp() as u64;
+        round.answeredInRound = _roundId;
         self.latestRoundId = _roundId;
 
         return (true, newAnswer);
@@ -517,10 +540,17 @@ impl AccessControlledAggregator {
         if av == "" {
             return;
         }
-        
+
         let prevRound: u64 = _roundId - 1;
-        let prevAnswerRoundId: u64 = self.rounds[prevRound].answeredInRound;
-        let prevRoundAnswer: u128 = self.rounds[prevRound].answer;
+
+        let round_option = self.rounds.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+
+        let prevAnswerRoundId: u64 = round.answeredInRound;
+        let prevRoundAnswer: u128 = round.answer;
         // TRY CATCH
     }
 
@@ -759,6 +789,11 @@ impl AccessControlledAggregator {
         assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 
+    fn median(&mut self, numbers: Vec<u128>) -> u128 {
+        numbers.sort();
+        let mid = numbers.len() / 2;
+        numbers[mid]
+    }
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
