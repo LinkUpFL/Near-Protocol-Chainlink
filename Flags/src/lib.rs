@@ -110,7 +110,7 @@ impl Flags {
         let userHasAccess = self.accessList.get(&_user);
             if userHasAccess.is_none() {
                 env::panic(b"The subject is invalid.");
-        }
+            }
         userHasAccess.unwrap() || !self.checkEnabled
     }
 
