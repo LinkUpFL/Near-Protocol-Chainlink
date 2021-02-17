@@ -633,7 +633,12 @@ impl AccessControlledAggregator {
     }
 
     fn delayed(&self, _oracle: AccountId, _roundId: u64) -> bool {
-        let lastStarted: u64 = self.oracles[_oracle].lastStartedRound;
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        let lastStarted: u64 = oracle.lastStartedRound;
         _roundId > (lastStarted + self.restartDelay) || lastStarted == 0
     }
 
@@ -652,12 +657,16 @@ impl AccessControlledAggregator {
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
-        let oracle_id_option = self.accessList.get(&_user);
-        if oracle_id_option.is_none() {
-            env::panic(b"Did not find the oracle account to remove.");
+        if !self.checkEnabled {
+            !self.checkEnabled
+        } else {
+            let user_option = self.accessList.get(&_user);
+            if user_option.is_none() {
+                env::panic(b"Did not find this oracle account.");
+            }
+            let user = user_option.unwrap();
+            user
         }
-        let oracle_id = oracle_id_option.unwrap();
-        self.accessList[_user] || !self.checkEnabled;
     }
 
     pub fn addAccess(&mut self, _user: AccountId) {
@@ -667,7 +676,6 @@ impl AccessControlledAggregator {
         if user_option.is_none() {
             let user = user_option.unwrap();
             user = false;
-            env::panic(b"Did not find the oracle account to remove.");
         }
     }
 
