@@ -40,13 +40,21 @@ impl Flags {
     }
 
     pub fn getFlag(&self, subject: AccountId) -> bool {
-        self.flags[subject]
+        let flag = self.flags.get(&subject);
+        if flag.is_none() {
+            env::panic(b"The subject is invalid.");
+        }
+        flag.unwrap()
     }
 
     pub fn getFlags(&self, subjects: Vec<AccountId>) -> Vec::<bool> {
         let mut responses: Vec::<bool>;
         for i in 0..subjects.len() {
-            responses[i] = self.flags[subjects[i]];
+            let flag = self.flags.get(&subjects[i]);
+            if flag.is_none() {
+                env::panic(b"The subject is invalid.");
+            }
+            responses[i] = flag;
         }
         return responses;
     }
@@ -69,10 +77,11 @@ impl Flags {
         self.onlyOwner();
         for i in 0..subjects.len() {
             let subject: AccountId = subjects[i];
-
-            if self.flags[subject] {
-                self.flags[subject] = false;
+            let flag = self.flags.get(&subject);
+            if flag.is_none() {
+                env::panic(b"The subject is invalid.");
             }
+            self.flags[i] = false;
         }
     }
 
@@ -93,7 +102,11 @@ impl Flags {
             env::panic(b"Did not find the oracle account to remove.");
         }
         let oracle_id = oracle_id_option.unwrap();
-        self.accessList[_user] || !self.checkEnabled
+        let userHasAccess = self.accessList.get(&_user);
+            if userHasAccess.is_none() {
+                env::panic(b"The subject is invalid.");
+        }
+        userHasAccess.unwrap() || !self.checkEnabled
     }
 
     fn allowedToRaiseFlags(&self) -> bool {
@@ -101,8 +114,12 @@ impl Flags {
     }
 
     fn tryToRaiseFlag(&mut self, subject: AccountId) {
-        if !self.flags[subject] {
-            self.flags[subject] = true;
+        let flag = self.flags.get(&subject);
+        if flag.is_none() {
+            env::panic(b"The subject is invalid.");
+        }
+        if !flag.unwrap() {
+            flag = true;
         }
     }
 
