@@ -525,28 +525,58 @@ impl AccessControlledAggregator {
     }
 
     fn payOracle(&mut self, _roundId: u64) {
-        let payment: u128 = self.details[_roundId].paymentAmount;
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let detail = detail_option.unwrap();
+
+        let oracle_option = self.oracles.get(&env::predecessor_account_id());
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        let payment: u128 = detail.paymentAmount;
         let funds: Funds = self.recordedFunds;
         funds.available = funds.available - payment;
         funds.allocated = funds.allocated - payment;
         self.recordedFunds = funds;
-        oracles[env::signer_account_id()].withdrawable = self.oracles[env::signer_account_id()].withdrawable + payment;
+        oracle.withdrawable = oracle.withdrawable + payment;
     }
 
     fn recordSubmission(&mut self, _submission: u128, _roundId: u128) {
         assert!(self.acceptingSubmissions(_roundId), "round not accepting submissions");
 
-        self.details[_roundId].submissions.push(_submission);
-        self.oracles[env::signer_account_id()].lastReportedRound = _roundId;
-        self.oracles[env::signer_account_id()].latestSubmission = _submission;
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let detail = detail_option.unwrap();
+
+        let oracle_option = self.oracles.get(&env::predecessor_account_id());
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        detail.submissions.push(_submission);
+        oracle.lastReportedRound = _roundId as u64;
+        oracle.latestSubmission = _submission;
     }
 
     fn deleteRoundDetails(&mut self, _roundId: u64) {
-        if self.details[_roundId].submissions.len() < self.details[_roundId].maxSubmissions {
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let detail = detail_option.unwrap();
+
+        if (detail.submissions.len() as u64) < detail.maxSubmissions {
             return;
         }
 
-        self.details[_roundId].clear();
+        detial.clear();
     }
 
     fn timedOut(&mut self, _roundId: u64) -> bool {
@@ -556,7 +586,7 @@ impl AccessControlledAggregator {
         }
         let round = round_option.unwrap();
 
-        let detail_option = self.details.get(&_roundId);
+        let detail_option = self.details.get(&(_roundId as u128));
         if detail_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
@@ -564,7 +594,7 @@ impl AccessControlledAggregator {
 
         let startedAt: u64 = round.startedAt;
         let roundTimeout: u64 = detail.timeout;
-        startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp();
+        return startedAt > 0 && roundTimeout > 0 && ((startedAt + roundTimeout) < env::block_timestamp());
     }
 
     fn getStartingRound(&self, _oracle: AccountId) -> u64 {
