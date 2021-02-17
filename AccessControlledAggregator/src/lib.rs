@@ -76,7 +76,7 @@ const RESERVE_ROUNDS: u128 = 2;
 const MAX_ORACLE_COUNT: u128 = 77;
 // Previous: 2.pow(32-1)
 const ROUND_MAX: u128 = pow(32-1, 2);
-const V3_NO_DATA_ERROR: Base64String = "No data present";
+const V3_NO_DATA_ERROR: Base64String = "No data present".to_string();
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -114,7 +114,7 @@ impl Default for AccessControlledAggregator {
 #[near_bindgen]
 impl AccessControlledAggregator {
     #[init]
-    pub fn new(link_id: AccountId, owner_id: AccountId, _paymentAmount: U128, _timeout: U64, _validator: AccountId, _minSubmissionValue: U128, _maxSubmissionValue: U128, _decimals: U128, _description: Base64String) -> Self {
+    pub fn new(link_id: AccountId, owner_id: AccountId, _paymentAmount: U128, _timeout: U64, _validator: AccountId, _minSubmissionValue: U128, _maxSubmissionValue: U128, _decimals: U64, _description: Base64String) -> Self {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
         assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
@@ -123,14 +123,14 @@ impl AccessControlledAggregator {
         let timeout_u64: u64 = _timeout.into();
         let minSubmissionValue_u128: u128 = _minSubmissionValue.into();
         let maxSubmissionValue_u128: u128 = _maxSubmissionValue.into();
-        let decimals_u128: u128 = _decimals.into();
+        let decimals_u64: u64 = _decimals.into();
 
         let mut result = Self {
             owner: owner_id,
             linkToken: link_id,
             minSubmissionValue: minSubmissionValue_u128,
             maxSubmissionValue: maxSubmissionValue_u128,
-            decimals: decimals_u128,
+            decimals: decimals_u64,
             description: _description
         };
         result.checkEnabled = true;
@@ -529,7 +529,7 @@ impl AccessControlledAggregator {
         let funds: Funds = self.recordedFunds;
         funds.available = funds.available - payment;
         funds.allocated = funds.allocated - payment;
-        recordedFunds = funds;
+        self.recordedFunds = funds;
         oracles[env::signer_account_id()].withdrawable = self.oracles[env::signer_account_id()].withdrawable + payment;
     }
 
@@ -663,29 +663,24 @@ impl AccessControlledAggregator {
     pub fn addAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        let oracle_id_option = self.accessList.get(&_user);
-        if oracle_id_option.is_none() {
+        let user_option = self.accessList.get(&_user);
+        if user_option.is_none() {
+            let user = user_option.unwrap();
+            user = false;
             env::panic(b"Did not find the oracle account to remove.");
-        }
-        let oracle_id = oracle_id_option.unwrap();
-
-        if !oracle_id {
-            oracle_id = true;
         }
     }
 
     pub fn removeAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        let oracle_id_option = self.oracles.get(&_user);
-        if oracle_id_option.is_none() {
+        let user_option = self.accessList.get(&_user);
+        if user_option.is_none() {
             env::panic(b"Did not find the oracle account to remove.");
         }
-        let oracle_id = oracle_id_option.unwrap();
+        let user = user_option.unwrap();
 
-        if oracle_id {
-            oracle_id = false;
-        }
+        user_option = false;
     }
 
     pub fn enableAccessCheck(&mut self) {
