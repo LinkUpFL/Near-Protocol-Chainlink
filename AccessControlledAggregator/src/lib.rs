@@ -564,7 +564,12 @@ impl AccessControlledAggregator {
     }
 
     fn previousAndCurrentUnanswered(&self, _roundId: u64, _rrId: u64) -> bool {
-        return (_roundId + 1) == (_rrId && self.rounds[_rrId].updatedAt == 0);
+        let round_option = self.rounds.get(&_rrId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+        return (_roundId + 1) == _rrId && round.updatedAt == 0;
     }
 
     fn requiredReserve(&self, payment: u128) -> u128 {
