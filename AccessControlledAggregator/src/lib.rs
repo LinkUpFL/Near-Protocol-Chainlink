@@ -418,7 +418,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
-        assert!(env::predecessor_account_id() == env::sender(), "off-chain reading only");
+        assert!(env::predecessor_account_id() == env::env::signer_account_id(), "off-chain reading only");
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
 
