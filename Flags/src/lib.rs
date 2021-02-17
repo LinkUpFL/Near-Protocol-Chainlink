@@ -31,8 +31,11 @@ impl Flags {
         assert!(!env::state_exists(), "Already initialized");
 
         let mut result = Self {
+            raisingAccessController: "".to_string(),
             owner: owner_id,
-            checkEnabled: true
+            flags: LookupMap::new(b"flags".to_vec()),
+            checkEnabled: true,
+            accessList: LookupMap::new(b"accessList".to_vec())
         };
 
         result.setRaisingAccessController(racAddress);
@@ -50,10 +53,11 @@ impl Flags {
     pub fn getFlags(&self, subjects: Vec<AccountId>) -> Vec::<bool> {
         let mut responses: Vec::<bool>;
         for i in 0..subjects.len() {
-            let flag = self.flags.get(&subjects[i]);
-            if flag.is_none() {
+            let flag_option = self.flags.get(&subjects[i]);
+            if flag_option.is_none() {
                 env::panic(b"The subject is invalid.");
             }
+            let flag = flag_option.unwrap();
             responses[i] = flag;
         }
         return responses;
@@ -77,11 +81,12 @@ impl Flags {
         self.onlyOwner();
         for i in 0..subjects.len() {
             let subject: AccountId = subjects[i];
-            let flag = self.flags.get(&subject);
-            if flag.is_none() {
+            let flag_option = self.flags.get(&subject);
+            if flag_option.is_none() {
                 env::panic(b"The subject is invalid.");
             }
-            self.flags[i] = false;
+            let flag = flag_option.unwrap();
+            flag = false;
         }
     }
 
@@ -110,15 +115,13 @@ impl Flags {
     }
 
     fn allowedToRaiseFlags(&self) -> bool {
-        env::predecessor_account_id() == self.owner || self.hasAccess(env::predecessor_account_id()
+        env::predecessor_account_id() == self.owner || self.hasAccess(env::predecessor_account_id())
     }
 
     fn tryToRaiseFlag(&mut self, subject: AccountId) {
-        let flag = self.flags.get(&subject);
-        if flag.is_none() {
-            env::panic(b"The subject is invalid.");
-        }
-        if !flag.unwrap() {
+        let flag_option = self.flags.get(&subject);
+        if flag_option.is_none() {
+            let flag = flag_option.unwrap();
             flag = true;
         }
     }
