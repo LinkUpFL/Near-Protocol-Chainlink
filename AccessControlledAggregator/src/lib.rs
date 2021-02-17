@@ -49,7 +49,7 @@ pub struct OracleStatus {
     lastReportedRound: u64,
     lastStartedRound: u64,
     latestSubmission: u128,
-    index: u16,
+    index: u64,
     admin: AccountId,
     pendingAdmin: AccountId
 }
@@ -587,9 +587,21 @@ impl AccessControlledAggregator {
     fn removeOracle(&mut self, _oracle: AccountId) {
         assert!(self.oracleEnabled(_oracle), "oracle not enabled");
 
-        self.oracles[_oracle].endingRound = self.reportingRoundId + 1;
-        let tail: AccountId = self.oracleAddresses[self.oracleCount()-1];
-        let index: u16 = self.oracles[_oracle].index;
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        let lastOracle_option = self.oracleAddresses.get(self.oracleCount()-1);
+        if lastOracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let lastOracle = lastOracle_option.unwrap();
+
+        oracle.endingRound = (self.reportingRoundId + 1).into();
+        let tail: AccountId = lastOracle.to_string();
+        let index: u64 = oracle.index;
         self.oracles[tail].index = index;
         self.oracles[_oracle].index.clear();
         self.oracleAddresses[index] = tail;
