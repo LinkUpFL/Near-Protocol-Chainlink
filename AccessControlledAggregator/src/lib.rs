@@ -550,14 +550,32 @@ impl AccessControlledAggregator {
     }
 
     fn timedOut(&mut self, _roundId: u64) -> bool {
-        let startedAt: u64 = self.rounds[_roundId].startedAt;
-        let roundTimeout: u64 = self.details[_roundId].timeout;
-        return startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp();
+        let round_option = self.rounds.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+
+        let detail_option = self.details.get(&_roundId);
+        if detail_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let detail = detail_option.unwrap();
+
+        let startedAt: u64 = round.startedAt;
+        let roundTimeout: u64 = detail.timeout;
+        startedAt > 0 && roundTimeout > 0 && (startedAt + roundTimeout) < env::block_timestamp();
     }
 
     fn getStartingRound(&self, _oracle: AccountId) -> u64 {
         let currentRound: u64 = self.reportingRoundId;
-        if currentRound != 0 && currentRound == self.oracles[_oracle].endingRound{
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        if currentRound != 0 && currentRound == oracle.endingRound as u64 {
             return currentRound;
         }
         return currentRound + 1;
