@@ -45,7 +45,7 @@ pub struct RoundDetails {
 pub struct OracleStatus {
     withdrawable: u128,
     startingRound: u64,
-    endingRound: u64,
+    endingRound: u128,
     lastReportedRound: u64,
     lastStartedRound: u64,
     latestSubmission: u128,
@@ -99,7 +99,7 @@ pub struct AccessControlledAggregator {
     latestRoundId: u64,
     oracles: LookupMap<AccountId, OracleStatus>,
     rounds: LookupMap<u64, Round>,
-    details: LookupMap<u64, RoundDetails>,
+    details: LookupMap<u128, RoundDetails>,
     requesters: LookupMap<AccountId, Requester>,
     oracleAddresses: Vec<AccountId>,
     recordedFunds: Funds
@@ -598,38 +598,58 @@ impl AccessControlledAggregator {
 
     fn validateOracleRound(&self, _oracle: AccountId, _roundId: u64) -> Base64String {
         // cache storage reads
-        let startingRound: u64 = self.oracles[_oracle].startingRound;
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        let startingRound: u64 = oracle.startingRound;
         let rrId: u64 = self.reportingRoundId;
 
         if startingRound == 0 {
-            return "not enabled oracle";
+            return "not enabled oracle".to_string();
         }
         else if startingRound > _roundId {
-            return "not yet enabled oracle";
+            return "not yet enabled oracle".to_string();
         }
-        else if self.oracles[_oracle].endingRound < _roundId {
-            return "no longer allowed oracle";
+        else if oracle.endingRound < _roundId.into() {
+            return "no longer allowed oracle".to_string();
         }
-        else if self.oracles[_oracle].lastReportedRound >= _roundId {
-            return "cannot report on previous rounds";
+        else if oracle.lastReportedRound >= _roundId {
+            return "cannot report on previous rounds".to_string();
         }
         else if _roundId != rrId && _roundId != rrId + 1 && !self.previousAndCurrentUnanswered(_roundId, rrId) {
-            return "invalid round to report";
+            return "invalid round to report".to_string();
         }
         else {
-            return "previous round not supersedable";
+            return "previous round not supersedable".to_string();
         }
     }
     fn supersedable(&self, _roundId: u64) -> bool {
-        self.rounds[_roundId].updatedAt > 0 || self.timedOut(_roundId)
+        let round_option = self.rounds.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+        round.updatedAt > 0 || self.timedOut(_roundId)
     }
 
     fn oracleEnabled(&self, _oracle: AccountId) -> bool {
-        self.oracles[_oracle].endingRound == ROUND_MAX
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+        oracle.endingRound == ROUND_MAX
     }
 
     fn acceptingSubmissions(&self, _roundId: u128) -> bool {
-        self.details[_roundId].maxSubmissions != 0
+        let round_option = self.details.get(&_roundId);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
+        round.maxSubmissions != 0
     }
 
     fn delayed(&self, _oracle: AccountId, _roundId: u64) -> bool {
