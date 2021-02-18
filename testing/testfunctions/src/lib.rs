@@ -26,23 +26,24 @@ impl TestingFunctions {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-        let result = Self {
+        let mut result = Self {
             owner: owner_id,
             flags: LookupMap::new(b"flags".to_vec()),
         };
-
+        result.flags.insert(&"testing1.near".to_string(), &true);
+        result.flags.insert(&"testing2.near".to_string(), &false);
         result
     }
 
     pub fn lower_flags(&mut self, subjects: Vec<AccountId>) {
         for i in 0..subjects.len() {            
             let subject: bool = self.flags.get(&subjects[i]).unwrap();
-            if subject == false {
-                env::panic(b"The flag is already false.");
+            if subject == true {
+                let opposite_val: bool = self.flags.remove(&subjects[i]).unwrap();
+                self.flags.insert(&subjects[i], &!opposite_val);
             }
-            let opposite_val: bool = self.flags.remove(&subjects[i]).unwrap();
-            self.flags.insert(&subjects[i], &!opposite_val);
         }
+        &self.flags;
     }
 
 }
