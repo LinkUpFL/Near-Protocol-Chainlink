@@ -31,11 +31,8 @@ impl Flags {
         assert!(!env::state_exists(), "Already initialized");
 
         let mut result = Self {
-            raisingAccessController: "".to_string(),
             owner: owner_id,
-            flags: LookupMap::new(b"flags".to_vec()),
-            checkEnabled: true,
-            accessList: LookupMap::new(b"accessList".to_vec())
+            checkEnabled: true
         };
 
         result.setRaisingAccessController(racAddress);
@@ -53,11 +50,10 @@ impl Flags {
     pub fn getFlags(&self, subjects: Vec<AccountId>) -> Vec::<bool> {
         let mut responses: Vec::<bool>;
         for i in 0..subjects.len() {
-            let flag_option = self.flags.get(&subjects[i]);
-            if flag_option.is_none() {
+            let flag = self.flags.get(&subjects[i]);
+            if flag.is_none() {
                 env::panic(b"The subject is invalid.");
             }
-            let flag = flag_option.unwrap();
             responses[i] = flag;
         }
         return responses;
@@ -81,12 +77,11 @@ impl Flags {
         self.onlyOwner();
         for i in 0..subjects.len() {
             let subject: AccountId = subjects[i];
-            let flag_option = self.flags.get(&subject);
-            if flag_option.is_none() {
+            let flag = self.flags.get(&subject);
+            if flag.is_none() {
                 env::panic(b"The subject is invalid.");
             }
-            let flag = flag_option.unwrap();
-            flag = false;
+            self.flags[i] = false;
         }
     }
 
@@ -110,18 +105,20 @@ impl Flags {
         let userHasAccess = self.accessList.get(&_user);
             if userHasAccess.is_none() {
                 env::panic(b"The subject is invalid.");
-            }
+        }
         userHasAccess.unwrap() || !self.checkEnabled
     }
 
     fn allowedToRaiseFlags(&self) -> bool {
-        env::predecessor_account_id() == self.owner || self.hasAccess(env::predecessor_account_id())
+        env::predecessor_account_id() == self.owner || self.hasAccess(env::predecessor_account_id()
     }
 
     fn tryToRaiseFlag(&mut self, subject: AccountId) {
-        let flag_option = self.flags.get(&subject);
-        if flag_option.is_none() {
-            let flag = flag_option.unwrap();
+        let flag = self.flags.get(&subject);
+        if flag.is_none() {
+            env::panic(b"The subject is invalid.");
+        }
+        if !flag.unwrap() {
             flag = true;
         }
     }
@@ -130,3 +127,4 @@ impl Flags {
         assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 }
+ 
