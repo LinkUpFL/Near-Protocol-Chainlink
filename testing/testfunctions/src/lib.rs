@@ -10,7 +10,7 @@ static ALLOC: WeeAlloc = WeeAlloc::INIT;
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct TestingFunctions {
     pub owner: AccountId,
-    flags: LookupMap<AccountId, bool>,
+    pub flags: LookupMap<AccountId, bool>
 }
 
 impl Default for TestingFunctions {
@@ -30,20 +30,22 @@ impl TestingFunctions {
             owner: owner_id,
             flags: LookupMap::new(b"flags".to_vec()),
         };
-        result.flags.insert(&"testing1.near".to_string(), &true);
-        result.flags.insert(&"testing2.near".to_string(), &false);
+        result.flags.insert(&"testing11.near".to_string(), &true);
+        result.flags.insert(&"testing22.near".to_string(), &false);
         result
     }
 
-    pub fn lower_flags(&mut self, subjects: Vec<AccountId>) {
+    pub fn lower_flags(&mut self, subjects: Vec<AccountId>) -> LookupMap<AccountId, bool> {
         for i in 0..subjects.len() {            
-            let subject: bool = self.flags.get(&subjects[i]).unwrap();
-            if subject == true {
-                let opposite_val: bool = self.flags.remove(&subjects[i]).unwrap();
-                self.flags.insert(&subjects[i], &!opposite_val);
+            let subject = self.flags.get(&subjects[i]);
+            if subject.is_none() {
+                env::panic(b"The subject doesnt exist");
+            }
+            if subject.unwrap() == true {
+                self.flags.insert(&subjects[i], &false);
             }
         }
-        &self.flags;
+        self.flags
     }
 
 }
