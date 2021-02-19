@@ -35,18 +35,32 @@ impl TestingFunctions {
         result
     }
 
-    pub fn lower_flags(&mut self, subjects: Vec<AccountId>) -> LookupMap<AccountId, bool> {
+    pub fn lower_flags(&mut self, subjects: Vec<AccountId>) {
         for i in 0..subjects.len() {            
             let subject = self.flags.get(&subjects[i]);
             if subject.is_none() {
                 env::panic(b"The subject doesnt exist");
             }
-            if subject.unwrap() == true {
+            else if subject.unwrap() == true {
                 self.flags.insert(&subjects[i], &false);
             }
+            else {
+                self.flags.insert(&subjects[i], &true);
+            }
         }
-        self.flags
     }
 
+    pub fn get_flag(&self, account: AccountId) -> bool {
+        let individual_flag = self.flags.get(&account);
+        if individual_flag.is_none() {
+            env::panic(b"The individual_flag doesnt exist")
+        }
+        else if individual_flag.unwrap() == true {
+            true
+        }
+        else {
+            false
+        }
+    }
 }
  
