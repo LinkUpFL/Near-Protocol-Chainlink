@@ -49,12 +49,13 @@ impl EACAggregatorProxy {
 
         let mut result = Self {
             owner: owner_id,
-            link_account: link_id
+            accessController: _accessController,
+            proposedAggregator: _aggregator
         };
 
         result.checkEnabled = true;
-        result.setAggregator(&_aggregator);
-        result.setController(&_accessController);
+        // result.setAggregator(&_aggregator);
+        // result.setController(&_accessController);
         result
     }
 
