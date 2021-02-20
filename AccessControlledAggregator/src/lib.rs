@@ -118,19 +118,40 @@ impl AccessControlledAggregator {
         let minSubmissionValue_u128: u128 = _minSubmissionValue.into();
         let maxSubmissionValue_u128: u128 = _maxSubmissionValue.into();
         let decimals_u64: u64 = _decimals.into();
+        let mut vector: Vec::<AccountId> = Vec::new();
 
         let mut result = Self {
             owner: owner_id,
             linkToken: link_id,
+            validator: "".to_string(),
+            paymentAmount: 0_u128,
+            maxSubmissionCount: 0_u64,
+            minSubmissionCount: 0_u64,
+            restartDelay: 0_u64,
+            timeout: 0_u64,
+            decimals: decimals_u64,
+            description: _description,
             minSubmissionValue: minSubmissionValue_u128,
             maxSubmissionValue: maxSubmissionValue_u128,
-            decimals: decimals_u64,
-            description: _description
+            checkEnabled: true,
+            accessList: LookupMap::new(b"access_list".to_vec()),
+            reportingRoundId: 0_u64,
+            latestRoundId: 0_u64,
+            oracles: LookupMap::new(b"oracles".to_vec()),
+            rounds: LookupMap::new(b"rounds".to_vec()),
+            details: LookupMap::new(b"details".to_vec()),
+            requesters: LookupMap::new(b"requesters".to_vec()),
+            oracleAddresses: vector,
+            recordedFunds: Funds { available: 0_u128, allocated: 0_u128 }
         };
         result.checkEnabled = true;
-        result.rounds[0].updatedAt = (env::block_timestamp() - timeout_u64) as u64;
-        result.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, timeout_u64);
-        result.setValidator(&_validator);
+
+        let round_option = result.rounds.get(&0);
+        let round = round_option.unwrap();
+        round.updatedAt = (env::block_timestamp() - timeout_u64) as u64;
+
+        result.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, &timeout_u64);
+        result.setValidator(_validator);
         result
     }
 
@@ -254,7 +275,7 @@ impl AccessControlledAggregator {
         }
         let round = round_option.unwrap();
 
-        if self.validRoundId(_roundId) {
+        if self.validRoundId(roundId_u128) {
             return round.answer;
         }
         return 0;
@@ -269,7 +290,7 @@ impl AccessControlledAggregator {
         }
         let round = round_option.unwrap();
 
-        if self.validRoundId(_roundId) {
+        if self.validRoundId(roundId_u128) {
             return round.answer;
         }
         return 0;
@@ -418,7 +439,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
-        assert!(env::predecessor_account_id() == env::env::signer_account_id(), "off-chain reading only");
+        assert!(env::predecessor_account_id() == env::signer_account_id(), "off-chain reading only");
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
 
@@ -489,8 +510,9 @@ impl AccessControlledAggregator {
         let detail = detail_option.unwrap();
 
         let mut round: Round = firstRound;
+        let mut vector: Vec<u128> = Vec::new();
         let mut nextDetails: RoundDetails = RoundDetails(
-            Vec::<u128>,
+            vector,
             self.maxSubmissionCount,
             self.minSubmissionCount,
             self.timeout,
@@ -636,7 +658,7 @@ impl AccessControlledAggregator {
         }
         let round = round_option.unwrap();
 
-        let newAnswer: u128 = median(detail.submissions).into();
+        let newAnswer: u128 = self.median(detail.submissions).into();
         round.answer = newAnswer;
         round.updatedAt = env::block_timestamp() as u64;
         round.answeredInRound = _roundId;
@@ -716,7 +738,7 @@ impl AccessControlledAggregator {
             return;
         }
 
-        detial.clear();
+        detail.clear();
     }
 
     fn timedOut(&mut self, _roundId: u64) -> bool {
@@ -904,6 +926,7 @@ impl AccessControlledAggregator {
         let mid = numbers.len() / 2;
         numbers[mid]
     }
+
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
@@ -937,8 +960,7 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find the oracle account to remove.");
         }
         let user = user_option.unwrap();
-
-        user_option = false;
+        user = false;
     }
 
     pub fn enableAccessCheck(&mut self) {
