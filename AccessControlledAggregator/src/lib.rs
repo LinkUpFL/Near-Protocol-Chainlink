@@ -185,7 +185,7 @@ impl AccessControlledAggregator {
         }
 
         assert!(_added.len() == _addedAdmins.len(), "need same oracle and admin count");
-        assert!((self.oracleCount + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
+        assert!((self.oracleCount() + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
 
         for i in 0.._added.len() {
             self.addOracle(_added[i], _addedAdmins[i]);
@@ -318,20 +318,16 @@ impl AccessControlledAggregator {
     }
 
     pub fn latestRoundData(&self) -> ( u128, u64, u64, u64, u128) {
-        self.getRoundData(self.latestRoundId)
+        self.getRoundData(self.latestRoundId as u64)
     }
 
     pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
-        let oracles_result = self.oracles.get(&_oracle);
-        if oracles_result.is_none() {
-            env::panic(b"Did not find the oracle account to fulfill.");
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
         }
-        let withdrawable_option = oracles_result.unwrap().get(&_oracle);
-        if withdrawable_option.is_none() {
-            env::panic(b"Did not find the withdrawable request to fulfill.");
-        }
-        let withdrawable = withdrawable_option.unwrap();
-        withdrawable
+        let oracle = oracle_option.unwrap();
+        oracle.withdrawable
     }
 
     pub fn withdrawPayment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
@@ -468,11 +464,11 @@ impl AccessControlledAggregator {
                 self.eligibleForSpecificRound(_oracle, queriedRoundId_u64),
                 queriedRoundId_u64,
                 oracle.latestSubmission,
-                self.round.startedAt,
-                self.details.timeout,
+                round.startedAt,
+                detail.timeout,
                 self.recordedFunds.available,
                 self.oracleCount() as u64,
-                if self.round.startedAt > 0 { self.details.paymentAmount } else { self.paymentAmount }
+                if round.startedAt > 0 { detail.paymentAmount } else { self.paymentAmount }
             )
         } else {
             return self.oracleRoundStateSuggestRound(_oracle);
@@ -604,10 +600,19 @@ impl AccessControlledAggregator {
     }
 
     fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> ( bool,  u64,  u128, u64, u64,  u128, u128) {
-        let round: Round = self.rounds[0];
-        let oracle: OracleStatus = self.oracles[_oracle];
+        let round_option = self.rounds.get(&0);
+        if round_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let round = round_option.unwrap();
 
-        let shouldSupersede: bool = self.oracle.lastReportedRound == self.reportingRoundId || !self.acceptingSubmissions(self.reportingRoundId as u128);
+        let oracle_option = self.oracles.get(&_oracle);
+        if oracle_option.is_none() {
+            env::panic(b"Did not find this oracle account.");
+        }
+        let oracle = oracle_option.unwrap();
+
+        let shouldSupersede: bool = oracle.lastReportedRound == self.reportingRoundId || !self.acceptingSubmissions(self.reportingRoundId as u128);
         // Instead of nudging oracles to submit to the next round, the inclusion of
         // the shouldSupersede bool in the if condition pushes them towards
         // submitting in a currently open round.
@@ -616,18 +621,36 @@ impl AccessControlledAggregator {
         let mut _paymentAmount: u128;
         let mut _eligibleToSubmit: bool;
 
-        if self.supersedable(self.reportingRoundId) && self.shouldSupersede {
+        let detail_option = self.details.get(&(_roundId as u128));
+        if detail_option.is_none() {
+            env::panic(b"Did not find this round.");
+        }
+        let detail = detail_option.unwrap();
+
+        if self.supersedable(self.reportingRoundId) && shouldSupersede {
+            let roundFromId_option = self.rounds.get(&_roundId);
+            if roundFromId_option.is_none() {
+                env::panic(b"Did not find this round.");
+            }
+            let roundFromId = roundFromId_option.unwrap();
+
             _roundId = self.reportingRoundId + 1;
-            self.round = self.rounds[_roundId];
+            round = roundFromId;
 
             _paymentAmount = self.paymentAmount;
             _eligibleToSubmit = self.delayed(_oracle, _roundId);
         } else {
-            _roundId = self.reportingRoundId;
-            self.round = self.rounds[_roundId];
+            let roundFromId_option = self.rounds.get(&_roundId);
+            if roundFromId_option.is_none() {
+                env::panic(b"Did not find this round.");
+            }
+            let roundFromId = roundFromId_option.unwrap();
 
-            _paymentAmount = self.details[_roundId].paymentAmount;
-            _eligibleToSubmit = self.acceptingSubmissions(_roundId);
+            _roundId = self.reportingRoundId;
+            round = roundFromId;
+
+            _paymentAmount = detail.paymentAmount;
+            _eligibleToSubmit = self.acceptingSubmissions(_roundId.into());
         }
 
         if self.validateOracleRound(_oracle, _roundId).len() != 0 {
@@ -637,9 +660,9 @@ impl AccessControlledAggregator {
         return (
             _eligibleToSubmit,
             _roundId,
-            self.oracle.latestSubmission,
-            self.round.startedAt,
-            self.details[_roundId].timeout,
+            oracle.latestSubmission,
+            round.startedAt,
+            detail.timeout,
             self.oracleCount(),
             _paymentAmount
         );
