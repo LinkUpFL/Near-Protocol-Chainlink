@@ -95,10 +95,6 @@ impl Flags {
     // PRIVATE
 
     pub fn has_access(&self, user: AccountId) -> bool {
-        let oracle_id_option = self.access_list.get(&user);
-        if oracle_id_option.is_none() {
-            env::panic(b"Did not find the oracle account to remove.");
-        }
         let user_has_access = self.access_list.get(&user);
             if user_has_access.is_none() {
                 env::panic(b"The subject is invalid.");
