@@ -30,11 +30,11 @@ impl Flags {
         assert!(env::is_valid_account_id(rac_address.as_bytes()), "recAddress account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
         let result = Self {
+            raising_access_controller: rac_address,
             owner: owner_id,
-            check_enabled: true,
-            access_list: LookupMap::new(b"access_list".to_vec()),
             flags: LookupMap::new(b"flags".to_vec()),
-            raising_access_controller: rac_address
+            check_enabled: true,
+            access_list: LookupMap::new(b"access_list".to_vec())
         };
         result
     }
