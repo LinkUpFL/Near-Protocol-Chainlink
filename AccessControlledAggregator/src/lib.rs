@@ -297,20 +297,20 @@ impl AccessControlledAggregator {
         return 0;
     }
 
-    pub fn getRoundData(&self, _roundId: U128) -> ( u128, u128,  u64, u64, u64) {
-        let roundId_u128: u128 = _roundId.into();
+    pub fn getRoundData(&self, _roundId: U64) -> ( u64, u128,  u64, u64, u64) {
+        let roundId_u64: u64 = _roundId.into();
 
-        let round_option = self.rounds.get(&(roundId_u128 as u64));
+        let round_option = self.rounds.get(&roundId_u64);
         if round_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
         let round = round_option.unwrap();
 
         let r: Round = round;
-        assert!(r.answeredInRound > 0 && self.validRoundId(roundId_u128), V3_NO_DATA_ERROR);
+        assert!(r.answeredInRound > 0 && self.validRoundId(roundId_u64.into()), V3_NO_DATA_ERROR);
 
         return(
-            roundId_u128,
+            roundId_u64,
             r.answer,
             r.startedAt,
             r.updatedAt,
@@ -318,8 +318,8 @@ impl AccessControlledAggregator {
         )
     }
 
-    pub fn latestRoundData(&self) -> ( u128, u128, u64, u64, u64) {
-        self.getRoundData(self.latestRoundId as u64)
+    pub fn latestRoundData(&self) -> (u128, u128, u64, u64, u64) {
+        self.getRoundData(latestRoundId.into())
     }
 
     pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
