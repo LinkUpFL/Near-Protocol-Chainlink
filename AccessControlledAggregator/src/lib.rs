@@ -318,7 +318,7 @@ impl AccessControlledAggregator {
         )
     }
 
-    pub fn latestRoundData(&self) -> ( u128, u64, u64, u64, u128) {
+    pub fn latestRoundData(&self) -> ( u128, u128, u64, u64, u64) {
         self.getRoundData(self.latestRoundId as u64)
     }
 
@@ -364,7 +364,7 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this oracle account.");
         }
         let oracle = oracle_option.unwrap();
-        oracle.oracles[_oracle].admin
+        oracle.admin
     }
 
     pub fn transferAdmin(&mut self, _oracle: AccountId, _newAdmin: AccountId) {
