@@ -49,13 +49,16 @@ impl EACAggregatorProxy {
 
         let mut result = Self {
             owner: owner_id,
-            accessController: _accessController,
-            proposedAggregator: _aggregator
+            proposedAggregator: "".to_string(),
+            phaseAggregators: LookupMap::new(b"phaseAggregators".to_vec()),
+            accessController: "".to_string(),
+            checkEnabled: true,
+            accessList: LookupMap::new(b"access_list".to_vec()),
+            currentPhase: Phase { id: 0_u64, aggregator: "".to_string() }
         };
 
-        result.checkEnabled = true;
-        // result.setAggregator(&_aggregator);
-        // result.setController(&_accessController);
+        result.setAggregator(_aggregator);
+        result.setController(_accessController);
         result
     }
 
@@ -107,7 +110,7 @@ impl EACAggregatorProxy {
         return aggregator.getTimestamp(aggregatorRoundId);
     }
 
-    pub fn latestRound(&mut self) -> (u128) {
+    pub fn latestRound(&mut self) -> u128 {
         self.checkAccess();
         let phase: Phase = self.currentPhase;
         self.addPhase(phase.id, phase.aggregator.latestRound() as u64)
