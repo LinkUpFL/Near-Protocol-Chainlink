@@ -81,15 +81,21 @@ impl EACAggregatorProxy {
         self.checkAccess();
 
         let roundId_u128: u128 = _roundId.into();
-        if roundId_u128 > self.MAX_ID {
+        if roundId_u128 > MAX_ID {
             return 0;
         }
 
         let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
-        let aggregator: AccountId = self.phaseAggregators[phaseId];
+
+        let aggregator_option = self.phaseAggregators.get(&phaseId);
+        if aggregator_option.is_none() {
+            env::panic(b"Aggregator account not found");
+        }
+        let aggregator = aggregator_option.unwrap();
+
         if aggregator == "" {
             return 0;
-        } 
+        }
 
         return aggregator.getAnswer(aggregatorRoundId);
     }
@@ -97,12 +103,18 @@ impl EACAggregatorProxy {
     pub fn getTimestamp(&self, _roundId: U128) -> u128 {
         self.checkAccess();
         let roundId_u128: u128 = _roundId.into();
-        if roundId_u128 > self.MAX_ID {
+        if roundId_u128 > MAX_ID {
             return 0;
         }
 
         let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
-        let aggregator: AccountId = self.phaseAggregators[phaseId];
+
+        let aggregator_option = self.phaseAggregators.get(&phaseId);
+        // Test this to see if "" is the same as None
+        if aggregator_option.is_none() {
+            env::panic(b"Aggregator account not found");
+        }
+        let aggregator = aggregator_option.unwrap();
         if aggregator == "" {
             return 0;
         }
@@ -117,12 +129,18 @@ impl EACAggregatorProxy {
     }
 
     pub fn getRoundData(&mut self, _roundId: U128) -> (u128, u128, u128, u128, u64) {
+
         let roundId_u128: u128 = _roundId.into();
         let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
+        let phaseAggregator_option = self.phaseAggregators.get(&id);
+        if phaseAggregator_option.is_none() {
+            env::panic(b"Phase aggregator account not found");
+        }
+        phaseAggregator = phaseAggregator_option.unwrap();
 
-        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = self.phaseAggregators[phaseId].getRoundData(aggregatorRoundId);
+        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = phaseAggregator.getRoundData(aggregatorRoundId);
 
-        return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
+        return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, phaseId);
     }
 
     pub fn latestRoundData(&mut self) -> (u128, u128, u128, u128, u128) {
@@ -156,7 +174,7 @@ impl EACAggregatorProxy {
     }
 
     pub fn decimals(&self) -> u64 {
-        self.currentPhase.aggregator.decimals();
+        self.currentPhase.aggregator.decimals()
     }
 
     pub fn version(&self) -> u128 {
@@ -169,13 +187,13 @@ impl EACAggregatorProxy {
 
     pub fn proposeAggregator(&mut self, _aggregator: AccountId) {
         self.onlyOwner();
-        self.proposeAggregator = _aggregator;
+        self.proposedAggregator = _aggregator;
     }
 
     pub fn confirmAggregator(&mut self, _aggregator: AccountId) {
         self.onlyOwner();
         assert!(_aggregator == self.proposedAggregator as AccountId, "Invalid proposed aggregator");
-        self.proposeAggregator.clear();
+        self.proposedAggregator.clear();
         self.setAggregator(_aggregator);
     }
 
@@ -183,16 +201,21 @@ impl EACAggregatorProxy {
 
     fn setAggregator(&mut self, _aggregator: AccountId) {
         let id: u64 = self.currentPhase.id + 1;
+        let phaseAggregator_option = self.phaseAggregators.get(&id);
+        if phaseAggregator_option.is_none() {
+            env::panic(b"Phase aggregator account not found");
+        }
+        phaseAggregator = phaseAggregator_option.unwrap();
         self.currentPhase = self.Phase(id, _aggregator);
-        self.phaseAggregators[id] = _aggregator;
+        phaseAggregator = _aggregator;
     }
 
     fn addPhase(&self, _phase: u64, _originalId: u64) -> u128 {
-        ((_phase as u128) << self.PHASE_OFFSET | _originalId) as u128
+        ((_phase as u128) << PHASE_OFFSET | _originalId) as u128
     }
 
     fn parseIds(&self, _roundId: u128) -> (u64, u64) {
-        let phaseId: u64 = (_roundId >> self.PHASE_OFFSET) as u64;
+        let phaseId: u64 = (_roundId >> PHASE_OFFSET) as u64;
         let aggregatorRoundId: u64 = _roundId as u64;
 
         return(phaseId, aggregatorRoundId);
