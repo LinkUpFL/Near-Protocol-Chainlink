@@ -205,9 +205,9 @@ impl EACAggregatorProxy {
         if phaseAggregator_option.is_none() {
             env::panic(b"Phase aggregator account not found");
         }
-        phaseAggregator = phaseAggregator_option.unwrap();
+        let phaseAggregator = phaseAggregator_option.unwrap();
         self.currentPhase = self.Phase(id, _aggregator);
-        phaseAggregator = _aggregator;
+        self.phaseAggregators.insert(&id, &_aggregator);
     }
 
     fn addPhase(&self, _phase: u64, _originalId: u64) -> u128 {
@@ -255,8 +255,7 @@ impl EACAggregatorProxy {
 
         let user_option = self.accessList.get(&_user);
         if user_option.is_none() {
-            let user = user_option.unwrap();
-            user = true;
+            self.accessList.insert(&_user, &true);
             env::panic(b"Added access to this oracle account.");
         }
     }
@@ -268,8 +267,7 @@ impl EACAggregatorProxy {
         if user_option.is_none() {
             env::panic(b"Did not find the oracle account to remove.");
         }
-        let user = user_option.unwrap();
-        user = false;
+        self.accessList.insert(&_user, &false);
     }
 
     pub fn enableAccessCheck(&mut self) {
