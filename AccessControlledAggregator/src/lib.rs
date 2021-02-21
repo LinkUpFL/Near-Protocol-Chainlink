@@ -5,6 +5,7 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
+use std::convert::TryInto;
 use num_traits::pow;
 
 #[global_allocator]
@@ -425,7 +426,7 @@ impl AccessControlledAggregator {
             requester.authorized = _authorized;
             requester.delay = delay_u64;
         } else {
-            requester.clear();
+            drop(requester);
         }
     }
 
@@ -582,7 +583,7 @@ impl AccessControlledAggregator {
         round.answeredInRound = prev.answeredInRound;
         round.updatedAt = env::block_timestamp() as u64;
 
-        detail.clear();
+        drop(detail);
     }
 
     fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u64) -> bool {
@@ -761,7 +762,7 @@ impl AccessControlledAggregator {
             return;
         }
 
-        detail.clear();
+        drop(detail);
     }
 
     fn timedOut(&mut self, _roundId: u64) -> bool {
@@ -837,7 +838,9 @@ impl AccessControlledAggregator {
         }
         let oracle = oracle_option.unwrap();
 
-        let lastOracle_option = self.oracleAddresses.get(self.oracleCount()-1);
+        let lastOracle: usize = (self.oracleCount() - 1).try_into().unwrap();
+
+        let lastOracle_option = self.oracleAddresses.get(lastOracle);
         if lastOracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
@@ -845,7 +848,6 @@ impl AccessControlledAggregator {
 
         oracle.endingRound = (self.reportingRoundId + 1).into();
         let tail: AccountId = lastOracle.to_string();
-        let index: u64 = oracle.index;
 
         let oracleTail_option = self.oracles.get(&tail);
         if oracleTail_option.is_none() {
@@ -853,15 +855,11 @@ impl AccessControlledAggregator {
         }
         let oracleTail = oracleTail_option.unwrap();
 
-        oracleTail.index = index;
-        oracle.index.clear(); // FIX THIS
+        let index: usize = oracle.index.try_into().unwrap();
+        oracleTail.index = index.try_into().unwrap();
+        drop(oracle.index);
 
-        let oracleIndex_option = self.oracleAddresses[index];
-        if oracleIndex_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
-        }
-        let oracleIndex = oracleIndex_option.unwrap();
-
+        let oracleIndex = self.oracleAddresses[index];
         oracleIndex = tail;
         self.oracleAddresses.pop();
     }
