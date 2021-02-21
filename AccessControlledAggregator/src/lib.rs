@@ -426,7 +426,7 @@ impl AccessControlledAggregator {
             requester.authorized = _authorized;
             requester.delay = delay_u64;
         } else {
-            self.requesters.remove(&requester);
+            self.requesters.remove(&_requester);
         }
     }
 
@@ -583,7 +583,7 @@ impl AccessControlledAggregator {
         round.answeredInRound = prev.answeredInRound;
         round.updatedAt = env::block_timestamp() as u64;
 
-        self.details.remove(&detail);
+        self.details.remove(&(_roundId as u128));
     }
 
     fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u64) -> bool {
@@ -762,7 +762,7 @@ impl AccessControlledAggregator {
             return;
         }
 
-        self.details.remove(&detail);
+        self.details.remove(&(_roundId as u128));
     }
 
     fn timedOut(&mut self, _roundId: u64) -> bool {
