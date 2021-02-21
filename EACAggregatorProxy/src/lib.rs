@@ -212,23 +212,38 @@ impl EACAggregatorProxy {
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
-        self.accessList[_user] || !self.checkEnabled;
+        if !self.checkEnabled {
+            !self.checkEnabled
+        } else {
+            let user_option = self.accessList.get(&_user);
+            if user_option.is_none() {
+                env::panic(b"Did not find this oracle account.");
+            }
+            let user = user_option.unwrap();
+            user
+        }
     }
 
     pub fn addAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if !self.accessList[_user] {
-            self.accessList[_user] = true;
+        let user_option = self.accessList.get(&_user);
+        if user_option.is_none() {
+            let user = user_option.unwrap();
+            user = true;
+            env::panic(b"Added access to this oracle account.");
         }
     }
 
     pub fn removeAccess(&mut self, _user: AccountId) {
         self.onlyOwner();
 
-        if self.accessList[_user] {
-            self.accessList[_user] = false;
+        let user_option = self.accessList.get(&_user);
+        if user_option.is_none() {
+            env::panic(b"Did not find the oracle account to remove.");
         }
+        let user = user_option.unwrap();
+        user = false;
     }
 
     pub fn enableAccessCheck(&mut self) {
@@ -250,6 +265,8 @@ impl EACAggregatorProxy {
     fn checkAccess(&self) {
         let ac: AccountId = self.accessController;
         assert!(env::is_valid_account_id(ac.as_bytes()), "AC's account ID is invalid");
+        // Check this since it's supposed to be calling hasAccess() from withitn this
+        // contract called ac
         assert!(ac.hasAccess(env::predecessor_account_id()), "No access");
     }
 }
