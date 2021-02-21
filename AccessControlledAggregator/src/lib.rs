@@ -969,7 +969,8 @@ impl AccessControlledAggregator {
         let user_option = self.accessList.get(&_user);
         if user_option.is_none() {
             let user = user_option.unwrap();
-            user = false;
+            user = true;
+            env::panic(b"Added access to this oracle account.");
         }
     }
 
