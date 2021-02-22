@@ -55,17 +55,24 @@ impl Oracle {
 
     pub fn oracleRequest(&mut self, _sender: AccountId, _payment: U128, _specId: Base64String, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _nonce: U128, _dataVersion: U128, _data: Base64String) {
         self.onlyLINK();
-        self.checkCallbackAddress(_callbackAddress);
+        self.checkCallbackAddress(&_callbackAddress);
 
         let payment_u128: u128 = _payment.into();
         let nonce_u128: u128 = _nonce.into();
         let dataVersion_u128: u128 = _dataVersion.into();
 
         let requestId: Base64String = hex::encode(env::keccak256(_sender, nonce_u128));
-        assert!(self.commitments[requestId] == 0, "Must use a unique ID");
+
+        let commitment_option = self.commitments.get(&requestId);
+        if commitment_option.is_none() {
+            env::panic(b"Could not find commitment.");
+        }
+        let commitment = commitment_option.unwrap();
+        assert!(commitment == 0, "Must use a unique ID");
         let expiration: u256 = env::block_timestamp() + EXPIRY_TIME;
 
-        self.commitments[requestId] = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
+        let to_insert: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
+        self.commitments.insert(&requestId, &to_insert);
     }
 
     pub fn fulfillOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _expiration: U128, _data: Base64String) -> bool {
@@ -129,15 +136,22 @@ impl Oracle {
     }
 
     fn isValidRequest(&self, _requestId: Base64String) {
-        assert!(self.commitments[_requestId] != 0, "Must have a valid requestId");
+        let commitment_option = self.commitments.get(&requestId);
+        if commitment_option.is_none() {
+            env::panic(b"Could not find commitment.");
+        }
+        let commitment = commitment_option.unwrap();
+        assert!(commitment != 0, "Must have a valid requestId");
     }
 
     fn onlyAuthorizedNode(&self) {
-        assert!(self.authorizedNodes[env::predecessor_account_id()] || env::predecessor_account_id() == self.owner, "Not an authorized node to fulfill requests");
+        let node_option = self.authorizedNodes.get(&env::predecessor_account_id());
+        assert!(node_option.is_some() || env::predecessor_account_id() == self.owner, "Not an authorized node to fulfill requests");
     }
 
-    fn checkCallbackAddress(&self, _to: AccountId) {
-        //assert!(_to != LinkToken)
+    fn checkCallbackAddress(&self, _to: &AccountId) {
+        assert_ne!(callback_address, &self.link_account, "Cannot callback to LINK.");
+        assert_ne!(callback_address, &env::current_account_id(), "Callback address cannot be the oracle contract.");
     }
 
     fn onlyOwner(&mut self) {
