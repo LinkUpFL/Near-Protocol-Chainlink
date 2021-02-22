@@ -1,9 +1,11 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap};
-use near_sdk::json_types::{U128};
-use near_sdk::{AccountId, env, near_bindgen};
+use near_sdk::json_types::{U128, U64};
+use near_sdk::{AccountId, env, near_bindgen, Promise};
 use near_sdk::wee_alloc::{WeeAlloc};
 use std::str;
+use std::convert::TryInto;
 use num_traits::pow;
 
 #[global_allocator]
@@ -25,12 +27,12 @@ const MAX_ID: u128 = pow(PHASE_OFFSET+PHASE_SIZE, 2) - 1;
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct EACAggregatorProxy {
     pub owner: AccountId,
-    pub proposedAggregator: AccountId,
-    pub phaseAggregators: LookupMap<u64, AccountId>,
-    pub accessController: AccountId,
-    pub checkEnabled: bool,
-    accessList: LookupMap<AccountId, bool>,
-    currentPhase: Phase
+    pub proposed_aggregator: AccountId,
+    pub phase_aggregators: LookupMap<u64, Phase>,
+    pub access_controller: AccountId,
+    pub check_enabled: bool,
+    access_list: LookupMap<AccountId, bool>,
+    current_phase: Phase
 }
 
 impl Default for EACAggregatorProxy {
@@ -49,199 +51,279 @@ impl EACAggregatorProxy {
 
         let mut result = Self {
             owner: owner_id,
-            proposedAggregator: "".to_string(),
-            phaseAggregators: LookupMap::new(b"phaseAggregators".to_vec()),
-            accessController: "".to_string(),
-            checkEnabled: true,
-            accessList: LookupMap::new(b"access_list".to_vec()),
-            currentPhase: Phase { id: 0_u64, aggregator: "".to_string() }
+            proposed_aggregator: "".to_string(),
+            phase_aggregators: LookupMap::new(b"phase_aggregators".to_vec()),
+            access_controller: "".to_string(),
+            check_enabled: true,
+            access_list: LookupMap::new(b"access_list".to_vec()),
+            current_phase: Phase { id: 0_u64, aggregator: "".to_string() }
         };
 
-        result.setAggregator(_aggregator);
-        result.setController(_accessController);
+        result.set_aggregator(_aggregator);
+        result.set_controller(_accessController);
         result
     }
 
-    pub fn setController(&mut self, _accessController: AccountId) {
-        self.onlyOwner();
-        self.accessController = _accessController;
+    pub fn set_controller(&mut self, _access_controller: AccountId) {
+        self.only_owner();
+        self.access_controller = _access_controller;
     }
-
-    pub fn latestAnswer(&self) -> u128 {
-        self.checkAccess();
-        self.currentPhase.aggregator.latestAnswer()
-    }
-
-    pub fn latestTimestamp(&self) -> u128 {
-        self.checkAccess();
-        self.currentPhase.aggregator.latestTimestamp()
-    }
-
-    pub fn getAnswer(&mut self, _roundId: U128) -> u128 {
-        self.checkAccess();
-
-        let roundId_u128: u128 = _roundId.into();
-        if roundId_u128 > MAX_ID {
+    // Depracated
+    pub fn latest_answer(&self) -> Promise {
+        self.check_access();
+        Promise::new(self.current_phase.aggregator)
+            .function_call(
+                b"latest_answer".to_vec(),
+                json!({}).to_string().as_bytes().to_vec(),
+                0,
+                SINGLE_CALL_GAS,
+            )
+            .as_return()
+        }
+    // Depracated
+    pub fn latest_timestamp(&self) -> Promise {
+        self.check_access();
+        Promise::new(self.current_phase.aggregator)
+            .function_call(
+                b"lastest_timestamp".to_vec(),
+                json!({}).to_string().as_bytes().to_vec(),
+                0,
+                SINGLE_CALL_GAS,
+            )
+            .as_return()
+        }
+    // Depracated
+    pub fn get_answer(&mut self, _round_id: U128) -> Promise {
+             self.check_access();
+            let round_id_u128: u128 = _round_id.into();
+            if round_id_u128 > MAX_ID {
+                return 0;
+            }
+    
+            let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
+    
+            let aggregator_option = self.phase_aggregators.get(&phase_id);
+            if aggregator_option.is_none() {
+                env::panic(b"Aggregator account not found");
+            }
+            let phase_aggregator = aggregator_option.unwrap();
+    
+            if phase_aggregator.aggregator == "" {
+                return 0;
+            }
+            Promise::new(phase_aggregator.aggregator)
+                .function_call(
+                    b"get_answer".to_vec(),
+                    json!({"_roundId": aggregator_round_id}).to_string().as_bytes().to_vec(),
+                    0,
+                    SINGLE_CALL_GAS,
+                )
+                .as_return()
+            }
+    // Depracated
+    pub fn get_timestamp(&self, _roundId: U128) -> u128 {
+        self.check_access();
+        let round_id_u128: u128 = _round_id.into();
+        if round_id_u128 > MAX_ID {
             return 0;
         }
 
-        let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
+        let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
 
-        let aggregator_option = self.phaseAggregators.get(&phaseId);
+        let aggregator_option = self.phase_aggregators.get(&phase_id);
         if aggregator_option.is_none() {
             env::panic(b"Aggregator account not found");
         }
-        let aggregator = aggregator_option.unwrap();
+        let phase_aggregator = aggregator_option.unwrap();
 
-        if aggregator == "" {
+        if phase_aggregator.aggregator == "" {
             return 0;
         }
-
-        return aggregator.getAnswer(aggregatorRoundId);
-    }
-
-    pub fn getTimestamp(&self, _roundId: U128) -> u128 {
-        self.checkAccess();
-        let roundId_u128: u128 = _roundId.into();
-        if roundId_u128 > MAX_ID {
-            return 0;
+        Promise::new(phase_aggregator.aggregator)
+            .function_call(
+                b"get_timestamp".to_vec(),
+                json!({"_roundId": aggregator_round_id}).to_string().as_bytes().to_vec(),
+                0,
+                SINGLE_CALL_GAS,
+            )
+            .as_return()
         }
 
-        let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
-
-        let aggregator_option = self.phaseAggregators.get(&phaseId);
-        // Test this to see if "" is the same as None
-        if aggregator_option.is_none() {
-            env::panic(b"Aggregator account not found");
-        }
-        let aggregator = aggregator_option.unwrap();
-        if aggregator == "" {
-            return 0;
-        }
-
-        return aggregator.getTimestamp(aggregatorRoundId);
+    pub fn latest_round(&mut self) -> u128 {
+        self.check_access();
+        let phase: Phase = self.current_phase;
+        let round_id: u64 = Promise::new(phase.aggregator)
+        .function_call(
+            b"latest_round".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return();
+        self.add_phase(phase.id, round_id);
+        round_id
     }
 
-    pub fn latestRound(&mut self) -> u128 {
-        self.checkAccess();
-        let phase: Phase = self.currentPhase;
-        self.addPhase(phase.id, phase.aggregator.latestRound() as u64)
-    }
+    pub fn get_round_data(&mut self, _round_id: U128) -> (u128, u128, u128, u128, u64) {
 
-    pub fn getRoundData(&mut self, _roundId: U128) -> (u128, u128, u128, u128, u64) {
-
-        let roundId_u128: u128 = _roundId.into();
-        let (phaseId, aggregatorRoundId): (u64, u64) = self.parseIds(roundId_u128);
-        let phaseAggregator_option = self.phaseAggregators.get(&id);
-        if phaseAggregator_option.is_none() {
+        let round_id_u128: u128 = _round_id.into();
+        let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
+        let phase_aggregator_option = self.phase_aggregators.get(&id);
+        if phase_aggregator_option.is_none() {
             env::panic(b"Phase aggregator account not found");
         }
-        phaseAggregator = phaseAggregator_option.unwrap();
-
-        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = phaseAggregator.getRoundData(aggregatorRoundId);
-
-        return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, phaseId);
+        phase_aggregator = phase_aggregator_option.unwrap();
+        (self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round) = Promise::new(phase_aggregator)
+        .function_call(
+            b"get_round_data".to_vec(),
+            json!({"_round_id": aggregator_round_id}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return();
+        self.add_phase_ids(self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round, phase_id);
     }
 
-    pub fn latestRoundData(&mut self) -> (u128, u128, u128, u128, u128) {
-        let current: Phase = self.currentPhase; // cache storage reads
+    pub fn latest_round_data(&mut self) -> (u128, u128, u128, u128, u128) {
+        let current: Phase = self.current_phase; // cache storage reads
 
-        (self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound) = current.aggregator.latestRoundata();
-
-        return self.addPhaseIds(self.roundId, self.answer, self.startedAt, self.updatedAt, self.answeredInRound, self.phaseId);
+        (self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round) = Promise::new(current.aggregator)
+        .function_call(
+            b"latest_round_data".to_vec(),
+            json!().to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return();
+        self.add_phase_ids(self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round, phase_id)
     }
 
-    pub fn proposedGetRoundData(&self, _roundId: U128) -> (u128, u128, u128, u128, u128) {
-        self.checkAccess();
-        self.hasProposal();
+    pub fn proposed_get_round_data(&self, _round_id: U128) -> Promise {
+        self.check_access();
+        self.has_proposal();
         
-        let roundId_u128: u128 = _roundId.into();
-        self.proposedAggregator.getRoundData(roundId_u128)
+        let round_id_u128: u128 = _round_id.into();
+        Promise::new(self.proposed_aggregator)
+        .function_call(
+            b"get_round_data".to_vec(),
+            json!({"_round_id": round_id_u128}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()
     }
 
-    pub fn proposedLatestRoundData(&self) -> (u128, u128, u128, u128,  u128) {
-        self.checkAccess();
-        self.hasProposal();
-        self.proposedAggregator.latestRoundData()
+    pub fn proposed_latest_round_data(&self) -> Promise {
+        self.check_access();
+        self.has_proposal();
+        Promise::new(self.proposed_aggregator)
+        .function_call(
+            b"latest_round_data".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()    
     }
 
     pub fn aggregator(&self) -> AccountId {
-        self.currentPhase.aggregator as AccountId
+        self.current_phase.aggregator as AccountId
     }
 
-    pub fn phaseId(&self) -> u64 {
-        self.currentPhase.id
+    pub fn phase_id(&self) -> u64 {
+        self.current_phase.id
     }
 
-    pub fn decimals(&self) -> u64 {
-        self.currentPhase.aggregator.decimals()
+    pub fn decimals(&self) -> Promise {
+        Promise::new(self.current_phase.aggregator)
+        .function_call(
+            b"get_decimals".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()  
     }
 
-    pub fn version(&self) -> u128 {
-        self.currentPhase.aggregator.version()
+    pub fn version(&self) -> Promise {
+        Promise::new(self.current_phase.aggregator)
+        .function_call(
+            b"get_version".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()  
     }
 
-    pub fn description(&self) -> Base64String {
-        self.currentPhase.aggregator.description()
+    pub fn description(&self) -> Promise {
+        Promise::new(self.current_phase.aggregator)
+        .function_call(
+            b"get_description".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()  
     }
 
-    pub fn proposeAggregator(&mut self, _aggregator: AccountId) {
-        self.onlyOwner();
-        self.proposedAggregator = _aggregator;
+    pub fn propose_aggregator(&mut self, _aggregator: AccountId) {
+        self.only_owner();
+        self.proposed_aggregator = _aggregator;
     }
 
-    pub fn confirmAggregator(&mut self, _aggregator: AccountId) {
-        self.onlyOwner();
-        assert!(_aggregator == self.proposedAggregator as AccountId, "Invalid proposed aggregator");
-        self.proposedAggregator.clear();
-        self.setAggregator(_aggregator);
+    pub fn confirm_aggregator(&mut self, _aggregator: AccountId) {
+        self.only_owner();
+        assert!(_aggregator == self.proposed_aggregator as AccountId, "Invalid proposed aggregator");
+        self.proposed_aggregator.clear();
+        self.set_aggregator(_aggregator);
     }
 
     // Internal
 
-    fn setAggregator(&mut self, _aggregator: AccountId) {
-        let id: u64 = self.currentPhase.id + 1;
-        let phaseAggregator_option = self.phaseAggregators.get(&id);
-        if phaseAggregator_option.is_none() {
+    fn set_aggregator(&mut self, _aggregator: AccountId) {
+        let id: u64 = self.current_phase.id + 1;
+        let phase_aggregator_option = self.phase_aggregators.get(&id);
+        if phase_aggregator_option.is_none() {
             env::panic(b"Phase aggregator account not found");
         }
-        let phaseAggregator = phaseAggregator_option.unwrap();
-        self.currentPhase = self.Phase(id, _aggregator);
-        self.phaseAggregators.insert(&id, &_aggregator);
+        let phase_aggregator = phase_aggregator_option.unwrap();
+        self.current_phase = self.Phase(id, _aggregator);
+        self.phase_aggregators.insert(&id, &_aggregator);
     }
 
-    fn addPhase(&self, _phase: u64, _originalId: u64) -> u128 {
-        ((_phase as u128) << PHASE_OFFSET | _originalId) as u128
+    fn add_phase(&self, _phase: u64, _original_id: u64) -> u128 {
+        ((_phase as u128) << PHASE_OFFSET | _original_id) as u128
     }
 
-    fn parseIds(&self, _roundId: u128) -> (u64, u64) {
-        let phaseId: u64 = (_roundId >> PHASE_OFFSET) as u64;
-        let aggregatorRoundId: u64 = _roundId as u64;
+    fn parse_ids(&self, _round_id: u128) -> (u64, u64) {
+        let phase_id: u64 = (_round_id >> PHASE_OFFSET) as u64;
+        let aggregator_round_id: u64 = _round_id as u64;
 
-        return(phaseId, aggregatorRoundId);
+        (phase_id, aggregator_round_id)
     }
 
-    fn addPhaseIds(&self, roundId: u128, answer: u128, startedAt: u128, updatedAt: u128, answeredInRound: u128, phaseId: u64) -> (u128, u128, u128, u128, u128) {
-        return(self.addPhase(phaseId, roundId as u64), answer, startedAt, updatedAt, self.addPhase(phaseId, answeredInRound as u64));
+    fn add_phase_ids(&self, round_id: u128, answer: u128, started_at: u128, updated_at: u128, answered_in_round: u128, phase_id: u64) -> (u128, u128, u128, u128, u128) {
+        (self.add_phase(phase_id, round_id as u64), phase_id, answer, startedAt, updatedAt, answered_in_round, self.add_phase(phase_id, answered_in_round as u64))
     }
 
     // Modifiers
 
-    fn hasProposal(&mut self) {
-        assert!(self.proposedAggregator != "", "No proposed aggregator present");
+    fn has_proposal(&mut self) {
+        assert!(self.proposed_aggregator != "", "No proposed aggregator present");
     }
 
-    fn onlyOwner(&mut self) {
+    fn only_owner(&mut self) {
         assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 
     // Access Control
 
-    pub fn hasAccess(&self, _user: AccountId) -> bool {
-        if !self.checkEnabled {
-            !self.checkEnabled
+    pub fn has_access(&self, _user: AccountId) -> bool {
+        if !self.check_enabled {
+            !self.check_enabled
         } else {
-            let user_option = self.accessList.get(&_user);
+            let user_option = self.access_list.get(&_user);
             if user_option.is_none() {
                 env::panic(b"Did not find this oracle account.");
             }
@@ -250,44 +332,44 @@ impl EACAggregatorProxy {
         }
     }
 
-    pub fn addAccess(&mut self, _user: AccountId) {
-        self.onlyOwner();
+    pub fn add_access(&mut self, _user: AccountId) {
+        self.only_owner();
 
-        let user_option = self.accessList.get(&_user);
+        let user_option = self.access_list.get(&_user);
         if user_option.is_none() {
-            self.accessList.insert(&_user, &true);
+            self.access_list.insert(&_user, &true);
             env::panic(b"Added access to this oracle account.");
         }
     }
 
-    pub fn removeAccess(&mut self, _user: AccountId) {
-        self.onlyOwner();
+    pub fn remove_access(&mut self, _user: AccountId) {
+        self.only_owner();
 
-        let user_option = self.accessList.get(&_user);
+        let user_option = self.access_list.get(&_user);
         if user_option.is_none() {
             env::panic(b"Did not find the oracle account to remove.");
         }
-        self.accessList.insert(&_user, &false);
+        self.access_list.insert(&_user, &false);
     }
 
-    pub fn enableAccessCheck(&mut self) {
-        self.onlyOwner();
+    pub fn enable_access_check(&mut self) {
+        self.only_owner();
 
-        if !self.checkEnabled {
-            self.checkEnabled = true;
+        if !self.check_enabled {
+            self.check_enabled = true;
         }
     }
 
-    pub fn disableAccessCheck(&mut self) {
-        self.onlyOwner();
+    pub fn disable_access_check(&mut self) {
+        self.only_owner();
 
-        if self.checkEnabled {
-            self.checkEnabled = false;
+        if self.check_enabled {
+            self.check_enabled = false;
         }
     }
 
-    fn checkAccess(&self) {
-        let ac: AccountId = self.accessController;
+    fn check_access(&self) {
+        let ac: AccountId = self.access_controller;
         assert!(env::is_valid_account_id(ac.as_bytes()), "AC's account ID is invalid");
         // Check this since it's supposed to be calling hasAccess() from withitn this
         // contract called ac

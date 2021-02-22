@@ -319,7 +319,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn latestRoundData(&self) -> (u128, u128, u64, u64, u64) {
-        self.getRoundData(latestRoundId.into())
+        self.getRoundData(U64::from(self.latestRoundId))
     }
 
     pub fn withdrawablePayment(&self, _oracle: AccountId) -> u128 {
@@ -947,6 +947,15 @@ impl AccessControlledAggregator {
         numbers[mid]
     }
 
+    pub fn get_decimals(&self) -> u64 {
+        self.decimals
+    }
+    pub fn get_description(&self) -> String {
+        self.description
+    }
+    pub fn get_version(&self) -> u128 {
+        version
+    }
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
