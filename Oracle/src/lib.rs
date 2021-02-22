@@ -20,41 +20,14 @@ const TRANSFER_FROM_NEAR_COST: u128 = 36_500_000_000_000_000_000_000; // 365 x 1
 
 pub type Base64String = String;
 
-#[derive(Default, BorshDeserialize, BorshSerialize, Debug, Clone)]
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct OracleRequest {
-    caller_account: AccountId,
-    request_spec: Base64String,
-    callback_address: AccountId,
-    callback_method: String,
-    data: Base64String,
-    payment: u128,
-    expiration: u64
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct SummaryJSON {
-    account: AccountId,
-    total_requests: u16, // TODO: choosing u16? need to enforce if so
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct RequestsJSON {
-    nonce: U128,
-    request: OracleRequest,
-}
-
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct Oracle {
     pub owner: AccountId
     pub link_account: AccountId
-    commitments: LookupMap<AccountId, Base64String>,
+    commitments: LookupMap<Base64String, Base64String>,
     authorizedNodes: LookupMap<AccountId, bool>,
-    withdrawableTokens: u128 // = ?
+    withdrawableTokens: u128
 }
 
 impl Default for Oracle {
@@ -71,16 +44,19 @@ impl Oracle {
         assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
         assert!(!env::state_exists(), "Already initialized");
 
-
         Self {
             owner: owner_id,
             link_account: link_id,
+            commitments: LookupMap::new(b"commitments".to_vec()),
+            authorizedNodes: LookupMap::new(b"authorizedNodes".to_vec()),
+            withdrawableTokens: 0_u128
         }
     }
 
     pub fn oracleRequest(&mut self, _sender: AccountId, _payment: U128, _specId: Base64String, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _nonce: U128, _dataVersion: U128, _data: Base64String) {
         self.onlyLINK();
         self.checkCallbackAddress(_callbackAddress);
+
         let payment_u128: u128 = _payment.into();
         let nonce_u128: u128 = _nonce.into();
         let dataVersion_u128: u128 = _dataVersion.into();
@@ -134,7 +110,7 @@ impl Oracle {
         let expiration_u128: u128 = _expiration.into();
         let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
         assert!(paramsHash == self.commitments[_requestId], "Params do not match request ID");
-        assert!(expiration_u128 <= env::block_timestamp());
+        assert!(expiration_u128 <= env::block_timestamp().into());
 
         self.commitments[_requestId].clear();
 
@@ -165,6 +141,6 @@ impl Oracle {
     }
 
     fn onlyOwner(&mut self) {
-        assert_eq!(env::signer_account_id(), env::current_account_id(), "Only contract owner can call this method.");
+        assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 }
