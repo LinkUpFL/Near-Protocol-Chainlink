@@ -3,9 +3,7 @@ use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128};
 use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::wee_alloc::{WeeAlloc};
-use near_sdk::base64::{decode};
 use std::str;
-use num_traits::pow;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
@@ -69,7 +67,7 @@ impl Oracle {
         }
         let commitment = commitment_option.unwrap();
         assert!(commitment == "", "Must use a unique ID");
-        let expiration: u128 = env::block_timestamp() + EXPIRY_TIME;
+        let expiration: u128 = env::block_timestamp() + EXPIRY_TIME.into();
 
         let to_insert: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
         self.commitments.insert(&requestId, &to_insert);
@@ -79,24 +77,36 @@ impl Oracle {
         self.isValidRequest(_requestId);
         let payment_u128: u128 = _payment.into();
         let expiration_u128: u128 = _expiration.into();
-
         let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
-        assert!(self.commitments[_requestId] == paramsHash, "Params do not match request ID");
-        self.withdrawableTokens = self.withdrawableTokens + _payment;
-        self.commitments[_requestId].clear();
+        let commitment_option = self.commitments.get(&_requestId);
+        if commitment_option.is_none() {
+            env::panic(b"Could not find commitment.");
+        }
+        let commitment = commitment_option.unwrap();
+        assert!(commitment == paramsHash, "Params do not match request ID");
+        self.withdrawableTokens = self.withdrawableTokens + payment_u128;
+        self.commitments.remove(&_requestId);
         // gasleft
 
         //call back
     }
 
     pub fn getAuthorizationStatus(&self, _node: AccountId) -> bool {
-        self.authorizedNodes[_node]
+        let node_option = self.authorizedNodes.get(&_node);
+        if node_option.is_none() {
+            env::panic(b"Could not find node.");
+        }
+        node_option.unwrap()
     }
 
     pub fn setFulfillmentPermission(&mut self, _node: AccountId, _allowed: bool) {
         self.onlyOwner();
 
-        self.authorizedNodes[_node] = _allowed;
+        let node_option = self.authorizedNodes.get(&_node);
+        if node_option.is_none() {
+            env::panic(b"Could not find node.");
+        }
+        self.authorizedNodes.insert(&_node, &_allowed);
     }
 
     pub fn withdraw(&mut self, _recipient: AccountId, _amount: U128) {
@@ -115,14 +125,15 @@ impl Oracle {
     pub fn cancelOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackFunc: Base64String, _expiration: U128) {
         let payment_u128: u128 = _payment.into();
         let expiration_u128: u128 = _expiration.into();
-        let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
-        assert!(paramsHash == self.commitments[_requestId], "Params do not match request ID");
-        assert!(expiration_u128 <= env::block_timestamp().into());
-
+        let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunc, expiration_u128));
         let commitment_option = self.commitments.get(&_requestId);
         if commitment_option.is_none() {
             env::panic(b"Could not find commitment.");
         }
+        let commitment = commitment_option.unwrap();
+        assert!(paramsHash == commitment, "Params do not match request ID");
+        assert!(expiration_u128 <= env::block_timestamp().into());
+
         self.commitments.remove(&_requestId);
 
         //assert linkToken
@@ -154,11 +165,16 @@ impl Oracle {
     }
 
     fn checkCallbackAddress(&self, _to: &AccountId) {
-        assert_ne!(callback_address, &self.linkToken, "Cannot callback to LINK.");
-        assert_ne!(callback_address, &env::current_account_id(), "Callback address cannot be the oracle contract.");
+        assert_ne!(_to, &self.linkToken, "Cannot callback to LINK.");
+        assert_ne!(_to, &env::current_account_id(), "Callback address cannot be the oracle contract.");
     }
 
     fn onlyOwner(&mut self) {
         assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
+    }
+
+    // Test to see if this works
+    fn onlyLink(&self) {
+        assert_eq!(env::predecessor_account_id(), self.linkToken, "Must use LINK token.");
     }
 }
