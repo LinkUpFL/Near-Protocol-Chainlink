@@ -28,7 +28,7 @@ const MAX_ID: u128 = pow(PHASE_OFFSET+PHASE_SIZE, 2) - 1;
 pub struct EACAggregatorProxy {
     pub owner: AccountId,
     pub proposed_aggregator: AccountId,
-    pub phase_agregators: LookupMap<u64, Phase>,
+    pub phase_aggregators: LookupMap<u64, Phase>,
     pub access_controller: AccountId,
     pub check_enabled: bool,
     access_list: LookupMap<AccountId, bool>,
@@ -68,7 +68,7 @@ impl EACAggregatorProxy {
         self.only_owner();
         self.access_controller = _access_controller;
     }
-
+    // Depracated
     pub fn latest_answer(&self) -> Promise {
         self.check_access();
         Promise::new(self.current_phase.aggregator)
@@ -80,8 +80,7 @@ impl EACAggregatorProxy {
             )
             .as_return()
         }
-    }
-
+    // Depracated
     pub fn latest_timestamp(&self) -> Promise {
         self.check_access();
         Promise::new(self.current_phase.aggregator)
@@ -93,7 +92,7 @@ impl EACAggregatorProxy {
             )
             .as_return()
         }
-
+    // Depracated
     pub fn get_answer(&mut self, _round_id: U128) -> Promise {
              self.check_access();
             let round_id_u128: u128 = _round_id.into();
@@ -121,7 +120,7 @@ impl EACAggregatorProxy {
                 )
                 .as_return()
             }
-
+    // Depracated
     pub fn get_timestamp(&self, _roundId: U128) -> u128 {
         self.check_access();
         let round_id_u128: u128 = _round_id.into();
@@ -181,8 +180,8 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         )
-        .as_return()
-        return self.add_phase_ids(self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round, phase_id);
+        .as_return();
+        self.add_phase_ids(self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round, phase_id);
     }
 
     pub fn latest_round_data(&mut self) -> (u128, u128, u128, u128, u128) {
@@ -195,8 +194,8 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         )
-        .as_return()
-        return self.add_phase_ids(self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round, phase_id);
+        .as_return();
+        self.add_phase_ids(self.round_id, self.answer, self.started_at, self.updated_at, self.answered_in_round, phase_id)
     }
 
     pub fn proposed_get_round_data(&self, _round_id: U128) -> Promise {
@@ -216,7 +215,7 @@ impl EACAggregatorProxy {
 
     pub fn proposed_latest_round_data(&self) -> Promise {
         self.check_access();
-        self.hasProposal();
+        self.has_proposal();
         Promise::new(self.proposed_aggregator)
         .function_call(
             b"latest_round_data".to_vec(),
@@ -276,7 +275,7 @@ impl EACAggregatorProxy {
         ((_phase as u128) << PHASE_OFFSET | _original_id) as u128
     }
 
-    fn parseIds(&self, _round_id: u128) -> (u64, u64) {
+    fn parse_ids(&self, _round_id: u128) -> (u64, u64) {
         let phase_id: u64 = (_round_id >> PHASE_OFFSET) as u64;
         let aggregator_round_id: u64 = _round_id as u64;
 
@@ -284,9 +283,7 @@ impl EACAggregatorProxy {
     }
 
     fn add_phase_ids(&self, round_id: u128, answer: u128, started_at: u128, updated_at: u128, answered_in_round: u128, phase_id: u64) -> (u128, u128, u128, u128, u128) {
-        self.add_phase(phase_id, round_id as u64);
-        self.add_phase(phase_id, answered_in_round as u64);
-        phase_id, answer, startedAt, updatedAt, answered_in_round
+        (self.add_phase(phase_id, round_id as u64), phase_id, answer, startedAt, updatedAt, answered_in_round, self.add_phase(phase_id, answered_in_round as u64))
     }
 
     // Modifiers
@@ -305,7 +302,7 @@ impl EACAggregatorProxy {
         if !self.check_enabled {
             !self.check_enabled
         } else {
-            let user_option = self.accessList.get(&_user);
+            let user_option = self.access_list.get(&_user);
             if user_option.is_none() {
                 env::panic(b"Did not find this oracle account.");
             }
@@ -319,7 +316,7 @@ impl EACAggregatorProxy {
 
         let user_option = self.access_list.get(&_user);
         if user_option.is_none() {
-            self.accessList.insert(&_user, &true);
+            self.access_list.insert(&_user, &true);
             env::panic(b"Added access to this oracle account.");
         }
     }
@@ -357,3 +354,4 @@ impl EACAggregatorProxy {
         // contract called ac
         assert!(ac.hasAccess(env::predecessor_account_id()), "No access");
     }
+}
