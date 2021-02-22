@@ -234,17 +234,38 @@ impl EACAggregatorProxy {
         self.current_phase.id
     }
 
-    // pub fn decimals(&self) -> u64 {
-    //     self.current_phase.aggregator.decimals()
-    // }
+    pub fn decimals(&self) -> Promise {
+        Promise::new(self.current_phase.aggregator)
+        .function_call(
+            b"get_decimals".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()  
+    }
 
-    // pub fn version(&self) -> u128 {
-    //     self.currentPhase.aggregator.version()
-    // }
+    pub fn version(&self) -> Promise {
+        Promise::new(self.current_phase.aggregator)
+        .function_call(
+            b"get_version".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()  
+    }
 
-    // pub fn description(&self) -> Base64String {
-    //     self.currentPhase.aggregator.description()
-    // }
+    pub fn description(&self) -> Promise {
+        Promise::new(self.current_phase.aggregator)
+        .function_call(
+            b"get_description".to_vec(),
+            json!({}).to_string().as_bytes().to_vec(),
+            0,
+            SINGLE_CALL_GAS,
+        )
+        .as_return()  
+    }
 
     pub fn propose_aggregator(&mut self, _aggregator: AccountId) {
         self.only_owner();
