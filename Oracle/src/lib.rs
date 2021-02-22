@@ -21,10 +21,10 @@ const TRANSFER_FROM_NEAR_COST: u128 = 36_500_000_000_000_000_000_000; // 365 x 1
 pub type Base64String = String;
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Oracle {
-    pub owner: AccountId
-    pub link_account: AccountId
+    pub owner: AccountId,
+    pub linkToken: AccountId,
     commitments: LookupMap<Base64String, Base64String>,
     authorizedNodes: LookupMap<AccountId, bool>,
     withdrawableTokens: u128
@@ -46,7 +46,7 @@ impl Oracle {
 
         Self {
             owner: owner_id,
-            link_account: link_id,
+            linkToken: link_id,
             commitments: LookupMap::new(b"commitments".to_vec()),
             authorizedNodes: LookupMap::new(b"authorizedNodes".to_vec()),
             withdrawableTokens: 0_u128
@@ -68,8 +68,8 @@ impl Oracle {
             env::panic(b"Could not find commitment.");
         }
         let commitment = commitment_option.unwrap();
-        assert!(commitment == 0, "Must use a unique ID");
-        let expiration: u256 = env::block_timestamp() + EXPIRY_TIME;
+        assert!(commitment == "", "Must use a unique ID");
+        let expiration: u128 = env::block_timestamp() + EXPIRY_TIME;
 
         let to_insert: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
         self.commitments.insert(&requestId, &to_insert);
@@ -104,12 +104,12 @@ impl Oracle {
         self.hasAvailableFunds(_amount);
         let amount_u128: u128 = _amount.into();
 
-        self.withdrawableTokens = self.withdrawableTokens - _amount;
+        self.withdrawableTokens = self.withdrawableTokens - amount_u128;
         //assert!()
     }
 
     pub fn withdrawable(&mut self) -> u128 {
-        self.withdrawableTokens - ONE_FOR_CONSISTENT_GAS_COST
+        self.withdrawableTokens
     }
 
     pub fn cancelOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackFunc: Base64String, _expiration: U128) {
@@ -119,29 +119,33 @@ impl Oracle {
         assert!(paramsHash == self.commitments[_requestId], "Params do not match request ID");
         assert!(expiration_u128 <= env::block_timestamp().into());
 
-        self.commitments[_requestId].clear();
+        let commitment_option = self.commitments.get(&_requestId);
+        if commitment_option.is_none() {
+            env::panic(b"Could not find commitment.");
+        }
+        self.commitments.remove(&_requestId);
 
         //assert linkToken
     }
 
     pub fn getChainlinkToken(&self) -> AccountId {
-        self.link_id
+        self.linkToken
     }
 
     // MODIFIERS
 
     fn hasAvailableFunds(&self, _amount: U128) {
         let amount_u128: u128 = _amount.into();
-        assert!(self.withdrawableTokens >= (amount_u128 + ONE_FOR_CONSISTENT_GAS_COST));
+        assert!(self.withdrawableTokens >= amount_u128);
     }
 
     fn isValidRequest(&self, _requestId: Base64String) {
-        let commitment_option = self.commitments.get(&requestId);
+        let commitment_option = self.commitments.get(&_requestId);
         if commitment_option.is_none() {
             env::panic(b"Could not find commitment.");
         }
         let commitment = commitment_option.unwrap();
-        assert!(commitment != 0, "Must have a valid requestId");
+        assert!(commitment != "", "Must have a valid requestId");
     }
 
     fn onlyAuthorizedNode(&self) {
@@ -150,7 +154,7 @@ impl Oracle {
     }
 
     fn checkCallbackAddress(&self, _to: &AccountId) {
-        assert_ne!(callback_address, &self.link_account, "Cannot callback to LINK.");
+        assert_ne!(callback_address, &self.linkToken, "Cannot callback to LINK.");
         assert_ne!(callback_address, &env::current_account_id(), "Callback address cannot be the oracle contract.");
     }
 
