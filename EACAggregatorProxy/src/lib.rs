@@ -53,7 +53,6 @@ impl Default for EACAggregatorProxy {
 impl EACAggregatorProxy {
     #[init]
     pub fn new(
-        link_id: AccountId,
         owner_id: AccountId,
         _aggregator: AccountId,
         _access_controller: AccountId,
@@ -61,10 +60,6 @@ impl EACAggregatorProxy {
         assert!(
             env::is_valid_account_id(owner_id.as_bytes()),
             "Owner's account ID is invalid"
-        );
-        assert!(
-            env::is_valid_account_id(link_id.as_bytes()),
-            "Link token account ID is invalid"
         );
         assert!(!env::state_exists(), "Already initialized");
 
