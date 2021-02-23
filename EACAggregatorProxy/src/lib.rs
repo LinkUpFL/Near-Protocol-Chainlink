@@ -24,10 +24,10 @@ pub struct Phase {
 }
 
 const PHASE_OFFSET: u128 = 64;
-const PHASE_SIZE: u128 = 16;
+// const PHASE_SIZE: u128 = 16;
 
 fn find_pow() -> u128 {
-    pow(PHASE_OFFSET + PHASE_SIZE, 2) - 1
+    (pow(2, 80)) - 1
 }
 
 
