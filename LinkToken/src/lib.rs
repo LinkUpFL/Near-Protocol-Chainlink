@@ -271,10 +271,10 @@ impl LinkToken {
     pub fn transferAndCall(&self, _to: AccountId, _value: U128, _data: Base64String) -> bool {
         let value_u128: u128 = _value.into();
         self.transfer(&_to, &value_u128);
-        // FIX THIS  -- How to tell if an address is a contract?
-        if _to.isContract {
-            self.contractFallback(&_to, &value_u128, &_data);
-        }
+        // Whether the _to AccountId is a contract cannot be established with Near unless using an
+        // oracle to query all shards to find if an there exists an AccountId that matches
+        // _to.
+        self.contractFallback(&_to, &value_u128, &_data);
         return true;
     }
 
