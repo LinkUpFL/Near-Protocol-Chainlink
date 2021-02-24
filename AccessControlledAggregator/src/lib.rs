@@ -151,7 +151,7 @@ impl AccessControlledAggregator {
         let round = round_option.unwrap();
         round.updatedAt = (env::block_timestamp() - timeout_u64) as u64;
 
-        result.updateFutureRounds(&paymentAmount_u128, 0, 0, 0, &timeout_u64);
+        result.updateFutureRounds(U128::from(paymentAmount_u128), U64::from(0), U64::from(0), U64::from(0), U64::from(timeout_u64));
         result.setValidator(_validator);
         result
     }
@@ -186,13 +186,13 @@ impl AccessControlledAggregator {
         }
 
         assert!(_added.len() == _addedAdmins.len(), "need same oracle and admin count");
-        assert!((self.oracleCount() + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
+        assert!((self.oracleCount() as usize + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
 
         for i in 0.._added.len() {
             self.addOracle(_added[i], _addedAdmins[i]);
         }
 
-        self.updateFutureRounds(self.paymentAmount, minSubmissions_u64, maxSubmissions_u64, restartDelay_u64, self.timeout);
+        self.updateFutureRounds(U128::from(self.paymentAmount), U64::from(minSubmissions_u64), U64::from(maxSubmissions_u64), U64::from(restartDelay_u64), U64::from(self.timeout));
     }
 
     pub fn updateFutureRounds(&mut self, _paymentAmount: U128, _minSubmissions: U64, _maxSubmissions: U64, _restartDelay: U64, _timeout: U64) {
@@ -508,13 +508,13 @@ impl AccessControlledAggregator {
 
         let mut round: Round = firstRound;
         let mut vector: Vec<u128> = Vec::new();
-        let mut nextDetails: RoundDetails = RoundDetails(
-            vector,
-            self.maxSubmissionCount,
-            self.minSubmissionCount,
-            self.timeout,
-            self.paymentAmount
-        );
+        let mut nextDetails: RoundDetails = RoundDetails {
+            submissions: vector,
+            maxSubmissions: self.maxSubmissionCount,
+            minSubmissions: self.minSubmissionCount,
+            timeout: self.timeout,
+            paymentAmount: self.paymentAmount
+        };
         detail = nextDetails;
         round.startedAt = env::block_timestamp() as u64;
     }
