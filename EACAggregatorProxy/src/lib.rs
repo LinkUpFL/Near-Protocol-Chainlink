@@ -200,26 +200,6 @@ impl EACAggregatorProxy {
         self.add_phase(self.current_phase.id, latest_round_id.try_into().unwrap())
     }
 
-    pub fn latest_round(&mut self) -> u128 {
-        self.check_access();
-        let get_latest_round_promise = env::promise_create(
-            self.current_phase.aggregator.clone(),
-            b"lastest_round",
-            json!({}).to_string().as_bytes(),
-            0,
-            SINGLE_CALL_GAS,
-        );
-        let get_latest_round_promise_result: Vec<u8> =
-            match env::promise_result(get_latest_round_promise) {
-                PromiseResult::Successful(x) => x,
-                _ => panic!("Promise with index 0 failed"),
-            };
-        let get_latest_round_promise_result_json: u128 =
-            serde_json::from_slice(&get_latest_round_promise_result).unwrap();
-            // u64/u128 error here
-        self.add_phase(self.current_phase.id, get_latest_round_promise_result_json.try_into().unwrap())
-    }
-
     pub fn get_round_data(&mut self, _round_id: U128) -> (u128, u128, u128, u128, u128) {
         let round_id_u128: u128 = _round_id.into();
         let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
