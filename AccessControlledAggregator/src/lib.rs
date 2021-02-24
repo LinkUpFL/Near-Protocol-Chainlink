@@ -119,7 +119,7 @@ impl AccessControlledAggregator {
         let minSubmissionValue_u128: u128 = _minSubmissionValue.into();
         let maxSubmissionValue_u128: u128 = _maxSubmissionValue.into();
         let decimals_u64: u64 = _decimals.into();
-        let mut vector: Vec::<AccountId> = Vec::new();
+        let vector: Vec::<AccountId> = Vec::new();
 
         let mut result = Self {
             owner: owner_id,
@@ -148,7 +148,7 @@ impl AccessControlledAggregator {
         result.checkEnabled = true;
 
         let round_option = result.rounds.get(&0);
-        let round = round_option.unwrap();
+        let mut round = round_option.unwrap();
         round.updatedAt = (env::block_timestamp() - timeout_u64) as u64;
 
         result.updateFutureRounds(U128::from(paymentAmount_u128), U64::from(0), U64::from(0), U64::from(0), U64::from(timeout_u64));
@@ -226,7 +226,7 @@ impl AccessControlledAggregator {
         self.recordedFunds.available
     }
 
-    pub fn updateAvailableFunds(&self) {
+    pub fn updateAvailableFunds(&mut self) {
         let funds: Funds = self.recordedFunds;
 
         // uint256 nowAvailable = linkToken.balanceOf(address(this)).sub(funds.allocated);
@@ -336,7 +336,7 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
         assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
 
         // Safe to downcast _amount because the total amount of LINK is less than 2^128.
@@ -372,7 +372,7 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
         assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
         oracle.pendingAdmin = _newAdmin;
     }
@@ -430,7 +430,7 @@ impl AccessControlledAggregator {
         }
     }
 
-    pub fn onTokenTransfer(&mut self, address: AccountId, num: U128, _data: Base64String) {
+    pub fn onTokenTransfer(&mut self, _address: AccountId, _num: U128, _data: Base64String) {
         assert!(_data.len() == 0, "transfer doesn't accept calldata");
         self.updateAvailableFunds();
     }
@@ -460,7 +460,6 @@ impl AccessControlledAggregator {
 
         if queriedRoundId_u64 > 0 {
             let round: Round = round;
-            let details: RoundDetails = detail;
             return (
                 self.eligibleForSpecificRound(_oracle, queriedRoundId_u64),
                 queriedRoundId_u64,
@@ -500,12 +499,6 @@ impl AccessControlledAggregator {
         }
         let round = round_option.unwrap();
 
-        let detail_option = self.details.get(&(_roundId as u128));
-        if detail_option.is_none() {
-            env::panic(b"Did not find this round.");
-        }
-        let detail = detail_option.unwrap();
-
         let mut round: Round = firstRound;
         let mut vector: Vec<u128> = Vec::new();
         let mut nextDetails: RoundDetails = RoundDetails {
@@ -515,7 +508,7 @@ impl AccessControlledAggregator {
             timeout: self.timeout,
             paymentAmount: self.paymentAmount
         };
-        detail = nextDetails;
+        self.details.insert(&(_roundId as u128), &nextDetails);
         round.startedAt = env::block_timestamp() as u64;
     }
 
@@ -572,12 +565,6 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this round.");
         }
         let prev = prev_option.unwrap();
-
-        let detail_option = self.details.get(&(_roundId as u128));
-        if detail_option.is_none() {
-            env::panic(b"Did not find this round.");
-        }
-        let detail = detail_option.unwrap();
 
         round.answer = prev.answer;
         round.answeredInRound = prev.answeredInRound;
@@ -942,7 +929,7 @@ impl AccessControlledAggregator {
         assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
 
-    fn median(&mut self, numbers: Vec<u128>) -> u128 {
+    fn median(&mut self, mut numbers: Vec<u128>) -> u128 {
         numbers.sort();
         let mid = numbers.len() / 2;
         numbers[mid]
@@ -977,8 +964,7 @@ impl AccessControlledAggregator {
 
         let user_option = self.accessList.get(&_user);
         if user_option.is_none() {
-            let user = user_option.unwrap();
-            user = true;
+            self.accessList.insert(&_user, &true);
             env::panic(b"Added access to this oracle account.");
         }
     }
@@ -990,8 +976,7 @@ impl AccessControlledAggregator {
         if user_option.is_none() {
             env::panic(b"Did not find the oracle account to remove.");
         }
-        let user = user_option.unwrap();
-        user = false;
+        self.accessList.insert(&_user, &false);
     }
 
     pub fn enableAccessCheck(&mut self) {
