@@ -170,6 +170,36 @@ impl EACAggregatorProxy {
         )
     }
 
+    pub fn latest_round(&mut self) {
+        self.check_access();
+        let prepaid_gas = env::prepaid_gas();
+        let get_latest_round_promise = env::promise_create(
+            self.current_phase.aggregator.clone(),
+            b"latest_round",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+
+        let promise3 = env::promise_then(get_latest_round_promise, env::current_account_id(), b"latest_round_results", json!({}).to_string().as_bytes(), 0, prepaid_gas / 4);
+        env::promise_return(promise3);
+    }
+
+    pub fn latest_round_results(&self) -> u128 {
+        assert_eq!(env::current_account_id(), env::predecessor_account_id());
+        assert_eq!(env::promise_results_count(), 1);
+        let get_latest_round_promise_result: Vec<u8> =
+        match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                env::log(b"Check_promise successful");
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let latest_round_id: u64 = serde_json::from_slice(&get_latest_round_promise_result).unwrap();
+        self.add_phase(self.current_phase.id, latest_round_id.try_into().unwrap())
+    }
+
     pub fn latest_round(&mut self) -> u128 {
         self.check_access();
         let get_latest_round_promise = env::promise_create(
@@ -453,3 +483,5 @@ impl EACAggregatorProxy {
         );
     }
 }
+
+  
