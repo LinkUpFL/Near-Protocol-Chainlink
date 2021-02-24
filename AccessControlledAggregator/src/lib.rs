@@ -297,7 +297,7 @@ impl AccessControlledAggregator {
         return 0;
     }
 
-    pub fn getRoundData(&self, _roundId: U64) -> ( u64, u128,  u64, u64, u64) {
+    pub fn getRoundData(&self, _roundId: U64) -> (u64, u128,  u64, u64, u64) {
         let roundId_u64: u64 = _roundId.into();
 
         let round_option = self.rounds.get(&roundId_u64);
@@ -318,7 +318,7 @@ impl AccessControlledAggregator {
         )
     }
 
-    pub fn latestRoundData(&self) -> (u128, u128, u64, u64, u64) {
+    pub fn latestRoundData(&self) -> (u64, u128,  u64, u64, u64) {
         self.getRoundData(U64::from(self.latestRoundId))
     }
 
@@ -600,7 +600,7 @@ impl AccessControlledAggregator {
         }
     }
 
-    fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> ( bool,  u64,  u128, u64, u64,  u128, u128) {
+    fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
         let round_option = self.rounds.get(&0);
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
@@ -664,7 +664,8 @@ impl AccessControlledAggregator {
             oracle.latestSubmission,
             round.startedAt,
             detail.timeout,
-            self.oracleCount(),
+            self.recordedFunds.available,
+            self.oracleCount() as u64,
             _paymentAmount
         );
     }
