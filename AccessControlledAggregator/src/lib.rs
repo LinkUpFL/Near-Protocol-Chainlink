@@ -501,7 +501,6 @@ impl AccessControlledAggregator {
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let round = round_option.unwrap();
 
         let mut round: Round = firstRound;
         let vector: Vec<u128> = Vec::new();
@@ -599,7 +598,7 @@ impl AccessControlledAggregator {
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let round = round_option.unwrap();
+        let mut round = round_option.unwrap();
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -615,34 +614,33 @@ impl AccessControlledAggregator {
         let mut _roundId: u64;
         let mut _paymentAmount: u128;
         let mut _eligibleToSubmit: bool;
+        let _reportingRoundId: u64 = self.reportingRoundId;
 
-        let detail_option = self.details.get(&(_roundId as u128));
+        let detail_option = self.details.get(&(_reportingRoundId as u128));
         if detail_option.is_none() {
             env::panic(b"Did not find this round.");
         }
         let detail = detail_option.unwrap();
 
         if self.supersedable(self.reportingRoundId) && shouldSupersede {
+            _roundId = self.reportingRoundId + 1;
+
             let roundFromId_option = self.rounds.get(&_roundId);
             if roundFromId_option.is_none() {
                 env::panic(b"Did not find this round.");
             }
             let roundFromId = roundFromId_option.unwrap();
-
-            _roundId = self.reportingRoundId + 1;
-            round = roundFromId;
+            self.rounds.insert(&0, &roundFromId);
 
             _paymentAmount = self.paymentAmount;
             _eligibleToSubmit = self.delayed(_oracle, _roundId);
         } else {
-            let roundFromId_option = self.rounds.get(&_roundId);
+            let roundFromId_option = self.rounds.get(&_reportingRoundId);
             if roundFromId_option.is_none() {
                 env::panic(b"Did not find this round.");
             }
             let roundFromId = roundFromId_option.unwrap();
-
-            _roundId = self.reportingRoundId;
-            round = roundFromId;
+            self.rounds.insert(&0, &roundFromId);
 
             _paymentAmount = detail.paymentAmount;
             _eligibleToSubmit = self.acceptingSubmissions(_roundId.into());
