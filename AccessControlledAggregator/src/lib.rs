@@ -480,7 +480,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn setValidator(&mut self, _newValidator: AccountId) {
-        let previous: AccountId = self.validator as AccountId;
+        let previous: AccountId = String::from(&self.validator) as AccountId;
 
         if previous != _newValidator {
             self.validator = _newValidator;
@@ -598,7 +598,7 @@ impl AccessControlledAggregator {
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let mut round = round_option.unwrap();
+        let round = round_option.unwrap();
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -635,6 +635,7 @@ impl AccessControlledAggregator {
             _paymentAmount = self.paymentAmount;
             _eligibleToSubmit = self.delayed(_oracle, _roundId);
         } else {
+            _roundId = self.reportingRoundId;
             let roundFromId_option = self.rounds.get(&_reportingRoundId);
             if roundFromId_option.is_none() {
                 env::panic(b"Did not find this round.");
@@ -835,30 +836,26 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
 
-        let lastOracle: usize = (self.oracleCount() - 1).try_into().unwrap();
-        let lastOracle_option = self.oracleAddresses.get(lastOracle);
-        if lastOracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
-        }
-        let lastOracle = lastOracle_option.unwrap();
+        let lastOracle: usize = (self.oracleCount() - 1) as usize;
+        let tail: &AccountId = &self.oracleAddresses[lastOracle];
 
-        oracle.endingRound = (self.reportingRoundId + 1).into();
-        let tail: AccountId = lastOracle.to_string();
-
-        let oracleTail_option = self.oracles.get(&tail);
+        let oracleTail_option = self.oracles.get(tail);
         if oracleTail_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracleTail = oracleTail_option.unwrap();
+        let mut oracleTail = oracleTail_option.unwrap();
 
+        oracle.endingRound = (self.reportingRoundId + 1).into();
         let index: usize = oracle.index.try_into().unwrap();
         oracleTail.index = index.try_into().unwrap();
         oracle.index = 0_u64;
-        let oracleIndex = self.oracleAddresses[index];
-        oracleIndex = tail;
+        self.oracleAddresses[index] = tail.to_string();
         self.oracleAddresses.pop();
+
+        self.oracles.insert(&_oracle, &oracle);
+        self.oracles.insert(&tail, &oracleTail);
     }
 
     fn validateOracleRound(&self, _oracle: AccountId, _roundId: u64) -> Base64String {
