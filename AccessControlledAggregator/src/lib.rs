@@ -543,7 +543,7 @@ impl AccessControlledAggregator {
         if requester_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let requester = requester_option.unwrap();
+        let mut requester = requester_option.unwrap();
 
         let lastStarted: u128 = requester.lastStartedRound.into(); // cache storage reads
         assert!((_roundId as u128) > lastStarted + (requester.delay as u128) || lastStarted == 0, "must delay requests");
@@ -551,6 +551,7 @@ impl AccessControlledAggregator {
         self.initializeNewRound(_roundId);
 
         requester.lastStartedRound = _roundId;
+        self.requesters.insert(&env::predecessor_account_id(), &requester);
     }
 
     fn updateTimedOutRoundInfo(&mut self, _roundId: u64) {
@@ -563,7 +564,7 @@ impl AccessControlledAggregator {
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let round = round_option.unwrap();
+        let mut round = round_option.unwrap();
 
         let prev_option = self.rounds.get(&prevId);
         if prev_option.is_none() {
@@ -674,12 +675,13 @@ impl AccessControlledAggregator {
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let round = round_option.unwrap();
+        let mut round = round_option.unwrap();
 
         let newAnswer: u128 = self.median(detail.submissions).into();
         round.answer = newAnswer;
         round.updatedAt = env::block_timestamp() as u64;
         round.answeredInRound = _roundId;
+        self.rounds.insert(&_roundId, &round);
         self.latestRoundId = _roundId;
 
         return (true, newAnswer);
@@ -715,14 +717,15 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
 
         let payment: u128 = detail.paymentAmount;
-        let funds: Funds = self.recordedFunds;
+        let mut funds: Funds = self.recordedFunds;
         funds.available = funds.available - payment;
         funds.allocated = funds.allocated - payment;
         self.recordedFunds = funds;
         oracle.withdrawable = oracle.withdrawable + payment;
+        self.oracles.insert(&env::predecessor_account_id(), &oracle);
     }
 
     fn recordSubmission(&mut self, _submission: u128, _roundId: u128) {
@@ -732,17 +735,20 @@ impl AccessControlledAggregator {
         if detail_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let detail = detail_option.unwrap();
+        let mut detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
 
         detail.submissions.push(_submission);
+        self.details.insert(&(_roundId as u128), &detail);
+
         oracle.lastReportedRound = _roundId as u64;
         oracle.latestSubmission = _submission;
+        self.oracles.insert(&env::predecessor_account_id(), &oracle);
     }
 
     fn deleteRoundDetails(&mut self, _roundId: u64) {
@@ -812,7 +818,7 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
 
         assert!(oracle.admin == env::predecessor_account_id() || oracle.admin == _admin, "owner cannot overwrite admin");
 
@@ -821,6 +827,7 @@ impl AccessControlledAggregator {
         oracle.index = self.oracleAddresses.len() as u64;
         self.oracleAddresses.push(_oracle);
         oracle.admin = _admin;
+        self.oracles.insert(&_oracle, &oracle);
     }
 
     fn removeOracle(&mut self, _oracle: AccountId) {
@@ -833,7 +840,6 @@ impl AccessControlledAggregator {
         let oracle = oracle_option.unwrap();
 
         let lastOracle: usize = (self.oracleCount() - 1).try_into().unwrap();
-
         let lastOracle_option = self.oracleAddresses.get(lastOracle);
         if lastOracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
