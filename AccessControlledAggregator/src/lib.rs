@@ -345,6 +345,7 @@ impl AccessControlledAggregator {
         assert!(available >= amount_u128, "insufficient withdrawable funds");
 
         oracle.withdrawable = available - amount_u128;
+        self.oracles.insert(&_oracle, &oracle);
         self.recordedFunds.allocated = self.recordedFunds.allocated - amount_u128;
 
         //assert(linkToken.transfer(_recipient, uint256(amount)));
@@ -375,6 +376,7 @@ impl AccessControlledAggregator {
         let mut oracle = oracle_option.unwrap();
         assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
         oracle.pendingAdmin = _newAdmin;
+        self.oracles.insert(&_oracle, &oracle);
     }
 
     pub fn acceptAdmin(&mut self, _oracle: AccountId) {
@@ -382,10 +384,11 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
         assert!(oracle.pendingAdmin == env::predecessor_account_id(), "only callable by pending admin");
         oracle.pendingAdmin = "".to_string();
         oracle.admin = env::predecessor_account_id();
+        self.oracles.insert(&_oracle, &oracle);
     }
 
     pub fn requestNewRound(&mut self) -> u64 {
@@ -416,7 +419,7 @@ impl AccessControlledAggregator {
         if requester_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let requester = requester_option.unwrap();
+        let mut requester = requester_option.unwrap();
 
         if requester.authorized == _authorized {
             return;
@@ -425,6 +428,7 @@ impl AccessControlledAggregator {
         if _authorized {
             requester.authorized = _authorized;
             requester.delay = delay_u64;
+            self.requesters.insert(&_requester, &requester);
         } else {
             self.requesters.remove(&_requester);
         }
@@ -435,7 +439,7 @@ impl AccessControlledAggregator {
         self.updateAvailableFunds();
     }
 
-    pub fn oracleRoundState(&self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
+    pub fn oracleRoundState(&mut self, _oracle: AccountId, _queriedRoundId: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
         assert!(env::predecessor_account_id() == env::signer_account_id(), "off-chain reading only");
 
         let queriedRoundId_u64: u64 = _queriedRoundId.into();
@@ -500,8 +504,8 @@ impl AccessControlledAggregator {
         let round = round_option.unwrap();
 
         let mut round: Round = firstRound;
-        let mut vector: Vec<u128> = Vec::new();
-        let mut nextDetails: RoundDetails = RoundDetails {
+        let vector: Vec<u128> = Vec::new();
+        let nextDetails: RoundDetails = RoundDetails {
             submissions: vector,
             maxSubmissions: self.maxSubmissionCount,
             minSubmissions: self.minSubmissionCount,
@@ -520,7 +524,7 @@ impl AccessControlledAggregator {
         if oracle_option.is_none() {
             env::panic(b"Did not find this round.");
         }
-        let oracle = oracle_option.unwrap();
+        let mut oracle = oracle_option.unwrap();
 
         let lastStarted: u64 = oracle.lastStartedRound; // cache storage reads
         if _roundId <= lastStarted + self.restartDelay && lastStarted != 0 {
@@ -528,6 +532,7 @@ impl AccessControlledAggregator {
         }
         self.initializeNewRound(_roundId);
         oracle.lastStartedRound = _roundId;
+        self.oracles.insert(&env::predecessor_account_id(), &oracle);
     }
 
     fn requesterInitializeNewRound(&mut self, _roundId: u64) {
@@ -569,6 +574,7 @@ impl AccessControlledAggregator {
         round.answer = prev.answer;
         round.answeredInRound = prev.answeredInRound;
         round.updatedAt = env::block_timestamp() as u64;
+        self.rounds.insert(&_roundId, &round);
 
         self.details.remove(&(_roundId as u128));
     }
@@ -880,7 +886,7 @@ impl AccessControlledAggregator {
             return "previous round not supersedable".to_string();
         }
     }
-    fn supersedable(&self, _roundId: u64) -> bool {
+    fn supersedable(&mut self, _roundId: u64) -> bool {
         let round_option = self.rounds.get(&_roundId);
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
