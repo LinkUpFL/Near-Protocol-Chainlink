@@ -182,14 +182,14 @@ impl AccessControlledAggregator {
         let restartDelay_u64: u64 = _restartDelay.into();
 
         for i in 0.._removed.len() {
-            self.removeOracle(_removed[i]);
+            self.removeOracle(_removed[i].clone());
         }
 
         assert!(_added.len() == _addedAdmins.len(), "need same oracle and admin count");
         assert!((self.oracleCount() as usize + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
 
         for i in 0.._added.len() {
-            self.addOracle(_added[i], _addedAdmins[i]);
+            self.addOracle(_added[i].clone(), _addedAdmins[i].clone());
         }
 
         self.updateFutureRounds(U128::from(self.paymentAmount), U64::from(minSubmissions_u64), U64::from(maxSubmissions_u64), U64::from(restartDelay_u64), U64::from(self.timeout));
@@ -227,7 +227,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn updateAvailableFunds(&mut self) {
-        let funds: Funds = self.recordedFunds;
+        let funds: &Funds = &self.recordedFunds;
 
         // uint256 nowAvailable = linkToken.balanceOf(address(this)).sub(funds.allocated);
         let nowAvailable: u128 = funds.available - funds.allocated;
@@ -242,7 +242,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn getOracles(&self) -> Vec<AccountId> {
-        self.oracleAddresses
+        self.oracleAddresses.clone()
     }
 
     pub fn latestAnswer(&self) -> u128 {
@@ -580,21 +580,22 @@ impl AccessControlledAggregator {
     }
 
     fn eligibleForSpecificRound(&self, _oracle: AccountId, _queriedRoundId: u64) -> bool {
+        let init_oracle = &_oracle;
         let round_option = self.rounds.get(&_queriedRoundId);
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
         let round = round_option.unwrap();
-
         if round.startedAt > 0 {
-            return self.acceptingSubmissions(_queriedRoundId.into()) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
+            return self.acceptingSubmissions(_queriedRoundId.into()) && self.validateOracleRound(init_oracle.to_string(), _queriedRoundId).len() == 0
         } else {
-            return self.delayed(_oracle, _queriedRoundId) && self.validateOracleRound(_oracle, _queriedRoundId).len() == 0;
+            return self.delayed(_oracle.to_string(), _queriedRoundId) && self.validateOracleRound(init_oracle.to_string(), _queriedRoundId).len() == 0
         }
     }
 
     fn oracleRoundStateSuggestRound(&mut self, _oracle: AccountId) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
         let round_option = self.rounds.get(&0);
+        let init_oracle = &_oracle;
         if round_option.is_none() {
             env::panic(b"Did not find this round.");
         }
@@ -633,7 +634,7 @@ impl AccessControlledAggregator {
             self.rounds.insert(&0, &roundFromId);
 
             _paymentAmount = self.paymentAmount;
-            _eligibleToSubmit = self.delayed(_oracle, _roundId);
+            _eligibleToSubmit = self.delayed(_oracle.to_string(), _roundId);
         } else {
             _roundId = self.reportingRoundId;
             let roundFromId_option = self.rounds.get(&_reportingRoundId);
@@ -647,7 +648,7 @@ impl AccessControlledAggregator {
             _eligibleToSubmit = self.acceptingSubmissions(_roundId.into());
         }
 
-        if self.validateOracleRound(_oracle, _roundId).len() != 0 {
+        if self.validateOracleRound(init_oracle.to_string(), _roundId).len() != 0 {
             _eligibleToSubmit = false;
         }
 
@@ -687,7 +688,7 @@ impl AccessControlledAggregator {
     }
 
     fn validateAnswer(&self, _roundId: u64, _newAnswer: u128) {
-        let av: AccountId = self.validator; // cache storage reads
+        let av: AccountId = self.validator.clone(); // cache storage reads
         if av == "" {
             return;
         }
