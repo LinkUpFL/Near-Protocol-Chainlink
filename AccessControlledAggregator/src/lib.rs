@@ -720,7 +720,7 @@ impl AccessControlledAggregator {
         let mut oracle = oracle_option.unwrap();
 
         let payment: u128 = detail.paymentAmount;
-        let mut funds: Funds = self.recordedFunds;
+        let mut funds: Funds = self.recordedFunds.clone();
         funds.available = funds.available - payment;
         funds.allocated = funds.allocated - payment;
         self.recordedFunds = funds;
@@ -811,7 +811,8 @@ impl AccessControlledAggregator {
     }
 
     fn addOracle(&mut self, _oracle: AccountId, _admin: AccountId) {
-        assert!(!self.oracleEnabled(_oracle), "oracle already enabled");
+        let init_oracle = &_oracle;
+        assert!(!self.oracleEnabled(init_oracle.to_string()), "oracle already enabled");
         assert!(_admin != "", "cannot set admin to 0");
 
         let oracle_option = self.oracles.get(&_oracle);
@@ -822,16 +823,17 @@ impl AccessControlledAggregator {
 
         assert!(oracle.admin == env::predecessor_account_id() || oracle.admin == _admin, "owner cannot overwrite admin");
 
-        oracle.startingRound = self.getStartingRound(_oracle);
+        oracle.startingRound = self.getStartingRound(init_oracle.to_string());
         oracle.endingRound = ROUND_MAX;
         oracle.index = self.oracleAddresses.len() as u64;
-        self.oracleAddresses.push(_oracle);
+        self.oracleAddresses.push(init_oracle.to_string());
         oracle.admin = _admin;
         self.oracles.insert(&_oracle, &oracle);
     }
 
     fn removeOracle(&mut self, _oracle: AccountId) {
-        assert!(self.oracleEnabled(_oracle), "oracle not enabled");
+        let init_oracle = &_oracle;
+        assert!(self.oracleEnabled(init_oracle.to_string()), "oracle not enabled");
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -840,9 +842,10 @@ impl AccessControlledAggregator {
         let mut oracle = oracle_option.unwrap();
 
         let lastOracle: usize = (self.oracleCount() - 1) as usize;
-        let tail: &AccountId = &self.oracleAddresses[lastOracle];
+        let tail: AccountId = self.oracleAddresses[lastOracle].clone();
+        let init_tail = &tail;
 
-        let oracleTail_option = self.oracles.get(tail);
+        let oracleTail_option = self.oracles.get(&tail);
         if oracleTail_option.is_none() {
             env::panic(b"Did not find this oracle account.");
         }
@@ -852,7 +855,7 @@ impl AccessControlledAggregator {
         let index: usize = oracle.index.try_into().unwrap();
         oracleTail.index = index.try_into().unwrap();
         oracle.index = 0_u64;
-        self.oracleAddresses[index] = tail.to_string();
+        self.oracleAddresses[index] = init_tail.to_string();
         self.oracleAddresses.pop();
 
         self.oracles.insert(&_oracle, &oracle);
