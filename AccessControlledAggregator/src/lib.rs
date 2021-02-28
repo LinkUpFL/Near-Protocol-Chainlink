@@ -60,6 +60,7 @@ pub struct Requester {
 
 #[derive(BorshDeserialize, BorshSerialize)]
 #[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Funds {
     available: u128,
@@ -69,9 +70,8 @@ pub struct Funds {
 const version: u128 = 3;
 const RESERVE_ROUNDS: u128 = 2;
 const MAX_ORACLE_COUNT: u128 = 77;
-// Previous: 2.pow(32-1)
-const ROUND_MAX: u128 = pow(32-1, 2);
-const V3_NO_DATA_ERROR: Base64String = "No data present".to_string();
+const ROUND_MAX: u128 = 4294967295; // 2**32-1
+const V3_NO_DATA_ERROR: &str = "No data present";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -950,11 +950,12 @@ impl AccessControlledAggregator {
         self.decimals
     }
     pub fn get_description(&self) -> String {
-        self.description
+        self.description.clone()
     }
     pub fn get_version(&self) -> u128 {
         version
     }
+
     // Access Control
 
     pub fn hasAccess(&self, _user: AccountId) -> bool {
