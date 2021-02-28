@@ -3,6 +3,7 @@ use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128};
 use near_sdk::{AccountId, env, near_bindgen};
 use near_sdk::wee_alloc::{WeeAlloc};
+use hex::{encode};
 use std::str;
 
 #[global_allocator]
@@ -22,10 +23,10 @@ pub type Base64String = String;
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Oracle {
     pub owner: AccountId,
-    pub linkToken: AccountId,
+    pub link_token: AccountId,
     commitments: LookupMap<Base64String, Base64String>,
-    authorizedNodes: LookupMap<AccountId, bool>,
-    withdrawableTokens: u128
+    authorized_nodes: LookupMap<AccountId, bool>,
+    withdrawable_tokens: u128
 }
 
 impl Default for Oracle {
@@ -44,24 +45,25 @@ impl Oracle {
 
         Self {
             owner: owner_id,
-            linkToken: link_id,
+            link_token: link_id,
             commitments: LookupMap::new(b"commitments".to_vec()),
-            authorizedNodes: LookupMap::new(b"authorizedNodes".to_vec()),
-            withdrawableTokens: 0_u128
+            authorized_nodes: LookupMap::new(b"authorized_nodes".to_vec()),
+            withdrawable_tokens: 0_u128
         }
     }
 
-    pub fn oracleRequest(&mut self, _sender: AccountId, _payment: U128, _specId: Base64String, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _nonce: U128, _dataVersion: U128, _data: Base64String) {
-        self.onlyLINK();
-        self.checkCallbackAddress(&_callbackAddress);
+    pub fn oracle_request(&mut self, _sender: AccountId, _payment: U128, _spec_id: Base64String, _callback_address: AccountId, _callback_function_id: Base64String, _nonce: U128, _data_version: U128, _data: Base64String) {
+        self.only_link();
+        self.check_callback_address(&_callback_address);
 
         let payment_u128: u128 = _payment.into();
         let nonce_u128: u128 = _nonce.into();
-        let dataVersion_u128: u128 = _dataVersion.into();
+        let data_version_u128: u128 = _data_version.into();
 
-        let requestId: Base64String = hex::encode(env::keccak256(_sender, nonce_u128));
+        let request_id_to_encode: Base64String = [_sender, nonce_u128.to_string()].join("\n");
+        let request_id = hex::encode(to_encode);
 
-        let commitment_option = self.commitments.get(&requestId);
+        let commitment_option = self.commitments.get(&request_id);
         if commitment_option.is_none() {
             env::panic(b"Could not find commitment.");
         }
@@ -69,23 +71,24 @@ impl Oracle {
         assert!(commitment == "", "Must use a unique ID");
         let expiration: u128 = env::block_timestamp() + EXPIRY_TIME.into();
 
-        let to_insert: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration));
-        self.commitments.insert(&requestId, &to_insert);
+        let commitment_to_encode: Base64String = [payment_u128.to_string(), _callbackAddress, _callbackFunctionId, expiration.to_string()].join("\n");
+        let to_insert: Base64String = hex::encode(commitment_to_encode);
+        self.commitments.insert(&request_id, &to_insert);
     }
 
-    pub fn fulfillOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _expiration: U128, _data: Base64String) -> bool {
-        self.isValidRequest(_requestId);
+    pub fn fulfillOracleRequest(&mut self, _request_id: Base64String, _payment: U128, _callbackAddress: AccountId, _callbackFunctionId: Base64String, _expiration: U128, _data: Base64String) -> bool {
+        self.isValidRequest(_request_id);
         let payment_u128: u128 = _payment.into();
         let expiration_u128: u128 = _expiration.into();
         let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunctionId, expiration_u128));
-        let commitment_option = self.commitments.get(&_requestId);
+        let commitment_option = self.commitments.get(&_request_id);
         if commitment_option.is_none() {
             env::panic(b"Could not find commitment.");
         }
         let commitment = commitment_option.unwrap();
         assert!(commitment == paramsHash, "Params do not match request ID");
         self.withdrawableTokens = self.withdrawableTokens + payment_u128;
-        self.commitments.remove(&_requestId);
+        self.commitments.remove(&_request_id);
         // gasleft
 
         //call back
@@ -122,11 +125,11 @@ impl Oracle {
         self.withdrawableTokens
     }
 
-    pub fn cancelOracleRequest(&mut self, _requestId: Base64String, _payment: U128, _callbackFunc: Base64String, _expiration: U128) {
+    pub fn cancelOracleRequest(&mut self, _request_id: Base64String, _payment: U128, _callbackFunc: Base64String, _expiration: U128) {
         let payment_u128: u128 = _payment.into();
         let expiration_u128: u128 = _expiration.into();
         let paramsHash: Base64String = hex::encode(env::keccak256(payment_u128, _callbackAddress, _callbackFunc, expiration_u128));
-        let commitment_option = self.commitments.get(&_requestId);
+        let commitment_option = self.commitments.get(&_request_id);
         if commitment_option.is_none() {
             env::panic(b"Could not find commitment.");
         }
@@ -134,7 +137,7 @@ impl Oracle {
         assert!(paramsHash == commitment, "Params do not match request ID");
         assert!(expiration_u128 <= env::block_timestamp().into());
 
-        self.commitments.remove(&_requestId);
+        self.commitments.remove(&_request_id);
 
         //assert linkToken
     }
@@ -150,13 +153,13 @@ impl Oracle {
         assert!(self.withdrawableTokens >= amount_u128);
     }
 
-    fn isValidRequest(&self, _requestId: Base64String) {
-        let commitment_option = self.commitments.get(&_requestId);
+    fn isValidRequest(&self, _request_id: Base64String) {
+        let commitment_option = self.commitments.get(&_request_id);
         if commitment_option.is_none() {
             env::panic(b"Could not find commitment.");
         }
         let commitment = commitment_option.unwrap();
-        assert!(commitment != "", "Must have a valid requestId");
+        assert!(commitment != "", "Must have a valid request_id");
     }
 
     fn onlyAuthorizedNode(&self) {
