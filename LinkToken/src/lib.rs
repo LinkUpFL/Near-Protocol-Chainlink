@@ -268,7 +268,7 @@ impl LinkToken {
 
     // 677
 
-    pub fn transferAndCall(&self, _to: AccountId, _value: U128, _data: Base64String) -> bool {
+    /*pub fn transferAndCall(&self, _to: AccountId, _value: U128, _data: Base64String) -> bool {
         let value_u128: u128 = _value.into();
         self.transfer(&_to, &value_u128);
         // Whether the _to AccountId is a contract cannot be established with Near unless using an
@@ -281,7 +281,7 @@ impl LinkToken {
     fn contractFallback(&self, _to: AccountId, _value: U128, _data: Base64String) {
         let receiver: AccountId = _to;
         // onTokenTransfer
-    }
+    }*/
 }
 
 #[cfg(not(target_arch = "wasm32"))]
