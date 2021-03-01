@@ -149,9 +149,14 @@ impl AccessControlledAggregator {
         };
         result.check_enabled = true;
 
-        let round_option = result.rounds.get(&0);
-        let mut round = round_option.unwrap();
-        round.updated_at = (env::block_timestamp() - timeout_u64) as u64;
+        let updated_at_insert: u64 = (env::block_timestamp() - timeout_u64) as u64;
+        let newRound: Round = Round {
+            answer: 0_u128,
+            started_at: 0_u64,
+            updated_at: updated_at_insert,
+            answered_in_round: 0_u64
+        };
+        result.rounds.insert(&0, &newRound);
 
         result.update_future_rounds(U128::from(payment_amount_u128), U64::from(0), U64::from(0), U64::from(0), U64::from(timeout_u64));
         result.set_validator(_validator);
@@ -1043,5 +1048,46 @@ impl AccessControlledAggregator {
 
     fn check_access(&self) {
         assert!(self.has_access(env::predecessor_account_id()), "No access")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use near_sdk::{MockedBlockchain, StorageUsage};
+    use near_sdk::{testing_env, VMContext};
+    use near_sdk::base64::{encode};
+
+    fn link() -> AccountId { "link_near".to_string() }
+    fn alice() -> AccountId { "alice_near".to_string() }
+    fn bob() -> AccountId { "bob_near".to_string() }
+
+    fn get_context(signer_account_id: AccountId, storage_usage: StorageUsage) -> VMContext {
+        VMContext {
+            current_account_id: alice(),
+            signer_account_id,
+            signer_account_pk: vec![0, 1, 2],
+            predecessor_account_id: alice(),
+            input: vec![],
+            block_index: 0,
+            block_timestamp: 0,
+            epoch_height: 0,
+            account_balance: 0,
+            account_locked_balance: 0,
+            storage_usage,
+            attached_deposit: 0,
+            prepaid_gas: 10u64.pow(18),
+            random_seed: vec![0, 1, 2],
+            is_view: false,
+            output_data_receivers: vec![],
+        }
+    }
+
+    #[test]
+    fn get_link_balance() {
+        let context = get_context(alice(), 0);
+        testing_env!(context);
+        let contract = AccessControlledAggregator::new(link(), alice(), U128::from(12), U64::from(30), "".to_string(), U128::from(10), U128::from(100), U64::from(4), "eth/usd".to_string());
+        contract.oracle_count();
     }
 }
