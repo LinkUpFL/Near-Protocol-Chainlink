@@ -2,13 +2,16 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{LookupMap};
 use near_sdk::json_types::{U128, U64};
-use near_sdk::{AccountId, env, near_bindgen};
+use near_sdk::{AccountId, env, near_bindgen, PromiseResult};
 use near_sdk::wee_alloc::{WeeAlloc};
+use near_sdk::serde_json::{self, json};
 use std::str;
 use std::convert::TryInto;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
+
+const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
 
 pub type Base64String = String;
 
@@ -228,9 +231,21 @@ impl AccessControlledAggregator {
     pub fn update_available_funds(&mut self) {
         let funds: &Funds = &self.recorded_funds;
 
-        // uint256 nowAvailable = linkToken.balanceOf(address(this)).sub(funds.allocated);
-        let now_available: u128 = funds.available - funds.allocated;
-        
+        let get_balance_promise = env::promise_create(
+            env::current_account_id(),
+            b"get_balance",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_balance_promise_result: Vec<u8> =
+            match env::promise_result(get_balance_promise) {
+                PromiseResult::Successful(x) => x,
+                _ => panic!("Promise with index 0 failed"),
+            };
+        let link_balance: u64 = serde_json::from_slice(&get_balance_promise_result).unwrap();
+        let now_available: u128 = (link_balance - funds.allocated as u64).into();
+
         if funds.available != now_available {
             self.recorded_funds.available = now_available as u128;
         }
@@ -347,14 +362,14 @@ impl AccessControlledAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        //assert(linkToken.transfer(_recipient, uint256(amount)));
+        //assert(link_token.transfer(_recipient, uint256(amount)));
     }
 
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
         assert!((available - self.required_reserve(self.payment_amount)) >= amount_u128, "insufficient reserve funds");
-        // assert linktoken transfer
+        // assert link_token transfer
         self.update_available_funds();
     }
 
