@@ -57,7 +57,7 @@ impl Oracle {
 
         let payment_u128: u128 = _payment.into();
         let nonce_u128: u128 = _nonce.into();
-        let data_version_u128: u128 = _data_version.into();
+        let _data_version_u128: u128 = _data_version.into();
 
         let request_id_to_encode: Base64String = [_sender, nonce_u128.to_string()].join("\n");
         let request_id: Base64String = hex::encode(request_id_to_encode);
@@ -144,7 +144,7 @@ impl Oracle {
     }
 
     pub fn getChainlink_token(&self) -> AccountId {
-        self.link_token
+        self.link_token.clone()
     }
 
     // MODIFIERS
