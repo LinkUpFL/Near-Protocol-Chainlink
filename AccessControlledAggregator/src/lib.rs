@@ -361,8 +361,7 @@ impl AccessControlledAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        // assert link_token?
-        // Requires testing
+        // How do we assert this promise? Requires testing
         env::promise_create(
             self.link_token.clone(),
             b"transfer",
@@ -376,8 +375,7 @@ impl AccessControlledAggregator {
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
         assert!((available - self.required_reserve(self.payment_amount)) >= amount_u128, "insufficient reserve funds");
-        // assert link_token?
-        // Requires testing
+        // How do we assert this promise? Requires testing
         env::promise_create(
             self.link_token.clone(),
             b"transfer",
