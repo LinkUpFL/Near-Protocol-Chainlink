@@ -232,9 +232,9 @@ impl AccessControlledAggregator {
         let funds: &Funds = &self.recorded_funds;
 
         let get_balance_promise = env::promise_create(
-            env::current_account_id(),
+            self.link_token.clone(),
             b"get_balance",
-            json!({}).to_string().as_bytes(),
+            json!({"owner_id": env::current_account_id()}).to_string().as_bytes(),
             0,
             SINGLE_CALL_GAS,
         );
@@ -353,7 +353,6 @@ impl AccessControlledAggregator {
         let mut oracle = oracle_option.unwrap();
         assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
 
-        // Safe to downcast _amount because the total amount of LINK is less than 2^128.
         let amount_u128: u128 = _amount.into();
         let available: u128 = oracle.withdrawable;
         assert!(available >= amount_u128, "insufficient withdrawable funds");
@@ -362,7 +361,7 @@ impl AccessControlledAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        //assert(link_token.transfer(_recipient, uint256(amount)));
+        // assert link_token?
     }
 
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
