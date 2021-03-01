@@ -260,6 +260,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn latest_answer(&self) -> u128 {
+        self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
             env::panic(b"Did not find this oracle account.");
@@ -269,6 +270,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn latest_timestamp(&self) -> u64 {
+        self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
             env::panic(b"Did not find this oracle account.");
@@ -278,10 +280,12 @@ impl AccessControlledAggregator {
     }
 
     pub fn latest_round(&self) -> u64 {
+        self.check_access();
         self.latest_round_id
     }
 
     pub fn get_answer(&self, _round_id: U128) -> u128 {
+        self.check_access();
         let round_id_u128: u128 = _round_id.into();
 
         let round_option = self.rounds.get(&(round_id_u128 as u64));
@@ -297,6 +301,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn get_timestamp(&self, _round_id: U128) -> u128 {
+        self.check_access();
         let round_id_u128: u128 = _round_id.into();
 
         let round_option = self.rounds.get(&(round_id_u128 as u64));
@@ -312,6 +317,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn get_round_data(&self, _round_id: U64) -> (u64, u128,  u64, u64, u64) {
+        self.check_access();
         let round_id_u64: u64 = _round_id.into();
 
         let round_option = self.rounds.get(&round_id_u64);
@@ -333,6 +339,7 @@ impl AccessControlledAggregator {
     }
 
     pub fn latest_round_data(&self) -> (u64, u128,  u64, u64, u64) {
+        self.check_access();
         self.get_round_data(U64::from(self.latest_round_id))
     }
 
