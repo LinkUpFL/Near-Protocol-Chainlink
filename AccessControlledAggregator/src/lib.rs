@@ -149,7 +149,8 @@ impl AccessControlledAggregator {
         };
         result.check_enabled = true;
 
-        let updated_at_insert: u64 = (env::block_timestamp() - timeout_u64) as u64;
+        // Subtraction overlflow error at runtime
+        /*let updated_at_insert: u64 = (env::block_timestamp() - timeout_u64) as u64;
         let newRound: Round = Round {
             answer: 0_u128,
             started_at: 0_u64,
@@ -157,7 +158,7 @@ impl AccessControlledAggregator {
             answered_in_round: 0_u64
         };
         result.rounds.insert(&0, &newRound);
-
+        */
         result.update_future_rounds(U128::from(payment_amount_u128), U64::from(0), U64::from(0), U64::from(0), U64::from(timeout_u64));
         result.set_validator(_validator);
         result
@@ -1084,10 +1085,11 @@ mod tests {
     }
 
     #[test]
-    fn get_link_balance() {
+    fn get_oracle_count() {
         let context = get_context(alice(), 0);
         testing_env!(context);
-        let contract = AccessControlledAggregator::new(link(), alice(), U128::from(12), U64::from(30), "".to_string(), U128::from(10), U128::from(100), U64::from(4), "eth/usd".to_string());
-        contract.oracle_count();
+        let contract = AccessControlledAggregator::new(link(), alice(), U128::from(12), U64::from(3), "".to_string(), U128::from(10), U128::from(100), U64::from(4), "eth/usd".to_string());
+        let oracle_count = contract.oracle_count();
+        assert_eq!(0, oracle_count);
     }
 }
