@@ -182,6 +182,19 @@ impl AccessControlledAggregator {
         }
     }
 
+    /**
+   * @notice called by the owner to remove and add new oracles as well as
+   * update the round related parameters that pertain to total oracle count
+   * @param _removed is the list of addresses for the new Oracles being removed
+   * @param _added is the list of addresses for the new Oracles being added
+   * @param _addedAdmins is the admin addresses for the new respective _added
+   * list. Only this address is allowed to access the respective oracle's funds
+   * @param _minSubmissions is the new minimum submission count for each round
+   * @param _maxSubmissions is the new maximum submission count for each round
+   * @param _restartDelay is the number of rounds an Oracle has to wait before
+   * they can initiate a round
+   */
+
     pub fn change_oracles(&mut self, _removed: Vec<AccountId>, _added: Vec<AccountId>, _added_admins: Vec<AccountId>, _min_submissions: U64, _max_submissions: U64, _restart_delay: U64) {
         self.only_owner();
 
@@ -857,18 +870,21 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            // assert not required since there is_none
+            let oracle: OracleStatus = OracleStatus {
+                withdrawable: 0_u128,
+                // there is no starting round for _oracle since the index doesn't exist
+                starting_round: 0_u64,
+                ending_round: ROUND_MAX,
+                last_reported_round: 0_u64,
+                last_started_round: 0_u64,
+                latest_submission: 0_u128,
+                index: self.oracle_addresses.len() as u64,
+                admin: _admin,
+                pending_admin: "".to_string()
+            };
+            self.oracles.insert(&_oracle, &oracle);
         }
-        let mut oracle = oracle_option.unwrap();
-
-        assert!(oracle.admin == env::predecessor_account_id() || oracle.admin == _admin, "owner cannot overwrite admin");
-
-        oracle.starting_round = self.get_starting_round(init_oracle.to_string());
-        oracle.ending_round = ROUND_MAX;
-        oracle.index = self.oracle_addresses.len() as u64;
-        self.oracle_addresses.push(init_oracle.to_string());
-        oracle.admin = _admin;
-        self.oracles.insert(&_oracle, &oracle);
     }
 
     fn remove_oracle(&mut self, _oracle: AccountId) {
@@ -943,7 +959,7 @@ impl AccessControlledAggregator {
     fn oracle_enabled(&self, _oracle: AccountId) -> bool {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            return false;
         }
         let oracle = oracle_option.unwrap();
         oracle.ending_round == ROUND_MAX
@@ -1085,10 +1101,18 @@ mod tests {
     }
 
     #[test]
+    fn add_oracle() {
+        let context = get_context(alice(), 0);
+        testing_env!(context);
+        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(12), U64::from(3), "".to_string(), U128::from(10), U128::from(100), U64::from(4), "eth/usd".to_string());
+        contract.add_oracle(bob(), alice());
+    }
+
+    #[test]
     fn get_oracle_count() {
         let context = get_context(alice(), 0);
         testing_env!(context);
-        let contract = AccessControlledAggregator::new(link(), alice(), U128::from(12), U64::from(3), "".to_string(), U128::from(10), U128::from(100), U64::from(4), "eth/usd".to_string());
+        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(12), U64::from(3), "".to_string(), U128::from(10), U128::from(100), U64::from(4), "eth/usd".to_string());
         let oracle_count = contract.oracle_count();
         assert_eq!(0, oracle_count);
     }
