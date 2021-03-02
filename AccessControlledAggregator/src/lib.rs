@@ -1065,6 +1065,7 @@ impl AccessControlledAggregator {
                 pending_admin: "".to_string()
             };
             self.oracles.insert(&_oracle, &oracle);
+        self.oracle_addresses.push(_oracle);
         }
     }
 
@@ -1279,6 +1280,21 @@ mod tests {
             is_view: false,
             output_data_receivers: vec![],
         }
+    }
+
+    #[test]
+    fn submit_test() {
+        let context = get_context(alice(), 0);
+        testing_env!(context);
+        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(18), "LINK/USD".to_string());
+        let min_ans: u64 = 1;
+        let max_ans: u64 = 1;
+        let rr_delay: u64 = 0;
+        // transfer LINK
+        // update_available_funds
+        contract.add_oracle(bob(), alice());
+        contract.change_oracles([].to_vec(), [alice()].to_vec(), [alice()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
+        //contract.submit(U128::from(1), U128::from(100));
     }
 
     #[test]
