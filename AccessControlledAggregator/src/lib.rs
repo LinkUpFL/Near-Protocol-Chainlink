@@ -342,7 +342,7 @@ impl AccessControlledAggregator {
         self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {latest_answer}");
         }
         let round = round_option.unwrap();
         round.answer
@@ -360,7 +360,7 @@ impl AccessControlledAggregator {
         self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {latest_timestamp}");
         }
         let round = round_option.unwrap();
         round.updated_at
@@ -394,7 +394,7 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&(round_id_u128 as u64));
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {get_answer}");
         }
         let round = round_option.unwrap();
 
@@ -419,7 +419,7 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&(round_id_u128 as u64));
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {get_timestamp}");
         }
         let round = round_option.unwrap();
 
@@ -453,7 +453,7 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&round_id_u64);
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {get_round_data}");
         }
         let round = round_option.unwrap();
 
@@ -501,7 +501,7 @@ impl AccessControlledAggregator {
     pub fn withdrawable_payment(&self, _oracle: AccountId) -> u128 {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {withdrawable_payment}");
         }
         let oracle = oracle_option.unwrap();
         oracle.withdrawable
@@ -517,7 +517,7 @@ impl AccessControlledAggregator {
     pub fn withdraw_payment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {withdraw_payment}");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
@@ -567,7 +567,7 @@ impl AccessControlledAggregator {
     pub fn get_admin(&self, _oracle: AccountId) -> AccountId {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {get_admin}");
         }
         let oracle = oracle_option.unwrap();
         oracle.admin
@@ -581,7 +581,7 @@ impl AccessControlledAggregator {
     pub fn transfer_admin(&mut self, _oracle: AccountId, _new_admin: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {transfer_admin}");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
@@ -596,7 +596,7 @@ impl AccessControlledAggregator {
     pub fn accept_admin(&mut self, _oracle: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {accept_admin}");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(oracle.pending_admin == env::predecessor_account_id(), "only callable by pending admin");
@@ -840,7 +840,7 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {oracle_round_state_suggest_round}");
         }
         let oracle = oracle_option.unwrap();
 
@@ -904,7 +904,7 @@ impl AccessControlledAggregator {
     fn update_round_answer(&mut self, _round_id: u64) -> (bool, u128) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {update_round_answer}");
         }
         let detail = detail_option.unwrap();
 
@@ -946,13 +946,13 @@ impl AccessControlledAggregator {
     fn pay_oracle(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {pay_oracle}");
         }
         let detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {pay_oracle}");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -970,13 +970,13 @@ impl AccessControlledAggregator {
 
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {record_submission}");
         }
         let mut detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {record_submission}");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -991,7 +991,7 @@ impl AccessControlledAggregator {
     fn delete_round_details(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {delete_round_details}");
         }
         let detail = detail_option.unwrap();
 
@@ -1078,7 +1078,7 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {remove_oracle}");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -1088,7 +1088,7 @@ impl AccessControlledAggregator {
 
         let oracle_tail_option = self.oracles.get(&tail);
         if oracle_tail_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {remove_oracle}");
         }
         let mut oracle_tail = oracle_tail_option.unwrap();
 
@@ -1170,7 +1170,7 @@ impl AccessControlledAggregator {
     fn delayed(&self, _oracle: AccountId, _round_id: u64) -> bool {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {delayed}");
         }
         let oracle = oracle_option.unwrap();
         let last_started: u64 = oracle.last_started_round;
@@ -1213,7 +1213,7 @@ impl AccessControlledAggregator {
         } else {
             let user_option = self.access_list.get(&_user);
             if user_option.is_none() {
-                env::panic(b"Did not find this oracle account.");
+                return false;
             }
             let user = user_option.unwrap();
             user
@@ -1226,7 +1226,6 @@ impl AccessControlledAggregator {
         let user_option = self.access_list.get(&_user);
         if user_option.is_none() {
             self.access_list.insert(&_user, &true);
-            env::panic(b"Added access to this oracle account.");
         }
     }
 
@@ -1271,6 +1270,7 @@ mod tests {
     fn link() -> AccountId { "link_near".to_string() }
     fn alice() -> AccountId { "alice_near".to_string() }
     fn bob() -> AccountId { "bob_near".to_string() }
+    fn test_helper() -> AccountId { "test_helper_near".to_string() }
 
     fn get_context(signer_account_id: AccountId, storage_usage: StorageUsage) -> VMContext {
         let init_signer: AccountId = signer_account_id.clone();
@@ -1298,7 +1298,7 @@ mod tests {
     fn submit_test() {
         let mut context = get_context(alice(), 0);
         testing_env!(context);
-        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(18), "LINK/USD".to_string());
+        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(24), "LINK/USD".to_string());
         //let mut link_contract = link_token_contract::new(link(), 10000);
 
         let payment_amount: u64 = 3;
@@ -1329,6 +1329,7 @@ mod tests {
             println!("sets the description");
         }
 
+        println!("\n#get_answer");
         // Owner Alice sets up ACA contract
         //link_contract.transfer(contract, deposit);
         //contract.update_available_funds();
@@ -1338,5 +1339,22 @@ mod tests {
         context = get_context(bob(), 0);
         testing_env!(context);
         contract.submit(U128::from(next_round), U128::from(answer));
+
+        // Supposed to fail (Fails)
+        /*
+        println!("when read by a contract without explicit access");
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.get_answer(U128::from(0));
+        */
+
+        // Supposed to succeed (Succeeds)
+        println!("when read by a contract with access");
+        context = get_context(alice(), 0);
+        testing_env!(context);
+        contract.add_access(test_helper());
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.get_answer(U128::from(1));
     }
 }
