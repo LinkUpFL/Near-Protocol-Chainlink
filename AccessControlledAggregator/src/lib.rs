@@ -1295,7 +1295,7 @@ mod tests {
     }
 
     #[test]
-    fn submit_test() {
+    fn submit_access_controls_test() {
         let mut context = get_context(alice(), 0);
         testing_env!(context);
         let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(24), "LINK/USD".to_string());
@@ -1329,7 +1329,6 @@ mod tests {
             println!("sets the description");
         }
 
-        println!("\n#get_answer");
         // Owner Alice sets up ACA contract
         //link_contract.transfer(contract, deposit);
         //contract.update_available_funds();
@@ -1340,12 +1339,17 @@ mod tests {
         testing_env!(context);
         contract.submit(U128::from(next_round), U128::from(answer));
 
+        /*
+         * get_answer tests
+        */
+        println!("\n#get_answer");
+
         // Supposed to fail (Fails)
         /*
         println!("when read by a contract without explicit access");
         context = get_context(test_helper(), 0);
         testing_env!(context);
-        contract.get_answer(U128::from(0));
+        contract.get_answer(U128::from(1));
         */
 
         // Supposed to succeed (Succeeds)
@@ -1356,5 +1360,71 @@ mod tests {
         context = get_context(test_helper(), 0);
         testing_env!(context);
         contract.get_answer(U128::from(1));
+
+        /*
+         * get_timestamp tests
+        */
+        println!("\n#get_timestamp");
+
+        // Supposed to fail (Fails)
+        /*
+        println!("when read by a contract without explicit access");
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.get_timestamp(U128::from(1));
+        */
+
+        // Supposed to succeed (Succeeds)
+        println!("when read by a contract with access");
+        context = get_context(alice(), 0);
+        testing_env!(context);
+        //contract.add_access(test_helper());
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.get_timestamp(U128::from(1));
+
+        /*
+         * latest_answer tests
+        */
+        println!("\n#latest_answer");
+
+        // Supposed to fail (Fails)
+        /*
+        println!("when read by a contract without explicit access");
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.latest_answer();
+        */
+
+        // Supposed to succeed (Succeeds)
+        println!("when read by a contract with access");
+        context = get_context(alice(), 0);
+        testing_env!(context);
+        //contract.add_access(test_helper());
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.latest_answer();
+
+        /*
+         * latest_timestamp tests
+        */
+        println!("\n#latest_timestamp");
+
+        // Supposed to fail (Fails)
+        /*
+        println!("when read by a contract without explicit access");
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.latest_timestamp();
+        */
+
+        // Supposed to succeed (Succeeds)
+        println!("when read by a contract with access");
+        context = get_context(alice(), 0);
+        testing_env!(context);
+        //contract.add_access(test_helper());
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.latest_timestamp();
     }
 }
