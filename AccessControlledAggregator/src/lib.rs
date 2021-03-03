@@ -263,6 +263,7 @@ impl AccessControlledAggregator {
         assert!(max_submissions_u64 >= min_submissions_u64, "max must equal/exceed min");
         assert!(oracle_num >= max_submissions_u64.into(), "max cannot exceed total");
         assert!(oracle_num == 0 || oracle_num > restart_delay_u64.into(), "delay cannot exceed total");
+        // off for tests
         //assert!(self.recorded_funds.available >= self.required_reserve(payment_amount_u128), "insufficient funds for payment");
         if self.oracle_count() > 0 {
             assert!(min_submissions_u64 > 0, "min must be greater than 0")
@@ -754,9 +755,10 @@ impl AccessControlledAggregator {
         if !self.new_round(_round_id) {
             return;
         }
+
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this round. {oracle_initialize_new_round}");
+            env::panic(b"Did not find oracle. {oracle_initialize_new_round}")
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -1035,7 +1037,8 @@ impl AccessControlledAggregator {
     fn previous_and_current_unanswered(&self, _round_id: u64, _rr_id: u64) -> bool {
         let round_option = self.rounds.get(&_rr_id);
         if round_option.is_none() {
-            env::panic(b"hey not find this round.");
+
+            env::panic(b"Did not find this round. {previous_and_current_unanswered}");
         }
         let round = round_option.unwrap();
         return (_round_id + 1) == _rr_id && round.updated_at == 0;
@@ -1065,7 +1068,7 @@ impl AccessControlledAggregator {
                 pending_admin: "".to_string()
             };
             self.oracles.insert(&_oracle, &oracle);
-        self.oracle_addresses.push(_oracle);
+            self.oracle_addresses.push(_oracle);
         }
     }
 
@@ -1270,11 +1273,12 @@ mod tests {
     fn bob() -> AccountId { "bob_near".to_string() }
 
     fn get_context(signer_account_id: AccountId, storage_usage: StorageUsage) -> VMContext {
+        let init_signer: AccountId = signer_account_id.clone();
         VMContext {
-            current_account_id: alice(),
+            current_account_id: signer_account_id.clone(),
             signer_account_id,
             signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id: alice(),
+            predecessor_account_id: init_signer,
             input: vec![],
             block_index: 0,
             block_timestamp: 0,
@@ -1303,10 +1307,16 @@ mod tests {
         let next_round: u128 = 1;
         let answer: u128 = 100;
 
+        // Owner Alice sets up ACA contract
         //link_contract.transfer(contract, deposit);
         //contract.update_available_funds();
-        //contract.add_oracle(bob(), alice());
-        contract.change_oracles([].to_vec(), [alice()].to_vec(), [alice()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
+        contract.change_oracles([].to_vec(), [bob()].to_vec(), [bob()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
+
+        // Oracle Bob submits his answers
+        context = get_context(bob(), 0);
+        testing_env!(context);
+        let addresses = contract.get_oracles();
+        println!("{}", addresses[0]);
         contract.submit(U128::from(next_round), U128::from(answer));
     }
 
