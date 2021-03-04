@@ -2,6 +2,8 @@ describe("AccessControlledAggregator", function () {
   let near;
   let contract;
   let accountId;
+  let accountOne;
+  let accountTwo;
 
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
@@ -16,7 +18,7 @@ describe("AccessControlledAggregator", function () {
     });
     await contract.new({
       owner_id: accountId,
-      link_id: "test.near",
+      link_id: "link-near.nolanjacobson.testnet",
       _payment_amount: "0",
       _timeout: "10",
       _validator: "test.near",
@@ -25,12 +27,14 @@ describe("AccessControlledAggregator", function () {
       _decimals: "18",
       _description: "LINK/USD",
     });
+    accountOne = await near.account("test-account-1614816912569-4232549");
+    accountTwo = await near.account("test-account-1614870841763-3263362");
   });
   it("can be changed", async function () {
     const changeOracles = await contract.change_oracles({
       _removed: [],
-      _added: [accountId],
-      _added_admins: [accountId],
+      _added: ["test-account-1614816912569-4232549"],
+      _added_admins: ["test-account-1614816912569-4232549"],
       _min_submissions: "1",
       _max_submissions: "1",
       _restart_delay: "0",
@@ -39,10 +43,19 @@ describe("AccessControlledAggregator", function () {
   });
 
   it("can be submitted", async function () {
-    const submitAnswer = await contract.submit({
-      _round_id: "1",
-      _submission: "1",
-    });
-    expect(submitAnswer).toEqual("");
+    const submitAnswer = await accountOne.functionCall(
+      accountId,
+      "submit",
+      {
+        "_round_id": "1",
+        "_submission": "1",
+      },
+      "300000000000000"
+    );
+    // const submitAnswer = await contract.submit({
+    //   _round_id: "1",
+    //   _submission: "1",
+    // });
+    expect(submitAnswer).not.toBe("");
   });
 });
