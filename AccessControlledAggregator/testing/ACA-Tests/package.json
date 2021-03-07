@@ -15,7 +15,7 @@
     "start": "parcel src/index.html",
     "start:dev": "env-cmd -f ./neardev/dev-account.env parcel src/index.html",
     "test:cargo": "cd contract && cargo test -- --nocapture",
-    "test": "yarn build && yarn test:cargo && jest --detectOpenHandles"
+    "test": "yarn build && yarn test:cargo && jest"
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
@@ -30,6 +30,7 @@
     "testEnvironment": "near-cli/test_environment"
   },
   "dependencies": {
+    "chai": "^4.3.3",
     "near-api-js": "^0.27.0",
     "regenerator-runtime": "^0.13.5"
   }

@@ -1198,6 +1198,12 @@ impl AccessControlledAggregator {
     pub fn get_decimals(&self) -> u64 {
         self.decimals
     }
+    pub fn get_timeout(&self) -> u64 {
+        self.timeout.clone()
+    }
+    pub fn get_payment_amount(&self) -> u128 {
+        self.payment_amount.clone()
+    }
     pub fn get_description(&self) -> String {
         self.description.clone()
     }
