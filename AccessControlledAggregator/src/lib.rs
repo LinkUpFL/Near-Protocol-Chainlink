@@ -1432,7 +1432,7 @@ mod tests {
     }
 
     #[test]
-    fn flux_tests() {
+    fn submit_flux_test() {
         let mut context = get_context(alice(), 0);
         testing_env!(context);
         let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(24), "LINK/USD".to_string());
