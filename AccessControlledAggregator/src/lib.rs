@@ -1161,7 +1161,7 @@ impl AccessControlledAggregator {
     fn accepting_submissions(&self, _round_id: u128) -> bool {
         let round_option = self.details.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"hey not find this round.");
+            env::panic(b"Did not find this round.");
         }
         let round = round_option.unwrap();
         round.max_submissions != 0
@@ -1485,5 +1485,10 @@ mod tests {
         context = get_context(neil(), 0);
         testing_env!(context);
         contract.submit(U128::from(next_round), U128::from(answer));
+
+        // when an oracle prematurely bumps the round
+        //context = get_context(alice(), 0);
+        //testing_env!(context);
+        //contract.update_future_rounds(U128::from(payment_amount), U64::from(2), U64::from(3), U64::from(rr_delay), U64::from(rr_delay));
     }
 }
