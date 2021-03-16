@@ -1270,6 +1270,9 @@ mod tests {
     fn link() -> AccountId { "link_near".to_string() }
     fn alice() -> AccountId { "alice_near".to_string() }
     fn bob() -> AccountId { "bob_near".to_string() }
+    fn neil() -> AccountId { "neil_near".to_string() }
+    fn ned() -> AccountId { "ned_near".to_string() }
+    fn nelly() -> AccountId { "nelly_near".to_string() }
     fn test_helper() -> AccountId { "test_helper_near".to_string() }
 
     fn get_context(signer_account_id: AccountId, storage_usage: StorageUsage) -> VMContext {
@@ -1466,32 +1469,21 @@ mod tests {
         // Owner Alice sets up ACA contract
         //link_contract.transfer(contract, deposit);
         //contract.update_available_funds();
-        contract.change_oracles([].to_vec(), [bob()].to_vec(), [bob()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
 
-        // Oracle Bob submits his answers
-        context = get_context(bob(), 0);
+        /*
+         * submit tests
+        */
+        println!("\n#submit");
+        let oracles = [[neil()].to_vec(), [ned()].to_vec(), [nelly()].to_vec()];
+        let minMax: u64 = oracles.len().try_into().unwrap();
+        for i in 0..oracles.len() {
+            let currentOracle = oracles[i].clone();
+            contract.change_oracles([].to_vec(), currentOracle, oracles[i].clone(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
+        }
+
+        // Oracle Neil submits his answers
+        context = get_context(neil(), 0);
         testing_env!(context);
         contract.submit(U128::from(next_round), U128::from(answer));
-
-        /*
-         * get_answer tests
-        */
-        println!("\n#get_answer");
-
-        // Supposed to fail (Fails)
-        /*
-        println!("when read by a contract without explicit access");
-        context = get_context(test_helper(), 0);
-        testing_env!(context);
-        contract.get_answer(U128::from(1));
-        */
-
-        // Supposed to succeed (Succeeds)
-        println!("when read by a contract with access");
-        context = get_context(alice(), 0);
-        testing_env!(context);
-        contract.add_access(test_helper());
-        context = get_context(test_helper(), 0);
-        testing_env!(context);
-        contract.get_answer(U128::from(1));
+    }
 }
