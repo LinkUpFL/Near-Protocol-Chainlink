@@ -1295,7 +1295,7 @@ mod tests {
     }
 
     #[test]
-    fn submit_access_controls_test() {
+    fn access_control_tests() {
         let mut context = get_context(alice(), 0);
         testing_env!(context);
         let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(24), "LINK/USD".to_string());
@@ -1427,4 +1427,71 @@ mod tests {
         testing_env!(context);
         contract.latest_timestamp();
     }
+
+    #[test]
+    fn flux_tests() {
+        let mut context = get_context(alice(), 0);
+        testing_env!(context);
+        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(24), "LINK/USD".to_string());
+        //let mut link_contract = link_token_contract::new(link(), 10000);
+
+        let payment_amount: u64 = 3;
+        let deposit: u64 = 100;
+        let answer: u128 = 100;
+        let min_ans: u64 = 1;
+        let max_ans: u64 = 1;
+        let rr_delay: u64 = 0;
+        let timeout: u64 = 1800;
+        let decimals: u64 = 24;
+        let description: Base64String = "LINK/USD".to_string();
+        let min_submission_value: u128 = 1;
+        let max_submission_value: u128 = 1;
+        let empty_address: AccountId = "".to_string();
+        let next_round: u128 = 1;
+
+        println!("\n#constructor");
+        if payment_amount as u128 == contract.payment_amount {
+            println!("sets the paymentAmount");
+        }
+        if timeout == contract.timeout {
+            println!("sets the timeout");
+        }
+        if decimals == contract.decimals {
+            println!("sets the decimals");
+        }
+        if description == contract.description {
+            println!("sets the description");
+        }
+
+        // Owner Alice sets up ACA contract
+        //link_contract.transfer(contract, deposit);
+        //contract.update_available_funds();
+        contract.change_oracles([].to_vec(), [bob()].to_vec(), [bob()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
+
+        // Oracle Bob submits his answers
+        context = get_context(bob(), 0);
+        testing_env!(context);
+        contract.submit(U128::from(next_round), U128::from(answer));
+
+        /*
+         * get_answer tests
+        */
+        println!("\n#get_answer");
+
+        // Supposed to fail (Fails)
+        /*
+        println!("when read by a contract without explicit access");
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.get_answer(U128::from(1));
+        */
+
+        // Supposed to succeed (Succeeds)
+        println!("when read by a contract with access");
+        context = get_context(alice(), 0);
+        testing_env!(context);
+        contract.add_access(test_helper());
+        context = get_context(test_helper(), 0);
+        testing_env!(context);
+        contract.get_answer(U128::from(1));
 }
