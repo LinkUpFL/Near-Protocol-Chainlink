@@ -1,0 +1,26 @@
+[package]
+name = "contract-wrap"
+version = "0.1.0"
+authors = ["kwsantiago <kwsantiago@usf.edu>"]
+edition = "2018"
+
+[dev-dependencies]
+near-sdk = { git = "https://github.com/near/near-sdk-rs.git", tag="3.0.0" }
+near-sdk-sim = { git = "https://github.com/near/near-sdk-rs.git", tag="3.0.0" }
+AccessControlledAggregator = { path = "./AccessControlledAggregator" }
+LinkToken = { path = "./LinkToken" }
+
+[profile.release]
+codegen-units = 1
+# Tell `rustc` to optimize for small code size.
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
+
+[workspace]
+members = [
+  "AccessControlledAggregator",
+  "LinkToken"
+]
