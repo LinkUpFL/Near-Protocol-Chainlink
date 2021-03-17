@@ -1600,10 +1600,15 @@ mod tests {
          * change_oracles tests
         */
         println!("\n#change_oracles");
+        // adding oracles, increases the oracle count
         let past_count: u128 = contract.oracle_count();
         contract.change_oracles([].to_vec(), [neil()].to_vec(), [neil()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
         let current_count: u128 = contract.oracle_count();
 
         assert_eq!(current_count, past_count + 1);
+
+        // adds the address in get_oracles
+        let oracles: Vec<AccountId> = contract.get_oracles();
+        assert_eq!(neil(), oracles[0]);
     }
 }
