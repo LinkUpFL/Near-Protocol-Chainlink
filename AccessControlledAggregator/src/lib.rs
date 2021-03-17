@@ -1491,4 +1491,59 @@ mod tests {
         //testing_env!(context);
         //contract.update_future_rounds(U128::from(payment_amount), U64::from(2), U64::from(3), U64::from(rr_delay), U64::from(rr_delay));
     }
+
+    #[test]
+    fn get_answer_flux_test() {
+        let mut context = get_context(alice(), 0);
+        testing_env!(context);
+        let mut contract = AccessControlledAggregator::new(link(), alice(), U128::from(3), U64::from(1800), "".to_string(), U128::from(1), U128::from(100000000000000000000), U64::from(24), "LINK/USD".to_string());
+        //let mut link_contract = link_token_contract::new(link(), 10000);
+
+        let payment_amount: u64 = 3;
+        let deposit: u64 = 100;
+        let answer: u128 = 100;
+        let min_ans: u64 = 1;
+        let max_ans: u64 = 1;
+        let rr_delay: u64 = 0;
+        let timeout: u64 = 1800;
+        let decimals: u64 = 24;
+        let description: Base64String = "LINK/USD".to_string();
+        let min_submission_value: u128 = 1;
+        let max_submission_value: u128 = 1;
+        let empty_address: AccountId = "".to_string();
+        let mut next_round: u128 = 1;
+
+        println!("\n#constructor");
+        if payment_amount as u128 == contract.payment_amount {
+            println!("sets the paymentAmount");
+        }
+        if timeout == contract.timeout {
+            println!("sets the timeout");
+        }
+        if decimals == contract.decimals {
+            println!("sets the decimals");
+        }
+        if description == contract.description {
+            println!("sets the description");
+        }
+
+        // Owner Alice sets up ACA contract
+        //link_contract.transfer(contract, deposit);
+        //contract.update_available_funds();
+
+        /*
+         * get_answer tests
+        */
+        println!("\n#get_answer");
+        let answers = [1, 10, 101, 1010, 10101, 101010, 1010101];
+        contract.change_oracles([].to_vec(), [neil()].to_vec(), [neil()].to_vec(), U64::from(min_ans), U64::from(max_ans), U64::from(rr_delay));
+
+        // Oracle Neil submits his answers
+        context = get_context(neil(), 0);
+        testing_env!(context);
+        for i in 0..answers.len() {
+            contract.submit(U128::from(next_round), U128::from(answers[i]));
+            next_round = next_round + 1;
+        }
+    }
 }
