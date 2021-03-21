@@ -203,7 +203,7 @@ impl AccessControlledAggregator {
         self.record_submission(submission_u128, round_id_u128);
         let (updated, new_answer): (bool, u128) = self.update_round_answer(round_id_u128 as u64);
         // off for tests
-        self.pay_oracle(round_id_u128 as u64);
+        // self.pay_oracle(round_id_u128 as u64);
         self.delete_round_details(round_id_u128 as u64);
         if updated {
             self.validate_answer(round_id_u128 as u64, new_answer);

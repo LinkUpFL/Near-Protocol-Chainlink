@@ -7,7 +7,7 @@ use crate::utils::init_without_macros as init;
 #[test]
 
 fn simulate_linktoken_transfer() {
-    let (root, aca, link, _oracle_one) = init();
+    let (root, aca, link, oracle_one) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -23,15 +23,33 @@ fn simulate_linktoken_transfer() {
         36500000000000000000000, // deposit
     )
     .assert_success();
+    // root.call(
+    //     aca.account_id(),
+    //     "update_available_funds",
+    //     &json!({}).to_string().into_bytes(),
+    //     DEFAULT_GAS,
+    //     0, // deposit
+    // )
+    // .assert_success();
+
+    // First add oracle_one
     root.call(
         aca.account_id(),
-        "update_available_funds",
-        &json!({}).to_string().into_bytes(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": "1", "_max_submissions": "1", "_restart_delay": "0"}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     )
     .assert_success();
-
+    // Second, call submit from oracle_one
+    oracle_one.call(
+        aca.account_id(),
+        "submit",
+        &json!({"_round_id": "1", "_submission": "1"}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
     let _root_balance: U128 = root
         .view(
             link.account_id(),
