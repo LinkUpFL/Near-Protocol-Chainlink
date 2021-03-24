@@ -15,7 +15,7 @@ fn simulate_linktoken_transfer() {
         &json!({
             "owner_id": root.account_id().to_string(),
             "new_owner_id": aca.account_id().to_string(),
-            "amount": "220"
+            "amount": "190"
         })
         .to_string()
         .into_bytes(),
@@ -23,14 +23,14 @@ fn simulate_linktoken_transfer() {
         36500000000000000000000, // deposit
     )
     .assert_success();
-    // root.call(
-    //     aca.account_id(),
-    //     "update_available_funds",
-    //     &json!({}).to_string().into_bytes(),
-    //     DEFAULT_GAS,
-    //     0, // deposit
-    // )
-    // .assert_success();
+    let outcome = root.call(
+        aca.account_id(),
+        "update_available_funds",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    println!("{:#?}", outcome.promise_results());    
 
     // First add oracle_one
     root.call(
@@ -61,18 +61,18 @@ fn simulate_linktoken_transfer() {
             .into_bytes(),
         )
         .unwrap_json();
-    let aca_balance: U128 = aca
-        .view(
-            link.account_id(),
-            "get_balance",
-            &json!({
-                "owner_id": aca.valid_account_id()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
-    // let _available_funds: U128 = root
+    // let aca_balance: String = aca
+    //     .view(
+    //         link.account_id(),
+    //         "get_balance",
+    //         &json!({
+    //             "owner_id": aca.valid_account_id()
+    //         })
+    //         .to_string()
+    //         .into_bytes(),
+    //     )
+    //     .unwrap_json();
+    // let available_funds: U128 = aca
     //     .view(
     //         aca.account_id(),
     //         "available_funds",
@@ -80,6 +80,6 @@ fn simulate_linktoken_transfer() {
     //     )
     //     .unwrap_json();
     // println!("{:?}", available_funds);
-    println!("{:?}", aca_balance);
+    // println!("{:?}", aca_balance);
     assert_eq!(true, true);
 }
