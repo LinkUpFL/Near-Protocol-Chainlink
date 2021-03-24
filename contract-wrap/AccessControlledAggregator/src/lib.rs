@@ -322,11 +322,12 @@ impl AccessControlledAggregator {
             }
             _x => panic!("Promise with index 0 failed"),
         };
-        let link_balance: u64 = serde_json::from_slice(&get_balance_promise_result).unwrap();
-        let now_available: u128 = (link_balance - funds.allocated as u64).into();
-        
+        let link_balance_str: String = serde_json::from_slice(&get_balance_promise_result).unwrap();
+        let link_balance: u128 = link_balance_str.parse().unwrap();
+
+        let now_available: u128 = link_balance - funds.allocated;
         if funds.available != now_available {
-            self.recorded_funds.available = now_available as u128;
+            self.recorded_funds.available = now_available;
         }
     }
   
