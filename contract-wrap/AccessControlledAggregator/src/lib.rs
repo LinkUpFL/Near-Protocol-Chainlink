@@ -565,7 +565,10 @@ impl AccessControlledAggregator {
    * @param _recipient is the address to send the LINK to
    * @param _amount is the amount of LINK to send
    */
+    #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
+        let prepaid_gas = env::prepaid_gas();
+
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
         assert!((available - self.required_reserve(self.payment_amount)) >= amount_u128, "insufficient reserve funds");
@@ -574,9 +577,9 @@ impl AccessControlledAggregator {
             self.link_token.clone(),
             b"transfer",
             json!({"new_owner_id": _recipient.clone(), "amount": amount_u128.clone()}).to_string().as_bytes(),
-            0,
-            SINGLE_CALL_GAS,
-        );
+            36500000000000000000000,
+            prepaid_gas / 4);
+        
         self.update_available_funds();
     }
 
