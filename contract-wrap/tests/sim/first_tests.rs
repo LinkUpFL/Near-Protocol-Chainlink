@@ -23,15 +23,13 @@ fn simulate_linktoken_transfer() {
         36500000000000000000000, // deposit
     )
     .assert_success();
-    let outcome = root.call(
+    let _outcome = root.call(
         aca.account_id(),
         "update_available_funds",
         &json!({}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     );
-    println!("{:#?}", outcome.promise_results());    
-
     // First add oracle_one
     root.call(
         aca.account_id(),
@@ -48,8 +46,7 @@ fn simulate_linktoken_transfer() {
         &json!({"_round_id": "1", "_submission": "1"}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    )
-    .assert_success();
+    ).assert_success();
     let _root_balance: U128 = root
         .view(
             link.account_id(),
@@ -64,7 +61,7 @@ fn simulate_linktoken_transfer() {
     // let aca_balance: String = aca
     //     .view(
     //         link.account_id(),
-    //         "get_balance",
+    //         "withdraw_payment",
     //         &json!({
     //             "owner_id": aca.valid_account_id()
     //         })
@@ -72,14 +69,38 @@ fn simulate_linktoken_transfer() {
     //         .into_bytes(),
     //     )
     //     .unwrap_json();
-    // let available_funds: U128 = aca
+
+
+    // let oracle_available_withdrawable: String = aca
     //     .view(
     //         aca.account_id(),
-    //         "available_funds",
-    //         &json!({}).to_string().into_bytes(),
+    //         "withdrawable_payment",
+    //         &json!({"_oracle": oracle_one.account_id()}).to_string().into_bytes(),
     //     )
     //     .unwrap_json();
-    // println!("{:?}", available_funds);
-    // println!("{:?}", aca_balance);
+    // println!("{:?}", oracle_available_withdrawable);
+
+    let withdraw = oracle_one.call(
+        aca.account_id(),
+        "withdraw_payment",
+        &json!({"_oracle": oracle_one.account_id(), "_recipient": oracle_one.account_id(), "_amount": "1"}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    );
+    println!("{:?}", withdraw.promise_results());
+
+    let oracle_balance: U128 = root
+    .view(
+        link.account_id(),
+        "get_balance",
+        &json!({
+            "owner_id": oracle_one.valid_account_id()
+        })
+        .to_string()
+        .into_bytes(),
+    )
+    .unwrap_json();
+    println!("{:?}", oracle_balance);
+
     assert_eq!(true, true);
 }

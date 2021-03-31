@@ -42,7 +42,7 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         "new",
         &json!({
             "link_id": link.account_id(), "owner_id": root.account_id(), "_timeout": "1800", "_validator": root.valid_account_id(), "_min_submission_value": "1", "_max_submission_value": "10",
-    "_decimals": "18", "_description": "NEAR/USD", "_payment_amount": "3"
+    "_decimals": "18", "_description": "NEAR/USD", "_payment_amount": "5"
         })
         .to_string()
         .into_bytes(),

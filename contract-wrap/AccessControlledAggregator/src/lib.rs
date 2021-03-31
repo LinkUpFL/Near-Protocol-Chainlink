@@ -203,7 +203,8 @@ impl AccessControlledAggregator {
         self.record_submission(submission_u128, round_id_u128);
         let (updated, new_answer): (bool, u128) = self.update_round_answer(round_id_u128 as u64);
         // off for tests
-        // self.pay_oracle(round_id_u128 as u64);
+        
+        self.pay_oracle(round_id_u128 as u64);
         self.delete_round_details(round_id_u128 as u64);
         if updated {
             self.validate_answer(round_id_u128 as u64, new_answer);
@@ -530,7 +531,10 @@ impl AccessControlledAggregator {
    * @param _recipient is the address to send the LINK to
    * @param _amount is the amount of LINK to send
    */
+    #[payable]
     pub fn withdraw_payment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
+        let prepaid_gas = env::prepaid_gas();
+
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account. {withdraw_payment}");
@@ -550,10 +554,10 @@ impl AccessControlledAggregator {
         env::promise_create(
             self.link_token.clone(),
             b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": amount_u128.clone()}).to_string().as_bytes(),
-            0,
-            SINGLE_CALL_GAS,
-        );
+            json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()}).to_string().as_bytes(),
+            36500000000000000000000,
+            prepaid_gas / 4);
+        
     }
 
     /**
@@ -974,10 +978,14 @@ impl AccessControlledAggregator {
 
         let payment: u128 = detail.payment_amount;
         let mut funds: Funds = self.recorded_funds.clone();
-        funds.available = funds.available - payment;
-        funds.allocated = funds.allocated - payment;
+        env::log(format!("{} Now Available", funds.available.saturating_sub(payment)).as_bytes());
+        env::log(format!("{} Now Allocated", funds.allocated.saturating_add(payment)).as_bytes());
+
+        funds.available = funds.available.saturating_sub(payment);
+        funds.allocated = funds.allocated.saturating_add(payment);
         self.recorded_funds = funds;
-        oracle.withdrawable = oracle.withdrawable + payment;
+        self.oracles.remove(&env::predecessor_account_id());
+        oracle.withdrawable = oracle.withdrawable.saturating_add(payment);
         self.oracles.insert(&env::predecessor_account_id(), &oracle);
     }
 

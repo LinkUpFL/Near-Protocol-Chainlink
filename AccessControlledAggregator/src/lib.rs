@@ -514,6 +514,7 @@ impl AccessControlledAggregator {
    * @param _recipient is the address to send the LINK to
    * @param _amount is the amount of LINK to send
    */
+    #[payable]
     pub fn withdraw_payment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
