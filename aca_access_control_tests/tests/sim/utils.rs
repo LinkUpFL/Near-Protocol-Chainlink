@@ -59,13 +59,13 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         &json!({
             "link_id": link.account_id(),
             "owner_id": root.account_id(),
-            "payment_amount": payment_amount,
-            "timeout": timeout,
-            "validator": empty_address,
-            "min_submission_value": min_submission_value,
-            "max_submission_value": max_submission_value,
-            "decimals": decimals,
-            "description": description,
+            "_payment_amount": payment_amount.to_string(),
+            "_timeout": timeout.to_string(),
+            "_validator": empty_address,
+            "_min_submission_value": min_submission_value.to_string(),
+            "_max_submission_value": max_submission_value.to_string(),
+            "_decimals": decimals.to_string(),
+            "_description": description,
         })
         .to_string()
         .into_bytes(),
