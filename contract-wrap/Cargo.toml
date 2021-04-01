@@ -8,7 +8,6 @@ edition = "2018"
 near-sdk = { git = "https://github.com/near/near-sdk-rs.git", tag="3.0.0" }
 near-sdk-sim = { git = "https://github.com/near/near-sdk-rs.git", rev="c2771af7fdfe01a4e8414046752ee16fb0d29d39" }
 AccessControlledAggregator = { path = "./AccessControlledAggregator" }
-LinkToken = { path = "./LinkToken" }
 
 [profile.release]
 codegen-units = 1
@@ -21,6 +20,5 @@ overflow-checks = true
 
 [workspace]
 members = [
-  "AccessControlledAggregator",
-  "LinkToken"
+  "AccessControlledAggregator"
 ]
