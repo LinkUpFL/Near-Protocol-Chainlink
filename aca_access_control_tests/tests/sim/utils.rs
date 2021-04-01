@@ -1,4 +1,5 @@
 use near_sdk::serde_json::json;
+use near_sdk::{AccountId};
 use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS, STORAGE_AMOUNT};
 
 const ACA_ID: &str = "aca";
@@ -37,12 +38,34 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         ACA_ID.to_string(),
         to_yocto("1000"), // attached deposit
     );
+
+    let payment_amount: u64 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 1;
+    let empty_address: AccountId = "".to_string();
+    let next_round: u128 = 1; 
+
     aca.call(
         ACA_ID.into(),
         "new",
         &json!({
-            "link_id": link.account_id(), "owner_id": root.account_id(), "_timeout": "1800", "_validator": root.valid_account_id(), "_min_submission_value": "1", "_max_submission_value": "10",
-    "_decimals": "18", "_description": "NEAR/USD", "_payment_amount": "3"
+            "link_id": link.account_id(),
+            "owner_id": root.account_id(),
+            "payment_amount": payment_amount,
+            "timeout": timeout,
+            "validator": empty_address,
+            "min_submission_value": min_submission_value,
+            "max_submission_value": max_submission_value,
+            "decimals": decimals,
+            "description": description,
         })
         .to_string()
         .into_bytes(),
@@ -57,43 +80,3 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
 
     (root, aca, link, oracle_one)
 }
-
-// pub fn init_with_macros() -> (
-//     UserAccount,
-//     ContractAccount<LinkToken>,
-//     ContractAccount<AccessControlledAggregator>,
-//     UserAccount,
-// ) {
-//     let root = init_simulator(None);
-//     // uses default values for deposit and gas
-//     let link_token = deploy!(
-//         // Contract Proxy
-//         contract: LinkToken,
-//         // Contract account id
-//         contract_id: LINKTOKEN_ID,
-//         // Bytes of contract
-//         bytes: &LINKTOKEN_WASM_BYTES,
-//         // User deploying the contract,
-//         signer_account: root,
-//         // init method
-//         init_method: new(
-//             root.account_id(), 100000
-//         )
-//     );
-//     let aca = deploy!(
-//         contract: AccessControlledAggregator,
-//         contract_id: ACA_ID,
-//         bytes: &ACA_WASM_BYTES,
-//         signer_account: root,
-//         init_method: new(
-//             link_token.account_id(), root.account_id(),  10,  root.valid_account_id(),  1, 10,
-//      18,  "NEAR/USD"
-//         )
-//     );
-//     let oracle_one = root.create_user(
-//         "oracle_one".to_string(),
-//         to_yocto("1000000"), // initial balance
-//     );
-
-//     (root, link_token, aca, oracle_one)
-// }
