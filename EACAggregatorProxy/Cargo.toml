@@ -1,5 +1,5 @@
 [package]
-name = "eac_aggregator_proxy"
+name = "EACAggregatorProxy"
 version = "0.1.0"
 authors = ["kwsantiago <kwsantiago@usf.edu>", "nolanjacobson <nolanjacobson@protonmail.com"]
 edition = "2018"
