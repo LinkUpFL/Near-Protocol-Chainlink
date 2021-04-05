@@ -7,7 +7,7 @@ use crate::utils::init_without_macros as init;
 #[test]
 
 fn simulate_linktoken_transfer() {
-    let (root, aca, link, oracle_one) = init();
+    let (root, aca, link, oracle_one, _eac) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
