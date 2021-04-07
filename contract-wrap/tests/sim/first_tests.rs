@@ -2,13 +2,14 @@ use near_sdk::json_types::U128;
 use near_sdk::serde_json::json;
 use near_sdk::{AccountId};
 use near_sdk_sim::DEFAULT_GAS;
+use near_sdk_sim::transaction::ExecutionStatus;
 
 use crate::utils::init_without_macros as init;
 
 #[test]
 
 fn simulate_linktoken_transfer() {
-    let (root, aca, link, oracle_one, _eac) = init();
+    let (root, aca, link, oracle_one, test_helper, _eac) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -121,7 +122,7 @@ fn access_control_tests() {
     let max_submission_value: u128 = 100000000000000000000;
     let empty_address: AccountId = "".to_string();
     let next_round: u128 = 1;
-    let (root, aca, link, oracle_one, _eac) = init();
+    let (root, aca, link, oracle_one, test_helper, _eac) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -161,4 +162,24 @@ fn access_control_tests() {
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
+
+    // Unauthorized call from test_helper for get_answer
+    let get_answer_unauthorized = test_helper.call(
+        aca.account_id(),
+        "get_answer",
+        &json!({"_round_id": next_round.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+
+    if let ExecutionStatus::Failure(execution_error) =
+        &get_answer_unauthorized.promise_errors().remove(0).unwrap().outcome().status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+
+    // add other unauthorized calls and then add the authorized calls in conjunction
 }
