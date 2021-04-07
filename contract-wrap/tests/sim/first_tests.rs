@@ -118,9 +118,9 @@ fn access_control_tests() {
     let decimals: u64 = 24;
     let description: String = "LINK/USD".to_string();
     let min_submission_value: u128 = 1;
-    let max_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
     let empty_address: AccountId = "".to_string();
-    let next_round: u128 = 1; 
+    let next_round: u128 = 1;
     let (root, aca, link, oracle_one, _eac) = init();
     // Transfer from link_token contract to ACA.
     root.call(
@@ -157,7 +157,7 @@ fn access_control_tests() {
     oracle_one.call(
         aca.account_id(),
         "submit",
-        &json!({"_round_id": next_round.to_string(), "_submission": "1"}).to_string().into_bytes(),
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
