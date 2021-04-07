@@ -163,8 +163,10 @@ fn access_control_tests() {
         0, // deposit
     ).assert_success();
 
+    // Unauthorized Calls
+
     // Unauthorized call from test_helper for get_answer
-    let get_answer_unauthorized = test_helper.call(
+    let mut get_answer_unauthorized = test_helper.call(
         aca.account_id(),
         "get_answer",
         &json!({"_round_id": next_round.to_string()}).to_string().into_bytes(),
@@ -180,6 +182,57 @@ fn access_control_tests() {
     } else {
         unreachable!();
     }
+    // Unauthorized call from test_helper for get_timestamp
+    get_answer_unauthorized = test_helper.call(
+        aca.account_id(),
+        "get_timestamp",
+        &json!({"_round_id": next_round.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
 
-    // add other unauthorized calls and then add the authorized calls in conjunction
+    if let ExecutionStatus::Failure(execution_error) =
+        &get_answer_unauthorized.promise_errors().remove(0).unwrap().outcome().status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+    // Unauthorized call from test_helper for latest_answer
+    get_answer_unauthorized = test_helper.call(
+        aca.account_id(),
+        "latest_answer",
+        &json!({"_round_id": next_round.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+
+    if let ExecutionStatus::Failure(execution_error) =
+        &get_answer_unauthorized.promise_errors().remove(0).unwrap().outcome().status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+    // Unauthorized call from test_helper for latest_timestamp
+    get_answer_unauthorized = test_helper.call(
+        aca.account_id(),
+        "latest_timestamp",
+        &json!({"_round_id": next_round.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+
+    if let ExecutionStatus::Failure(execution_error) =
+        &get_answer_unauthorized.promise_errors().remove(0).unwrap().outcome().status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+
+    // add authorized calls
 }
