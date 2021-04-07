@@ -76,12 +76,6 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         0, // attached deposit
     ).assert_success();
 
-    print!("\n#constructor");
-    assert_eq!(payment_amount, aca.payment_amount, "sets the payment_amount");
-    assert_eq!(timeout, aca.timeout, "sets the timeout");
-    assert_eq!(decimals, aca.decimals, "sets the decimals");
-    assert_eq!(description, aca.description, "sets the description");
-
     let oracle_one = root.create_user(
         "oracle_one".to_string(),
         to_yocto("1000000"), // initial balance
