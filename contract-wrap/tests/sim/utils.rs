@@ -43,18 +43,12 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
     );
 
     let payment_amount: u64 = 3;
-    let deposit: u64 = 100;
-    let answer: u128 = 100;
-    let min_ans: u64 = 1;
-    let max_ans: u64 = 1;
-    let rr_delay: u64 = 0;
     let timeout: u64 = 1800;
     let decimals: u64 = 24;
     let description: String = "LINK/USD".to_string();
     let min_submission_value: u128 = 1;
-    let max_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
     let empty_address: AccountId = "".to_string();
-    let next_round: u128 = 1; 
 
     aca.call(
         ACA_ID.into(),
