@@ -1,5 +1,6 @@
 use near_sdk::json_types::U128;
 use near_sdk::serde_json::json;
+use near_sdk::{AccountId};
 use near_sdk_sim::DEFAULT_GAS;
 
 use crate::utils::init_without_macros as init;
@@ -103,4 +104,61 @@ fn simulate_linktoken_transfer() {
     println!("{:?}", oracle_balance);
 
     assert_eq!(true, true);
+}
+
+#[test]
+fn access_control_tests() {
+    let payment_amount: u64 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 1;
+    let empty_address: AccountId = "".to_string();
+    let next_round: u128 = 1; 
+    let (root, aca, link, oracle_one, _eac) = init();
+    // Transfer from link_token contract to ACA.
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": deposit.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+    let _outcome = root.call(
+        aca.account_id(),
+        "update_available_funds",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    // First add oracle_one
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": "1", "_max_submissions": "1", "_restart_delay": "0"}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Second, call submit from oracle_one
+    oracle_one.call(
+        aca.account_id(),
+        "submit",
+        &json!({"_round_id": "1", "_submission": "1"}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
 }
