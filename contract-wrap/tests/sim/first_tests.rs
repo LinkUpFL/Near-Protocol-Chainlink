@@ -148,7 +148,7 @@ fn access_control_tests() {
     root.call(
         aca.account_id(),
         "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": "1", "_max_submissions": "1", "_restart_delay": "0"}).to_string().into_bytes(),
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     )
@@ -157,7 +157,7 @@ fn access_control_tests() {
     oracle_one.call(
         aca.account_id(),
         "submit",
-        &json!({"_round_id": "1", "_submission": "1"}).to_string().into_bytes(),
+        &json!({"_round_id": next_round.to_string(), "_submission": "1"}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
