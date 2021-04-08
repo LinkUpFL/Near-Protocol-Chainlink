@@ -234,5 +234,45 @@ fn access_control_tests() {
         unreachable!();
     }
 
-    // add authorized calls
+    // Authorized Calls
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+    // Authorized call from test_helper for get_answer
+    test_helper.call(
+        aca.account_id(),
+        "get_answer",
+        &json!({"_round_id": 1.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+    // Authorized call from test_helper for get_timestamp
+    test_helper.call(
+        aca.account_id(),
+        "get_timestamp",
+        &json!({"_round_id": 1.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+    // Authorized call from test_helper for latest_answer
+    test_helper.call(
+        aca.account_id(),
+        "latest_answer",
+        &json!({"_round_id": 1.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+    // Authorized call from test_helper for latest_timestamp
+    test_helper.call(
+        aca.account_id(),
+        "latest_timestamp",
+        &json!({"_round_id": 1.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
 }
