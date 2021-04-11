@@ -16,7 +16,7 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm"
 }
 
-pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
+pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
     // Use `None` for default genesis configuration; more info below
     let root = init_simulator(None);
     let link = root.deploy(
@@ -75,6 +75,16 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         to_yocto("1000000"), // initial balance
     );
 
+    let oracle_two = root.create_user(
+        "oracle_two".to_string(),
+        to_yocto("1000000"), // initial balance
+    );
+
+    let oracle_three = root.create_user(
+        "oracle_three".to_string(),
+        to_yocto("1000000"), // initial balance
+    );
+
     let test_helper = root.create_user(
         "test_helper".to_string(),
         to_yocto("1000"), // initial balance
@@ -98,5 +108,5 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         DEFAULT_GAS / 2,
         0, // attached deposit
     ).assert_success();
-    (root, aca, link, oracle_one, test_helper, eac)
+    (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac)
 }
