@@ -316,7 +316,9 @@ fn flux_tests() {
         DEFAULT_GAS,
         0, // deposit
     );
-    // First add oracle_one
+
+    // Add Oracles
+
     root.call(
         aca.account_id(),
         "change_oracles",
@@ -325,7 +327,25 @@ fn flux_tests() {
         0, // deposit
     )
     .assert_success();
-    // Second, call submit from oracle_one
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_two.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    // Call Submit
+
     oracle_one.call(
         aca.account_id(),
         "submit",
