@@ -365,14 +365,14 @@ fn flux_tests() {
     .unwrap_json();
     assert_eq!(0, allocated_funds, "updates the allocated and available funds counters");
 
-    let tx1 = oracle_one.call(
+    let mut tx = oracle_one.call(
         aca.account_id(),
         "submit",
         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     );
-    let receipt = tx1.promise_results();
+    let receipt = tx.promise_results();
     println!("{:?}", receipt);
 
     allocated_funds = root
@@ -400,4 +400,21 @@ fn flux_tests() {
     assert_eq!(payment_amount, allocated_funds);
     let expected_available: u64 = deposit - payment_amount;
     assert_eq!(expected_available, available_funds);
+    // add logged
+    // assert of expected_available and logged
+
+    // emits a log event announcing submission details
+    println!("emits a log event announcing submission details");
+    tx = oracle_two.call(
+        aca.account_id(),
+        "submit",
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    let receipt = tx.promise_results();
+    println!("{:?}", receipt); 
+    // let round = receipt.events?.[1]
+
+    //assert_eq(answer, round.submission)
 }
