@@ -352,7 +352,7 @@ fn flux_tests() {
     // updates the allocated and available funds counters
     println!("updates the allocated and available funds counters");
 
-    let allocated_funds: u128 = root
+    let mut allocated_funds: u64 = root
     .view(
         aca.account_id(),
         "allocated_funds",
@@ -372,5 +372,19 @@ fn flux_tests() {
         DEFAULT_GAS,
         0, // deposit
     );
-    println!("{:?}", tx1.promise_results());
+    let receipt = tx1.promise_results();
+    println!("{:?}", receipt);
+
+    allocated_funds = root
+    .view(
+        aca.account_id(),
+        "allocated_funds",
+        &json!({
+                "": "".to_string()
+            })
+            .to_string()
+            .into_bytes(),
+    )
+    .unwrap_json();
+    assert_eq!(payment_amount, allocated_funds);
 }
