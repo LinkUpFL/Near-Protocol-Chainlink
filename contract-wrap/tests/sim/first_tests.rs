@@ -317,7 +317,8 @@ fn flux_tests() {
         0, // deposit
     );
 
-    // Add Oracles
+    // #submit
+    println!("\n#submit");
 
     let mut min_max: u64 = 1;
 
@@ -348,6 +349,9 @@ fn flux_tests() {
     )
     .assert_success();
 
+    // updates the allocated and available funds counters
+    println!("updates the allocated and available funds counters");
+
     let allocated_funds: u128 = root
     .view(
         aca.account_id(),
@@ -361,13 +365,12 @@ fn flux_tests() {
     .unwrap_json();
     assert_eq!(0, allocated_funds, "updates the allocated and available funds counters");
 
-    // Call Submit
-
-    oracle_one.call(
+    let tx1 = oracle_one.call(
         aca.account_id(),
         "submit",
         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    ).assert_success();
+    );
+    println!("{:?}", tx1.promise_results());
 }
