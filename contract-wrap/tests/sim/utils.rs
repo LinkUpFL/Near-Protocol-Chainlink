@@ -52,7 +52,7 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
     let decimals: u64 = 24;
     let description: String = "LINK/USD".to_string();
     let min_submission_value: u128 = 1;
-    let max_submission_value: u128 = 1;
+    let max_submission_value: u128 = 5;
     let empty_address: AccountId = "".to_string();
     let next_round: u128 = 1; 
 
@@ -86,13 +86,13 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         EAC_ID.to_string(),
         to_yocto("1000"), // attached deposit
     );
-    root.call(
+    eac.call(
         EAC_ID.into(),
         "new",
         &json!({
-            "owner_id": root.account_id(),
+            "owner_id": eac.account_id(),
             "_aggregator": aca.account_id(),
-            "_access_controller": root.account_id()
+            "_access_controller": eac.account_id()
         })
         .to_string()
         .into_bytes(),

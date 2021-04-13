@@ -86,59 +86,108 @@ impl EACAggregatorProxy {
         self.access_controller = _access_controller;
     }
     // Depracated
-    pub fn latest_answer(&self) -> Promise {
+    
+    pub fn latest_answer(&mut self) {
         self.check_access();
-        Promise::new(self.current_phase.aggregator.clone())
-            .function_call(
-                b"latest_answer".to_vec(),
-                json!({}).to_string().as_bytes().to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+        let prepaid_gas = env::prepaid_gas();
+        let get_latest_answer_promise = env::promise_create(
+            self.current_phase.aggregator.clone(),
+            b"latest_answer",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+
+        let promise3 = env::promise_then(get_latest_answer_promise, env::current_account_id(), b"latest_answer_results", json!({}).to_string().as_bytes(), 0, prepaid_gas / 4);
+        env::promise_return(promise3);
+    }
+
+    pub fn latest_answer_results(&self) -> u128 {
+        assert_eq!(env::current_account_id(), env::predecessor_account_id());
+        assert_eq!(env::promise_results_count(), 1);
+        let get_latest_answer_promise_result: Vec<u8> =
+        match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                env::log(b"Check_promise successful");
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        serde_json::from_slice(&get_latest_answer_promise_result).unwrap()
     }
     // Depracated
-    pub fn latest_timestamp(&self) -> Promise {
+
+    pub fn latest_timestamp(&mut self) {
         self.check_access();
-        Promise::new(self.current_phase.aggregator.clone())
-            .function_call(
-                b"lastest_timestamp".to_vec(),
-                json!({}).to_string().as_bytes().to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+        let prepaid_gas = env::prepaid_gas();
+        let get_latest_timestamp_promise = env::promise_create(
+            self.current_phase.aggregator.clone(),
+            b"latest_timestamp",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+
+        let promise3 = env::promise_then(get_latest_timestamp_promise, env::current_account_id(), b"latest_timestamp_results", json!({}).to_string().as_bytes(), 0, prepaid_gas / 4);
+        env::promise_return(promise3);
     }
+
+    pub fn latest_timestamp_results(&self) -> u64 {
+        assert_eq!(env::current_account_id(), env::predecessor_account_id());
+        assert_eq!(env::promise_results_count(), 1);
+        let get_latest_timestamp_promise_result: Vec<u8> =
+        match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                env::log(b"Check_promise successful");
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        serde_json::from_slice(&get_latest_timestamp_promise_result).unwrap()
+    }
+
     // Depracated
-    pub fn get_answer(&mut self, _round_id: U128) -> PromiseOrValue<u128> {
-        self.check_access();
-        let round_id_u128: u128 = _round_id.into();
-        if round_id_u128 > find_pow() {
-            return PromiseOrValue::Value(0);
-        }
+    // pub fn get_answer(&mut self, _round_id: U128) {
+    //     self.check_access();
+    //     let prepaid_gas = env::prepaid_gas();
+    //     let round_id_u128: u128 = _round_id.into();
+    //     if round_id_u128 > find_pow() {
+    //         return PromiseOrValue::Value(0);
+    //     }
 
-        let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
+    //     let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
 
-        let aggregator_option = self.phase_aggregators.get(&phase_id);
-        if aggregator_option.is_none() {
-            env::panic(b"Aggregator account not found");
-        }
-        let phase_aggregator = aggregator_option.unwrap();
+    //     let aggregator_option = self.phase_aggregators.get(&phase_id);
+    //     if aggregator_option.is_none() {
+    //         env::panic(b"Aggregator account not found");
+    //     }
+    //     let phase_aggregator = aggregator_option.unwrap();
+    //     let get_latest_timestamp_promise = env::promise_create(
+    //         self.current_phase.aggregator.clone(),
+    //         b"get_answer",
+    //         json!({"_roundId": aggregator_round_id}).to_string().as_bytes(),
+    //         0,
+    //         SINGLE_CALL_GAS,
+    //     );
 
-        PromiseOrValue::Promise(
-            Promise::new(phase_aggregator)
-                .function_call(
-                    b"get_answer".to_vec(),
-                    json!({ "_roundId": aggregator_round_id })
-                        .to_string()
-                        .as_bytes()
-                        .to_vec(),
-                    0,
-                    SINGLE_CALL_GAS,
-                )
-                .as_return(),
-        )
-    }
+    //     let promise3 = env::promise_then(get_latest_timestamp_promise, env::current_account_id(), b"latest_timestamp_results", json!({}).to_string().as_bytes(), 0, prepaid_gas / 4);
+    //     env::promise_return(promise3);
+        
+    // }
+
+    // pub fn get_answer_results(&self) -> u128 {
+    //     assert_eq!(env::current_account_id(), env::predecessor_account_id());
+    //     assert_eq!(env::promise_results_count(), 1);
+    //     let get_answer_promise_result: Vec<u8> =
+    //     match env::promise_result(0) {
+    //         PromiseResult::Successful(_x) => {
+    //             env::log(b"Check_promise successful");
+    //             _x
+    //         }
+    //         _x => panic!("Promise with index 0 failed"),
+    //     };
+    //     serde_json::from_slice(&get_answer_promise_result).unwrap()
+    // }
     // Depracated
     pub fn get_timestamp(&self, _round_id: U128) -> PromiseOrValue<u128> {
         self.check_access();
@@ -293,7 +342,11 @@ impl EACAggregatorProxy {
     pub fn aggregator(&self) -> String {
         self.current_phase.aggregator.clone()
     }
+    // comment this out later
 
+    pub fn access_controller(&self) -> String {
+        self.access_controller.clone()
+    }
     pub fn phase_id(&self) -> u64 {
         self.current_phase.id
     }
@@ -349,12 +402,13 @@ impl EACAggregatorProxy {
     // Internal
 
     fn set_aggregator(&mut self, _aggregator: AccountId) {
-        let id: u64 = self.current_phase.id + 1;
+        let id: u64 = self.current_phase.id.saturating_add(1);
         let phase_aggregator_option = self.phase_aggregators.get(&id);
         if phase_aggregator_option.is_some() {
             env::panic(b"Phase aggregator account not found");
         }
-        self.phase_aggregators.insert(&self.current_phase.id, &_aggregator);
+        self.phase_aggregators.insert(&id, &_aggregator);
+        self.current_phase = Phase {id: id, aggregator: _aggregator};
     }
 
     fn add_phase(&self, _phase: u64, _original_id: u64) -> u128 {
