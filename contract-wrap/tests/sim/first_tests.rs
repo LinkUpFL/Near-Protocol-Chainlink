@@ -348,6 +348,19 @@ fn flux_tests() {
     )
     .assert_success();
 
+    let allocated_funds: u128 = root
+    .view(
+        aca.account_id(),
+        "allocated_funds",
+        &json!({
+                "": "".to_string()
+            })
+            .to_string()
+            .into_bytes(),
+    )
+    .unwrap_json();
+    assert_eq!(0, allocated_funds, "updates the allocated and available funds counters");
+
     // Call Submit
 
     oracle_one.call(
