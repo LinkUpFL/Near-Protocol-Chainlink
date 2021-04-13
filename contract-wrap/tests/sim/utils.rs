@@ -16,7 +16,7 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm"
 }
 
-pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
+pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
     // Use `None` for default genesis configuration; more info below
     let root = init_simulator(None);
     let link = root.deploy(
@@ -43,18 +43,12 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
     );
 
     let payment_amount: u64 = 3;
-    let deposit: u64 = 100;
-    let answer: u128 = 100;
-    let min_ans: u64 = 1;
-    let max_ans: u64 = 1;
-    let rr_delay: u64 = 0;
     let timeout: u64 = 1800;
     let decimals: u64 = 24;
     let description: String = "LINK/USD".to_string();
     let min_submission_value: u128 = 1;
-    let max_submission_value: u128 = 5;
+    let max_submission_value: u128 = 100000000000000000000;
     let empty_address: AccountId = "".to_string();
-    let next_round: u128 = 1; 
 
     aca.call(
         ACA_ID.into(),
@@ -81,6 +75,21 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         to_yocto("1000000"), // initial balance
     );
 
+    let oracle_two = root.create_user(
+        "oracle_two".to_string(),
+        to_yocto("1000000"), // initial balance
+    );
+
+    let oracle_three = root.create_user(
+        "oracle_three".to_string(),
+        to_yocto("1000000"), // initial balance
+    );
+
+    let test_helper = root.create_user(
+        "test_helper".to_string(),
+        to_yocto("1000"), // initial balance
+    );
+
     let eac = root.deploy(
         &EAC_WASM_BYTES,
         EAC_ID.to_string(),
@@ -99,5 +108,5 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         DEFAULT_GAS / 2,
         0, // attached deposit
     ).assert_success();
-    (root, aca, link, oracle_one, eac)
+    (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac)
 }

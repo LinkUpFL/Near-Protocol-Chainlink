@@ -7,7 +7,7 @@ use crate::utils::init_without_macros as init;
 #[test]
 
 fn eac_testss() {
-    let (root, aca, link, oracle_one, eac) = init();
+    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -139,15 +139,15 @@ fn eac_testss() {
     //     DEFAULT_GAS,
     //     0, // deposit
     // ).assert_success();
-    let eac_latest_answer: String = oracle_one
+    let eac_latest_answer = oracle_one
     .call(
         eac.account_id(),
-        "latest_answer",
+        "decimals",
         &json!({}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    ).unwrap_json();
-    println!("{:?}", eac_latest_answer);
+    );
+    println!("{:?}", eac_latest_answer.promise_results());
 
     assert_eq!(true, true);
 }
