@@ -60,27 +60,6 @@ fn simulate_linktoken_transfer() {
             .into_bytes(),
         )
         .unwrap_json();
-    // let aca_balance: String = aca
-    //     .view(
-    //         link.account_id(),
-    //         "withdraw_payment",
-    //         &json!({
-    //             "owner_id": aca.valid_account_id()
-    //         })
-    //         .to_string()
-    //         .into_bytes(),
-    //     )
-    //     .unwrap_json();
-
-
-    // let oracle_available_withdrawable: String = aca
-    //     .view(
-    //         aca.account_id(),
-    //         "withdrawable_payment",
-    //         &json!({"_oracle": oracle_one.account_id()}).to_string().into_bytes(),
-    //     )
-    //     .unwrap_json();
-    // println!("{:?}", oracle_available_withdrawable);
 
     let withdraw = oracle_one.call(
         aca.account_id(),
@@ -89,7 +68,6 @@ fn simulate_linktoken_transfer() {
         DEFAULT_GAS,
         36500000000000000000000, // deposit
     );
-    println!("{:?}", withdraw.promise_results());
 
     let oracle_balance: U128 = root
     .view(
@@ -102,9 +80,7 @@ fn simulate_linktoken_transfer() {
         .into_bytes(),
     )
     .unwrap_json();
-    println!("{:?}", oracle_balance);
-
-    assert_eq!(true, true);
+    assert_eq!(1, u128::from(oracle_balance));
 }
 
 #[test]
