@@ -386,5 +386,18 @@ fn flux_tests() {
             .into_bytes(),
     )
     .unwrap_json();
+    let available_funds: u64 = root
+    .view(
+        aca.account_id(),
+        "available_funds",
+        &json!({
+                "": "".to_string()
+            })
+            .to_string()
+            .into_bytes(),
+    )
+    .unwrap_json();
     assert_eq!(payment_amount, allocated_funds);
+    let expected_available: u64 = deposit - payment_amount;
+    assert_eq!(expected_available, available_funds);
 }
