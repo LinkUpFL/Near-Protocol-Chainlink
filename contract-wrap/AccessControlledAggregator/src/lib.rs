@@ -981,7 +981,7 @@ impl AccessControlledAggregator {
 
         let payment: u128 = detail.payment_amount;
         let mut funds: Funds = self.recorded_funds.clone();
-        env::log(format!("{} Now Available", funds.available.saturating_sub(payment)).as_bytes());
+        env::log(format!("{}", funds.available.saturating_sub(payment)).as_bytes());
         env::log(format!("{} Now Allocated", funds.allocated.saturating_add(payment)).as_bytes());
 
         funds.available = funds.available.saturating_sub(payment);
