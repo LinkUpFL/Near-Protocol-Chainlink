@@ -349,10 +349,6 @@ fn flux_tests() {
         0, // deposit
     );
     let mut receipt = tx.promise_results();
-    let receipt1 = tx.get_receipt_results();
-
-    println!("{:?}", receipt.remove(1).unwrap().outcome().logs[0]);
-    println!("receipt1 {:?}", receipt1);
 
     allocated_funds = root
     .view(
@@ -379,8 +375,8 @@ fn flux_tests() {
     assert_eq!(payment_amount, allocated_funds);
     let expected_available: u64 = deposit - payment_amount;
     assert_eq!(expected_available, available_funds);
-    // add logged
-    // assert of expected_available and logged
+    let logged: u64 = receipt.remove(1).unwrap().outcome().logs[0].parse().unwrap();
+    assert_eq!(expected_available, logged);
 
     // emits a log event announcing submission details
     println!("emits a log event announcing submission details");
@@ -391,9 +387,8 @@ fn flux_tests() {
         DEFAULT_GAS,
         0, // deposit
     );
-    let receipt = tx.promise_results();
-    println!("{:?}", receipt); 
+    receipt = tx.promise_results();
+    println!("{:?}", receipt);
     // let round = receipt.events?.[1]
-
     //assert_eq(answer, round.submission)
 }
