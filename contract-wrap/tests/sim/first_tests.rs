@@ -391,4 +391,19 @@ fn flux_tests() {
     println!("{:?}", receipt);
     // let round = receipt.events?.[1]
     //assert_eq(answer, round.submission)
+
+    // when the minimum oracles have not reported
+    println!("when the minimum oracles have not reported");
+    let withdrawable_payment: u128 = root
+    .view(
+        aca.account_id(),
+        "withdrawable_payment",
+        &json!({
+                "_oracle": oracle_one.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+    )
+    .unwrap_json();
+    assert_eq!(0, withdrawable_payment);
 }
