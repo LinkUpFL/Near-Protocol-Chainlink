@@ -38,8 +38,6 @@ pub struct EACAggregatorProxy {
     pub proposed_aggregator: AccountId,
     pub phase_aggregators: LookupMap<u64, AccountId>,
     pub access_controller: AccountId,
-    pub check_enabled: bool,
-    access_list: LookupMap<AccountId, bool>,
     current_phase: Phase,
 }
 
@@ -68,8 +66,6 @@ impl EACAggregatorProxy {
             proposed_aggregator: "".to_string(),
             phase_aggregators: LookupMap::new(b"phase_aggregators".to_vec()),
             access_controller: "".to_string(),
-            check_enabled: true,
-            access_list: LookupMap::new(b"access_list".to_vec()),
             current_phase: Phase {
                 id: 0_u64,
                 aggregator: "".to_string(),
@@ -470,66 +466,44 @@ impl EACAggregatorProxy {
         );
     }
 
-    // Access Control
 
-    pub fn has_access(&self, _user: AccountId) -> bool {
-        if !self.check_enabled {
-            !self.check_enabled
-        } else {
-            let user_option = self.access_list.get(&_user);
-            if user_option.is_none() {
-                env::panic(b"Did not find this oracle account.");
+
+    fn call_access_controller_has_access(&mut self, _user: AccountId) {
+        let prepaid_gas = env::prepaid_gas();
+        let get_has_access_promise = env::promise_create(
+            self.access_controller.clone(),
+            b"has_access",
+            json!({"_user": _user}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+
+        let promise3 = env::promise_then(get_has_access_promise, env::current_account_id(), b"call_access_controller_has_access_results", json!({}).to_string().as_bytes(), 0, prepaid_gas / 4);
+        env::promise_return(promise3);
+    }
+
+    fn call_access_controller_has_access_results(&self) -> bool {
+        assert_eq!(env::current_account_id(), env::predecessor_account_id());
+        assert_eq!(env::promise_results_count(), 1);
+        let get_has_access_promise_result: Vec<u8> =
+        match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                env::log(b"Check_promise successful");
+                _x
             }
-            let user = user_option.unwrap();
-            user
-        }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        serde_json::from_slice(&get_has_access_promise_result).unwrap()
     }
-
-    pub fn add_access(&mut self, _user: AccountId) {
-        self.only_owner();
-
-        let user_option = self.access_list.get(&_user);
-        if user_option.is_none() {
-            self.access_list.insert(&_user, &true);
-            env::panic(b"Added access to this oracle account.");
-        }
-    }
-
-    pub fn remove_access(&mut self, _user: AccountId) {
-        self.only_owner();
-
-        let user_option = self.access_list.get(&_user);
-        if user_option.is_none() {
-            env::panic(b"Did not find the oracle account to remove.");
-        }
-        self.access_list.insert(&_user, &false);
-    }
-
-    pub fn enable_access_check(&mut self) {
-        self.only_owner();
-
-        if !self.check_enabled {
-            self.check_enabled = true;
-        }
-    }
-
-    pub fn disable_access_check(&mut self) {
-        self.only_owner();
-
-        if self.check_enabled {
-            self.check_enabled = false;
-        }
-    }
-
     fn check_access(&self) {
-        // let ac: AccountId = self.access_controller;
-        // Check this since it's supposed to be calling has_access()
-        
+        //  || self.call_access_controller_has_access(env::predecessor_account_id()
         assert!(
-            env::predecessor_account_id() == self.access_controller || !self.check_enabled,
+            self.access_controller == "null",
             "No access"
         );
+
     }
+
 }
 
   

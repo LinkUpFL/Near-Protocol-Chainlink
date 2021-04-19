@@ -5,9 +5,8 @@ use near_sdk_sim::DEFAULT_GAS;
 use crate::utils::init_without_macros as init;
 
 #[test]
-
-fn eac_testss() {
-    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac) = init();
+fn external_access_tests() {
+    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac, eac_without_access_controller) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -102,7 +101,7 @@ fn eac_testss() {
     let _add_access_1 = root.call(
         aca.account_id(),
         "add_access",
-        &json!({"_user": eac.account_id()}).to_string().into_bytes(),
+        &json!({"_user": eac_without_access_controller.account_id()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
@@ -139,15 +138,45 @@ fn eac_testss() {
     //     DEFAULT_GAS,
     //     0, // deposit
     // ).assert_success();
-    let eac_latest_answer = oracle_one
+    oracle_one
     .call(
-        eac.account_id(),
+        eac_without_access_controller.account_id(),
         "decimals",
         &json!({}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     );
-    println!("{:?}", eac_latest_answer.promise_results());
 
-    assert_eq!(true, true);
+
+    // Callers can call view functions without explicit access
+
+        test_helper.call(
+        eac_without_access_controller.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        ).assert_success();
+        test_helper.call(
+            eac_without_access_controller.account_id(),
+                "latest_timestamp",
+                &json!({}).to_string().into_bytes(),
+                DEFAULT_GAS,
+                0, // deposit
+            ).assert_success();
+            // test_helper.call(
+            //     eac_without_access_controller.account_id(),
+            //         "get_answer",
+            //         &json!({}).to_string().into_bytes(),
+            //         DEFAULT_GAS,
+            //         0, // deposit
+            //     ).assert_success();
+            //     test_helper.call(
+            //         eac_without_access_controller.account_id(),
+            //             "get_answer",
+            //             &json!({}).to_string().into_bytes(),
+            //             DEFAULT_GAS,
+            //             0, // deposit
+            //         ).assert_success();
+        assert_eq!(true, true);
 }

@@ -9,7 +9,7 @@ use crate::utils::init_without_macros as init;
 #[test]
 
 fn simulate_linktoken_transfer() {
-    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac) = init();
+    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac, eac_without_access_controller) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -98,7 +98,7 @@ fn access_control_tests() {
     let max_submission_value: u128 = 100000000000000000000;
     let empty_address: AccountId = "".to_string();
     let next_round: u128 = 1;
-    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac) = init();
+    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _ea, eac_without_access_controller) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),
@@ -269,7 +269,7 @@ fn flux_tests() {
     let max_submission_value: u128 = 100000000000000000000;
     let oracles: Vec<AccountId>;
     let next_round: u128 = 1;
-    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac) = init();
+    let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac, eac_without_access_controller) = init();
     // Transfer from link_token contract to ACA.
     root.call(
         link.account_id(),

@@ -5,7 +5,7 @@ use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS, STORAGE_A
 const ACA_ID: &str = "aca";
 const LINKTOKEN_ID: &str = "lt";
 const EAC_ID: &str = "eac";
-
+const EAC_WITHOUT_ACCESS_CONTROLLER_ID: &str = "eac_without_access_controller";
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     // update `contract.wasm` for your contract's name
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
@@ -16,7 +16,7 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm"
 }
 
-pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
+pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
     // Use `None` for default genesis configuration; more info below
     let root = init_simulator(None);
     let link = root.deploy(
@@ -101,12 +101,32 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         &json!({
             "owner_id": eac.account_id(),
             "_aggregator": aca.account_id(),
-            "_access_controller": eac.account_id()
+            "_access_controller": "null"
         })
         .to_string()
         .into_bytes(),
         DEFAULT_GAS / 2,
         0, // attached deposit
     ).assert_success();
-    (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac)
+
+    let eac_without_access_controller = root.deploy(
+        &EAC_WASM_BYTES,
+        EAC_WITHOUT_ACCESS_CONTROLLER_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    eac_without_access_controller.call(
+        EAC_WITHOUT_ACCESS_CONTROLLER_ID.into(),
+        "new",
+        &json!({
+            "owner_id": eac_without_access_controller.account_id(),
+            "_aggregator": aca.account_id(),
+            "_access_controller": "null"
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS / 2,
+        0, // attached deposit
+    ).assert_success();
+    (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac, eac_without_access_controller)
 }
