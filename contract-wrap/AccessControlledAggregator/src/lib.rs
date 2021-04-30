@@ -194,7 +194,7 @@ impl AccessControlledAggregator {
     pub fn submit(&mut self, _round_id: U128, _submission: U128) {
         let round_id_u128: u128 = _round_id.into();
         let submission_u128: u128 = _submission.into();
-        let error: Base64String = self.validate_oracle_round(env::current_account_id(), round_id_u128 as u64);
+        let error: Base64String = self.validate_oracle_round(env::predecessor_account_id(), round_id_u128 as u64);
         assert!(submission_u128 >= self.min_submission_value, "value below minSubmissionValue");
         assert!(submission_u128 <= self.max_submission_value, "value above maxSubmissionValue");
         assert!(error.len() == 0, error);
@@ -781,7 +781,7 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find oracle. {oracle_initialize_new_round}")
+            env::panic(format!("{} Did not find this oracle.", &env::predecessor_account_id()).as_bytes());
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -821,13 +821,13 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this round. {update_timed_out_round_info}");
+            env::panic(format!("{} Did not find this round.", _round_id.to_string()).as_bytes());
         }
         let mut round = round_option.unwrap();
 
         let prev_option = self.rounds.get(&prev_id);
         if prev_option.is_none() {
-            env::panic(b"Did not find this round. {update_timed_out_round_info}");
+            env::panic(format!("{} Did not find this prev round.", prev_id.to_string()).as_bytes());
         }
         let prev = prev_option.unwrap();
 
@@ -854,7 +854,7 @@ impl AccessControlledAggregator {
     }
 
     fn oracle_round_state_suggest_round(&mut self, _oracle: AccountId) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
-        let round_option = self.rounds.get(&0);
+        let round_option = self.rounds.get(&1);
         let init_oracle = &_oracle;
         if round_option.is_none() {
             env::panic(b"Did not find this round. {oracle_round_state_suggest_round}");
@@ -930,6 +930,10 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this oracle account. {update_round_answer}");
         }
         let detail = detail_option.unwrap();
+        let submissions_length = detail.submissions.len() as u64;
+        if submissions_length < detail.min_submissions {
+            return (false, 0 as u128);
+        }
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
@@ -1044,6 +1048,7 @@ impl AccessControlledAggregator {
 
         let started_at: u64 = round.started_at;
         let round_timeout: u64 = detail.timeout;
+        env::log(format!("{},{},{},{},{} Now Allocated", started_at.to_string(), round_timeout.to_string(), (started_at + round_timeout).to_string(), env::block_timestamp(), started_at > 0 && round_timeout > 0 && ((started_at + round_timeout) < env::block_timestamp())).as_bytes());
         return started_at > 0 && round_timeout > 0 && ((started_at + round_timeout) < env::block_timestamp());
     }
 
@@ -1134,7 +1139,7 @@ impl AccessControlledAggregator {
         // cache storage reads
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            return "".to_string();
+            return "oracle_option_is_none".to_string();
         }
         let oracle = oracle_option.unwrap();
         let starting_round: u64 = oracle.starting_round;
