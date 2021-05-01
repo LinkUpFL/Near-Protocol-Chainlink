@@ -362,6 +362,9 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this oracle account. {latest_answer}");
         }
         let round = round_option.unwrap();
+        if round.answer == 0 {
+            return 0;
+        }
         round.answer
     }
 
