@@ -931,6 +931,7 @@ impl AccessControlledAggregator {
         }
         let detail = detail_option.unwrap();
         let submissions_length = detail.submissions.len() as u64;
+
         if submissions_length < detail.min_submissions {
             return (false, 0 as u128);
         }
@@ -942,6 +943,8 @@ impl AccessControlledAggregator {
         let mut round = round_option.unwrap();
 
         let new_answer: u128 = self.median(detail.submissions).into();
+        env::log(format!("{} Answer", new_answer).as_bytes());
+
         round.answer = new_answer;
         round.updated_at = env::block_timestamp() as u64;
         round.answered_in_round = _round_id;
@@ -1016,6 +1019,7 @@ impl AccessControlledAggregator {
 
         oracle.last_reported_round = _round_id as u64;
         oracle.latest_submission = _submission;
+
         self.oracles.insert(&env::predecessor_account_id(), &oracle);
     }
 
@@ -1220,11 +1224,14 @@ impl AccessControlledAggregator {
     fn only_owner(&mut self) {
         assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
     }
-
+    // Review implementation of this
     fn median(&mut self, mut numbers: Vec<u128>) -> u128 {
         numbers.sort();
-        let mid = numbers.len() / 2;
-        numbers[mid]
+        let _mid = numbers.len() / 2;
+        // numbers[mid]
+        let sum: u128 = numbers.iter().sum();
+        let len: u128 =  numbers.len().try_into().unwrap();
+        sum / len
     }
 
     pub fn get_decimals(&self) -> u64 {
