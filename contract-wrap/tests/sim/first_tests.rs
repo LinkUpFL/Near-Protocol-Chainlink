@@ -435,7 +435,7 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
             aca.account_id(),
             "allocated_funds",
             &json!({
-                "": "".to_string()
+             
             })
             .to_string()
             .into_bytes(),
@@ -446,7 +446,7 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
             aca.account_id(),
             "available_funds",
             &json!({
-                "": "".to_string()
+           
             })
             .to_string()
             .into_bytes(),

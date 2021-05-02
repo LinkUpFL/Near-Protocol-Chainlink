@@ -992,7 +992,7 @@ impl AccessControlledAggregator {
         let payment: u128 = detail.payment_amount;
         let mut funds: Funds = self.recorded_funds.clone();
         env::log(format!("{}", funds.available.saturating_sub(payment)).as_bytes());
-        env::log(format!("{} Now Allocated", funds.allocated.saturating_add(payment)).as_bytes());
+        env::log(format!("{}", funds.allocated.saturating_add(payment)).as_bytes());
 
         funds.available = funds.available.saturating_sub(payment);
         funds.allocated = funds.allocated.saturating_add(payment);
@@ -1055,7 +1055,6 @@ impl AccessControlledAggregator {
 
         let started_at: u64 = round.started_at;
         let round_timeout: u64 = detail.timeout;
-        env::log(format!("{},{},{},{},{} Now Allocated", started_at.to_string(), round_timeout.to_string(), (started_at + round_timeout).to_string(), env::block_timestamp(), started_at > 0 && round_timeout > 0 && ((started_at + round_timeout) < env::block_timestamp())).as_bytes());
         return started_at > 0 && round_timeout > 0 && ((started_at + round_timeout) < env::block_timestamp());
     }
 
