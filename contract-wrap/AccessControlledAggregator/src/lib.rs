@@ -197,7 +197,9 @@ impl AccessControlledAggregator {
         let error: Base64String = self.validate_oracle_round(env::predecessor_account_id(), round_id_u128 as u64);
         assert!(submission_u128 >= self.min_submission_value, "value below minSubmissionValue");
         assert!(submission_u128 <= self.max_submission_value, "value above maxSubmissionValue");
-        assert!(error.len() == 0, error);
+        if error.len() != 0 {
+            env::panic(format!("{}", error).as_bytes());
+        }
 
         self.oracle_initialize_new_round(round_id_u128 as u64);
         self.record_submission(submission_u128, round_id_u128);
@@ -703,8 +705,11 @@ impl AccessControlledAggregator {
         assert!(env::predecessor_account_id() == env::signer_account_id(), "off-chain reading only");
 
         let queried_round_id_u64: u64 = _queried_round_id.into();
-
-        let round_option = self.rounds.get(&queried_round_id_u64);
+        if queried_round_id_u64 == 0 {
+            return self.oracle_round_state_suggest_round(_oracle);
+        }
+        else {
+            let round_option = self.rounds.get(&queried_round_id_u64);
         if round_option.is_none() {
             env::panic(b"Did not find this round. {oracle_round_state}");
         }
@@ -721,8 +726,6 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this round. {oracle_round_state}");
         }
         let oracle = oracle_option.unwrap();
-
-        if queried_round_id_u64 > 0 {
             let round: Round = round;
             return (
                 self.eligible_for_specific_round(_oracle, queried_round_id_u64),
@@ -734,9 +737,8 @@ impl AccessControlledAggregator {
                 self.oracle_count() as u64,
                 if round.started_at > 0 { detail.payment_amount } else { self.payment_amount }
             )
-        } else {
-            return self.oracle_round_state_suggest_round(_oracle);
         }
+        
     }
 
     /**
@@ -946,7 +948,7 @@ impl AccessControlledAggregator {
         let mut round = round_option.unwrap();
 
         let new_answer: u128 = self.median(detail.submissions).into();
-        env::log(format!("{} Answer", new_answer).as_bytes());
+        env::log(format!("{}", new_answer).as_bytes());
 
         round.answer = new_answer;
         round.updated_at = env::block_timestamp() as u64;
@@ -1150,7 +1152,7 @@ impl AccessControlledAggregator {
         let oracle = oracle_option.unwrap();
         let starting_round: u64 = oracle.starting_round;
         let rr_id: u64 = self.reporting_round_id;
-
+        // maybe add logs here?
         if starting_round == 0 {
             return "not enabled oracle".to_string();
         }
@@ -1195,7 +1197,7 @@ impl AccessControlledAggregator {
         let oracle = oracle_option.unwrap();
         oracle.ending_round == ROUND_MAX
     }
-
+    // see why the round_option is none, see where it's failing in the tree
     fn accepting_submissions(&self, _round_id: u128) -> bool {
         let round_option = self.details.get(&_round_id);
         if round_option.is_none() {
