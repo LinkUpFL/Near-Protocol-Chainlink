@@ -367,7 +367,6 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
 
     let mut min_max: u64 = 1;
 
@@ -380,7 +379,6 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
     )
     .assert_success();
     min_max = min_max + 1;
-    println!("first {:?}", min_max);
     root.call(
         aca.account_id(),
         "change_oracles",
@@ -390,7 +388,7 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
     )
     .assert_success();
     min_max = min_max + 1;
-    println!("second {:?}", min_max);
+    // println!("second {:?}", min_max);
     root.call(
         aca.account_id(),
         "change_oracles",
@@ -399,9 +397,9 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
         0, // deposit
     )
     .assert_success();
-    println!("after {:?}", min_max);
+    // println!("after {:?}", min_max);
     // updates the allocated and available funds counters
-    println!("updates the allocated and available funds counters");
+    // println!("updates the allocated and available funds counters");
 
     let mut allocated_funds: u64 = root
         .view(
@@ -453,7 +451,7 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
     assert_eq!(expected_available, logged);
 
     // emits a log event announcing submission details
-    println!("emits a log event announcing submission details");
+    // println!("emits a log event announcing submission details");
     tx = oracle_two.call(
         aca.account_id(),
         "submit",
@@ -464,7 +462,7 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
         0, // deposit
     );
     receipt = tx.promise_results();
-    println!("{:?}", receipt);
+    // println!("{:?}", receipt);
     // let round = receipt.events?.[1]
     //assert_eq(answer, round.submission)
 
@@ -544,7 +542,7 @@ fn when_the_minimum_oracles_have_not_reported() {
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
+    // println!("\n#submit");
 
     let min_max: u64 = 3;
 
@@ -579,12 +577,12 @@ fn when_the_minimum_oracles_have_not_reported() {
         0, // deposit
     );
     let receipt = tx.promise_results();
-    println!("{:?}", receipt);
+    // println!("{:?}", receipt);
     // let round = receipt.events?.[1]
     //assert_eq(answer, round.submission)
 
     // when the minimum oracles have not reported
-    println!("when the minimum oracles have not reported");
+    // println!("when the minimum oracles have not reported");
     let withdrawable_payment: u128 = root
         .view(
             aca.account_id(),
@@ -643,7 +641,7 @@ fn when_the_minimum_oracles_have_not_reported() {
         DEFAULT_GAS,
         0, // deposit
     );
-    println!("{:?}", not_updated.promise_results());
+    // println!("{:?}", not_updated.promise_results());
 
     if let ExecutionStatus::Failure(execution_error) = &not_updated
         .promise_errors()
@@ -652,7 +650,7 @@ fn when_the_minimum_oracles_have_not_reported() {
         .outcome()
         .status
     {
-        println!("{:?}", execution_error.to_string());
+        // println!("{:?}", execution_error.to_string());
         assert!(execution_error.to_string().contains("Did not find"));
     } else {
         unreachable!();
@@ -720,7 +718,7 @@ fn when_an_oracle_prematurely_bumps_the_round() {
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
+    // println!("\n#submit");
 
     let min_max: u64 = 3;
 
@@ -777,9 +775,9 @@ fn when_an_oracle_prematurely_bumps_the_round() {
     // Note: https://github.com/smartcontractkit/chainlink/blob/95dd250a296042c81b7aafa887d8935c87cb1190/evm-contracts/test/v0.6/FluxAggregator.test.ts#L371
     // Not working here, moving on to the next test but look into this.
     let receipt_2 = tx_2.promise_results();
-    println!("{:?} receipt2previous", receipt_2);
+    // println!("{:?} receipt2previous", receipt_2);
     if let ExecutionStatus::Failure(execution_error) =
-        &tx_2.promise_errors().remove(0).unwrap().outcome().status
+        &tx_2.promise_errors().remove(1).unwrap().outcome().status
     {
         println!("{:?}", execution_error.to_string());
         assert!(execution_error
@@ -851,7 +849,7 @@ fn when_the_minimum_number_of_oracles_have_reported() {
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
+    // println!("\n#submit");
 
     let min_max: u64 = 3;
 
@@ -889,7 +887,7 @@ fn when_the_minimum_number_of_oracles_have_reported() {
         .outcome()
         .status
     {
-        println!("{:?} logs111111", execution_error.to_string());
+        // println!("{:?} logs111111", execution_error.to_string());
         assert!(execution_error.to_string().contains("Did not find"));
     } else {
         unreachable!();
@@ -1000,7 +998,7 @@ fn updates_the_updated_timestamp_and_announces_the_new_answer_with_a_log_event_a
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
+    // println!("\n#submit");
 
     let min_max: u64 = 3;
 
@@ -1039,7 +1037,7 @@ fn updates_the_updated_timestamp_and_announces_the_new_answer_with_a_log_event_a
         .outcome()
         .status
     {
-        println!("{:?} getrounddatalogs", execution_error.to_string());
+        // println!("{:?} getrounddatalogs", execution_error.to_string());
         assert!(execution_error.to_string().contains("No data present"));
     } else {
         unreachable!();
@@ -1062,7 +1060,7 @@ fn updates_the_updated_timestamp_and_announces_the_new_answer_with_a_log_event_a
         .status
     {
         // No data present should be error
-        println!("{:?} latestrounddatalogs", execution_error.to_string());
+        // println!("{:?} latestrounddatalogs", execution_error.to_string());
         assert!(execution_error
             .to_string()
             .contains("Did not find this oracle account. {get_round_data}"));
@@ -1216,7 +1214,6 @@ fn when_an_oracle_submits_for_a_round_twice() {
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
 
     let min_max: u64 = 3;
 
@@ -1333,7 +1330,6 @@ fn when_updated_after_the_max_answers_submitted() {
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
 
     let min_max: u64 = 3;
 
@@ -1371,7 +1367,6 @@ fn when_updated_after_the_max_answers_submitted() {
         DEFAULT_GAS,
         0, // deposit
     );
-    println!("{:?} roundnotaccepting", tx_2.promise_results());
     // check line 1201 to understanding why the details struct doesn't exist.
     if let ExecutionStatus::Failure(execution_error) =
         &tx_2.promise_errors().remove(0).unwrap().outcome().status
@@ -1446,8 +1441,6 @@ fn when_a_new_highest_round_number_is_passed_in() {
         0, // deposit
     );
     // #submit
-    println!("\n#submit");
-
     let min_max: u64 = 3;
 
     root.call(
@@ -1475,5 +1468,4 @@ fn when_a_new_highest_round_number_is_passed_in() {
         DEFAULT_GAS,
         0, // deposit
     );
-    println!("{:?} starting_state", starting_state.promise_results());
 }
