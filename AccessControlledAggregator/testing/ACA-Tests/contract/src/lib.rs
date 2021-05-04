@@ -1161,7 +1161,8 @@ impl AccessControlledAggregator {
     fn accepting_submissions(&self, _round_id: u128) -> bool {
         let round_option = self.details.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"hey not find this round.");
+            return false;
+            // env::panic(b"hey not find this round.");
         }
         let round = round_option.unwrap();
         round.max_submissions != 0

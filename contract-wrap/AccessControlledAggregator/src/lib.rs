@@ -1077,8 +1077,8 @@ impl AccessControlledAggregator {
     fn previous_and_current_unanswered(&self, _round_id: u64, _rr_id: u64) -> bool {
         let round_option = self.rounds.get(&_rr_id);
         if round_option.is_none() {
-
-            env::panic(b"Did not find this round. {previous_and_current_unanswered}");
+            return false
+            // env::panic(b"Did not find this round. {previous_and_current_unanswered}");
         }
         let round = round_option.unwrap();
         return (_round_id + 1) == _rr_id && round.updated_at == 0;
@@ -1147,7 +1147,8 @@ impl AccessControlledAggregator {
         // cache storage reads
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            return "oracle_option_is_none".to_string();
+            return "not enabled oracle".to_string();
+            // return "oracle_option_is_none".to_string();
         }
         let oracle = oracle_option.unwrap();
         let starting_round: u64 = oracle.starting_round;
@@ -1201,7 +1202,8 @@ impl AccessControlledAggregator {
     fn accepting_submissions(&self, _round_id: u128) -> bool {
         let round_option = self.details.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"hey not find this round.");
+            return false
+            // env::panic(b"hey not find this round.");
         }
         let round = round_option.unwrap();
         round.max_submissions != 0
