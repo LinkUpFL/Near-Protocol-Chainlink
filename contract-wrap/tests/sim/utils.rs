@@ -1,6 +1,6 @@
 use near_sdk::serde_json::json;
 use near_sdk::{AccountId};
-use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS, STORAGE_AMOUNT};
+use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS};
 
 const ACA_ID: &str = "aca";
 const LINKTOKEN_ID: &str = "lt";

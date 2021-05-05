@@ -196,7 +196,7 @@ impl AccessControlledAggregator {
         let submission_u128: u128 = _submission.into();
         let error: Base64String = self.validate_oracle_round(env::predecessor_account_id(), round_id_u128 as u64);
         assert!(submission_u128 >= self.min_submission_value, "value below minSubmissionValue");
-        assert!(submission_u128 <= self.max_submission_value, "value above maxSubmissionValue");
+        assert!(submission_u128 <= self.max_submission_value, "value above maxsubmissionValue");
         if error.len() != 0 {
             env::panic(format!("{}", error).as_bytes());
         }
@@ -435,7 +435,7 @@ impl AccessControlledAggregator {
    * an already answered Aggregator or use the recommended getRoundData
    * instead which includes better verification information.
    */
-    pub fn get_timestamp(&self, _round_id: U128) -> u128 {
+    pub fn get_timestamp(&self, _round_id: U128) -> u64 {
         self.check_access();
         let round_id_u128: u128 = _round_id.into();
 
@@ -446,7 +446,7 @@ impl AccessControlledAggregator {
         let round = round_option.unwrap();
 
         if self.valid_round_id(round_id_u128) {
-            return round.answer;
+            return round.updated_at;
         }
         return 0;
     }
