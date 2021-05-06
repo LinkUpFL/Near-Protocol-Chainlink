@@ -1058,7 +1058,7 @@ impl AccessControlledAggregator {
         let started_at: u64 = round.started_at;
         let round_timeout: u64 = detail.timeout;
         // commented out for test failure
-        return started_at > 0 && round_timeout > 0; /*&& ((started_at + round_timeout) < env::block_timestamp());*/
+        return started_at > 0 && round_timeout > 0 && ((started_at + round_timeout) < env::block_timestamp());
     }
 
     fn get_starting_round(&self, _oracle: AccountId) -> u64 {
