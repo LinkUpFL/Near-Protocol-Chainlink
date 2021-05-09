@@ -2721,7 +2721,7 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
     let min_submission_value: u128 = 1;
     let max_submission_value: u128 = 100000000000000000000;
     let oracles: Vec<AccountId>;
-    let next_round: u128 = 1;
+    let mut next_round: u128 = 1;
     let (
         root,
         aca,
@@ -2785,7 +2785,7 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2796,7 +2796,7 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2807,19 +2807,19 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
         )
         .assert_success();
-
+    next_round = next_round + 1;
     let tx_4 = oracle_two
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2830,17 +2830,18 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
         )
         .assert_success();
+    next_round = next_round + 1;
     let tx_6 = oracle_two.call(
         aca.account_id(),
         "submit",
-        &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
             .to_string()
             .into_bytes(),
         DEFAULT_GAS,
@@ -2874,7 +2875,7 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
     let min_submission_value: u128 = 1;
     let max_submission_value: u128 = 100000000000000000000;
     let oracles: Vec<AccountId>;
-    let next_round: u128 = 1;
+    let mut next_round: u128 = 1;
     let (
         root,
         aca,
@@ -2938,7 +2939,7 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2949,7 +2950,7 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2960,25 +2961,38 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
         )
         .assert_success();
-
+    next_round = next_round + 1;
     let tx_4 = oracle_two
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
         )
         .assert_success();
+    let tx_5 = oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    next_round = next_round + 1;
+
     root.call(
         aca.account_id(),
         "update_future_rounds",
@@ -2986,11 +3000,11 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
-    let tx_5 = oracle_three
+    let tx_6 = oracle_three
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
