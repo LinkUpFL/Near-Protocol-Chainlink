@@ -775,9 +775,9 @@ fn when_an_oracle_prematurely_bumps_the_round() {
     // Note: https://github.com/smartcontractkit/chainlink/blob/95dd250a296042c81b7aafa887d8935c87cb1190/evm-contracts/test/v0.6/FluxAggregator.test.ts#L371
     // Not working here, moving on to the next test but look into this.
     let receipt_2 = tx_2.promise_results();
-    // println!("{:?} receipt2previous", receipt_2);
+    println!("{:?} receipt2previous", receipt_2);
     if let ExecutionStatus::Failure(execution_error) =
-        &tx_2.promise_errors().remove(1).unwrap().outcome().status
+        &tx_2.promise_errors().remove(0).unwrap().outcome().status
     {
         println!("{:?}", execution_error.to_string());
         assert!(execution_error
@@ -2708,3 +2708,176 @@ fn when_the_price_is_not_updated_for_a_round_and_sets_the_previous_round_as_time
 }
 
 // still respects the delay restriction
+
+#[test]
+fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restriction() {
+    let new_amount: u128 = 50;
+    let payment_amount: u128 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let reserve_rounds: u64 = 2;
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let oracles: Vec<AccountId>;
+    let next_round: u128 = 1;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        eac_without_access_controller,
+    ) = init();
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Transfer from link_token contract to ACA.
+    // new_amount * oracles.length * 2
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": 300.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+    let _outcome = root.call(
+        aca.account_id(),
+        "update_available_funds",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    root.call(
+        aca.account_id(),
+        "update_future_rounds",
+        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+    let tx = oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    let tx_2 = oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    let tx_3 = oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let tx_4 = oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    let tx_5 = oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    // sets the info for the previous round
+    let tx_6 = test_helper.call(
+        aca.account_id(),
+        "get_round_data",
+        &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    if let ExecutionStatus::Failure(execution_error) =
+        &tx_6.promise_errors().remove(0).unwrap().outcome().status
+    {
+        // No data present should be error
+        assert!(execution_error.to_string().contains("No data present"));
+    } else {
+        unreachable!();
+    }
+
+    let tx_7 = oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+    println!("{:?}", tx_7.promise_results());
+    // let tx_8: (u64, u128, u64, u64, u64) = test_helper
+    //     .call(
+    //         aca.account_id(),
+    //         "get_round_data",
+    //         &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
+    //         DEFAULT_GAS,
+    //         0, // deposit
+    //     )
+    //     .unwrap_json();
+    // assert_eq!(2, tx_8.0);
+    // assert_eq!(1, tx_8.4);
+}
