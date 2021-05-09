@@ -2832,7 +2832,7 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": next_round, "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2843,7 +2843,7 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": next_round, "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
@@ -2984,11 +2984,24 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": next_round, "_submission": answer.to_string()})
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
-        )
-        .assert_success();
+        );
+    if let ExecutionStatus::Failure(execution_error) = &tx_5
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        //println!("{:?}", tx_5.promise_errors());
+        assert!(execution_error.to_string().contains("cannot report on previous rounds"));
+        //println!("{:?} getrounddatalogs", execution_error.to_string());
+        //assert!();
+    } else {
+        unreachable!();
+    }
 }
