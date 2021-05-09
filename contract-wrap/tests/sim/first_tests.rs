@@ -1581,9 +1581,7 @@ fn when_a_round_is_passed_in_higher_than_expected_and_when_called_by_a_non_oracl
         &tx_2.promise_errors().remove(0).unwrap().outcome().status
     {
         // No data present should be error
-        assert!(execution_error
-            .to_string()
-            .contains("not enabled oracle"));
+        assert!(execution_error.to_string().contains("not enabled oracle"));
     } else {
         unreachable!();
     }
@@ -1592,32 +1590,30 @@ fn when_a_round_is_passed_in_higher_than_expected_and_when_called_by_a_non_oracl
 #[test]
 
 fn when_there_are_not_sufficient_available_funds() {
-//        beforeEach(async () => {
-//     await aggregator
-//     .connect(personas.Carol)
-//     .withdrawFunds(
-//       personas.Carol.address,
-//       deposit.sub(paymentAmount.mul(oracles.length).mul(reserveRounds)),
-//     )
+    //        beforeEach(async () => {
+    //     await aggregator
+    //     .connect(personas.Carol)
+    //     .withdrawFunds(
+    //       personas.Carol.address,
+    //       deposit.sub(paymentAmount.mul(oracles.length).mul(reserveRounds)),
+    //     )
 
-//   // drain remaining funds
-//   await advanceRound(aggregator, oracles)
-//   await advanceRound(aggregator, oracles)
-// })
+    //   // drain remaining funds
+    //   await advanceRound(aggregator, oracles)
+    //   await advanceRound(aggregator, oracles)
+    // })
 
-// it('reverts', async () => {
-//   await matchers.evmRevert(
-//     aggregator.connect(personas.Neil).submit(nextRound, answer),
-//     'SafeMath: subtraction overflow',
-//   )
-// })
+    // it('reverts', async () => {
+    //   await matchers.evmRevert(
+    //     aggregator.connect(personas.Neil).submit(nextRound, answer),
+    //     'SafeMath: subtraction overflow',
+    //   )
+    // })
 }
 
 #[test]
 
-fn when_a_new_round_opens_before_the_previous_rounds_closes() {
-
-}
+fn when_a_new_round_opens_before_the_previous_rounds_closes() {}
 
 #[test]
 
@@ -1846,15 +1842,17 @@ fn when_delay_is_on() {
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
-    let tx = oracle_one.call(
-        aca.account_id(),
-        "submit",
-        &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
+    let tx = oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
     let tx_2 = oracle_one.call(
         aca.account_id(),
         "submit",
@@ -1863,7 +1861,7 @@ fn when_delay_is_on() {
             .into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    ); 
+    );
 
     // issue here with if/else tree not returning previous round not supersedable
     // println!("{:?}", tx_2.promise_results());
@@ -2832,28 +2830,36 @@ fn when_the_price_is_not_updated_for_a_round_and_still_respects_the_delay_restri
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": next_round, "_submission": answer.to_string()})
+            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
         )
         .assert_success();
-    let tx_6 = oracle_two
-        .call(
-            aca.account_id(),
-            "submit",
-            &json!({"_round_id": next_round, "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
+    let tx_6 = oracle_two.call(
+        aca.account_id(),
+        "submit",
+        &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    if let ExecutionStatus::Failure(execution_error) =
+        &tx_6.promise_errors().remove(0).unwrap().outcome().status
+    {
+        assert!(execution_error
+            .to_string()
+            .contains("round not accepting submissions"));
+    } else {
+        unreachable!();
+    }
 }
 
 #[test]
-fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beginning_of_the_round() {
+fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beginning_of_the_round(
+) {
     let new_amount: u128 = 50;
     let payment_amount: u128 = 3;
     let deposit: u64 = 100;
@@ -2984,19 +2990,11 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
         .call(
             aca.account_id(),
             "submit",
-            &json!({"_round_id": next_round, "_submission": answer.to_string()})
+            &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
                 .to_string()
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
-        );
-        if let ExecutionStatus::Failure(execution_error) =
-        &tx_5.promise_errors().remove(0).unwrap().outcome().status
-    {
-        // No data present should be error
-        println!("{:?}", tx_5.promise_errors());
-        assert!(execution_error.to_string().contains("cannot report on previous rounds"));
-    } else {
-        unreachable!();
-    }
+        )
+        .assert_success();
 }
