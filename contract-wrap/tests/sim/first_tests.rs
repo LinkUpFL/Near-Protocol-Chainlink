@@ -3014,7 +3014,8 @@ fn when_the_price_is_not_updated_for_a_round_and_uses_the_timeout_set_at_the_beg
 }
 
 #[test]
-fn when_the_price_is_not_updated_for_a_round_and_submitting_values_near_the_edges_of_allowed_values() {
+fn when_the_price_is_not_updated_for_a_round_and_submitting_values_near_the_edges_of_allowed_values(
+) {
     let new_amount: u128 = 50;
     let payment_amount: u128 = 3;
     let deposit: u64 = 100;
@@ -3157,6 +3158,15 @@ fn when_the_price_is_not_updated_for_a_round_and_submitting_values_near_the_edge
                 .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
-        )
-        .assert_success();
+        );
+    if let ExecutionStatus::Failure(execution_error) =
+        &tx_6.promise_errors().remove(0).unwrap().outcome().status
+    {
+        // No data present should be error
+        assert!(execution_error
+            .to_string()
+            .contains("value below minSubmissionValue"));
+    } else {
+        unreachable!();
+    }
 }
