@@ -3170,3 +3170,150 @@ fn when_the_price_is_not_updated_for_a_round_and_submitting_values_near_the_edge
         unreachable!();
     }
 }
+
+#[test]
+fn when_the_price_is_not_updated_for_a_round_and_accepts_submissions_equal_to_the_min_submission_value() {
+    let new_amount: u128 = 50;
+    let payment_amount: u128 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let reserve_rounds: u64 = 2;
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let oracles: Vec<AccountId>;
+    let mut next_round: u128 = 1;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        eac_without_access_controller,
+    ) = init();
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Transfer from link_token contract to ACA.
+    // new_amount * oracles.length * 2
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": 300.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+    let _outcome = root.call(
+        aca.account_id(),
+        "update_available_funds",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+    root.call(
+        aca.account_id(),
+        "update_future_rounds",
+        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+    let tx = oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    let tx_2 = oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    let tx_3 = oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    next_round = next_round + 1;
+    let tx_4 = oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    let tx_5 = oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+    next_round = next_round + 1;
+
+    // rejects values below the submission value range
+    let tx_6 = oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value).to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+}
