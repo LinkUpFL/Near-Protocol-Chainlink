@@ -293,6 +293,20 @@ impl AccessControlledAggregator {
         self.recorded_funds.available
     }
 
+    pub fn min_submission_count(&self) -> u64 {
+        self.min_submission_count
+    }
+
+
+    pub fn max_submission_count(&self) -> u64 {
+        self.max_submission_count
+    }
+
+    pub fn restart_delay(&self) -> u64 {
+        self.restart_delay
+    }
+
+
     /**
    * @notice recalculate the amount of LINK available for payouts
    */
@@ -977,6 +991,26 @@ impl AccessControlledAggregator {
         let prev_round_answer: u128 = round.answer;
         // TRY CATCH
     }
+
+
+    // fn validate(&self, _previous_round_id: u64, _previous_answer: u128, _current_round_id: u64, _current_answer: u128) {
+    //     let av: AccountId = self.validator.clone(); // cache storage reads
+    //     if av == "" {
+    //         return;
+    //     }
+
+    //     let prev_round: u64 = _round_id - 1;
+
+    //     let round_option = self.rounds.get(&_round_id);
+    //     if round_option.is_none() {
+    //         env::panic(b"Did not find this round. {validate_answer}");
+    //     }
+    //     let round = round_option.unwrap();
+
+    //     let prev_answer_round_id: u64 = round.answered_in_round;
+    //     let prev_round_answer: u128 = round.answer;
+    //     // TRY CATCH
+    // }
 
     fn pay_oracle(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
