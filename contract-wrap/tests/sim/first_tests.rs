@@ -3893,8 +3893,261 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(oracle_count + 1, updated_oracle_count);
 // }
 
-#[test]
-fn change_oracles_and_adding_oracles_and_adds_the_address_in_get_oracles() {
+// #[test]
+// fn change_oracles_and_adding_oracles_and_adds_the_address_in_get_oracles() {
+//     let new_amount: u128 = 50;
+//     let payment_amount: u128 = 3;
+//     let deposit: u64 = 100;
+//     let answer: u128 = 100;
+//     let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let decimals: u64 = 24;
+//     let description: String = "LINK/USD".to_string();
+//     let reserve_rounds: u64 = 2;
+//     let min_submission_value: u128 = 1;
+//     let max_submission_value: u128 = 100000000000000000000;
+//     let oracles: Vec<AccountId>;
+//     let mut next_round: u128 = 1;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         eac_without_access_controller,
+//     ) = init();
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+//     // Transfer from link_token contract to ACA.
+//     // new_amount * oracles.length * 2
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": 300.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(  
+//         aca.account_id(),   
+//         "change_oracles",   
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit               
+//     );
+//     let oracles: Vec<String> = test_helper.call(
+//         aca.account_id(),
+//         "get_oracles",
+//         &json!({
+            
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .unwrap_json();
+//     // println!("{:?}", oracles);
+//     assert_eq!(oracle_one.account_id().to_string(), oracles[0]);
+// }
+
+
+// #[test]
+// fn change_oracles_and_adding_oracles_and_updates_the_round_details() {
+//     let new_amount: u128 = 50;
+//     let payment_amount: u128 = 3;
+//     let deposit: u64 = 100;
+//     let answer: u128 = 100;
+//     let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let decimals: u64 = 24;
+//     let description: String = "LINK/USD".to_string();
+//     let reserve_rounds: u64 = 2;
+//     let min_submission_value: u128 = 1;
+//     let max_submission_value: u128 = 100000000000000000000;
+//     let oracles: Vec<AccountId>;
+//     let mut next_round: u128 = 1;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         eac_without_access_controller,
+//     ) = init();
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+//     // Transfer from link_token contract to ACA.
+//     // new_amount * oracles.length * 2
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": 300.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(  
+//         aca.account_id(),   
+//         "change_oracles",   
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit               
+//     );
+
+
+//     let min_submission_count: u64 = root.call(  
+//         aca.account_id(),   
+//         "min_submission_count",   
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit               
+//     ).unwrap_json();
+//     let max_submission_count: u64 = root.call(  
+//         aca.account_id(),   
+//         "max_submission_count",   
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit               
+//     ).unwrap_json();
+//     let restart_delay: u64 = root.call(  
+//         aca.account_id(),   
+//         "restart_delay",   
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit               
+//     ).unwrap_json();
+
+//     assert_eq!(min_submission_count, 1);
+//     assert_eq!(max_submission_count, 3);
+//     assert_eq!(restart_delay, 2);
+
+// }
+
+
+// #[test]
+// fn change_oracles_and_adding_oracles_and_emits_a_log() {
+//     let new_amount: u128 = 50;
+//     let payment_amount: u128 = 3;
+//     let deposit: u64 = 100;
+//     let answer: u128 = 100;
+//     let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let decimals: u64 = 24;
+//     let description: String = "LINK/USD".to_string();
+//     let reserve_rounds: u64 = 2;
+//     let min_submission_value: u128 = 1;
+//     let max_submission_value: u128 = 100000000000000000000;
+//     let oracles: Vec<AccountId>;
+//     let mut next_round: u128 = 1;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         eac_without_access_controller,
+//     ) = init();
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+//     // Transfer from link_token contract to ACA.
+//     // new_amount * oracles.length * 2
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": 300.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+
+//     let event = root.call(  
+//         aca.account_id(),   
+//         "change_oracles",   
+//         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit               
+//     ).promise_results();
+//     println!("{:?}", event);
+//     let logged: String = event.clone().remove(1).unwrap().outcome().logs[0]
+//         .parse()
+//         .unwrap();
+//     let result = [oracle_two.account_id(), ", true".to_string()].join(""); 
+//     assert_eq!(result, logged);
+//     let logged_two: String = event.clone().remove(1).unwrap().outcome().logs[1]
+//     .parse()
+//     .unwrap();
+
+//     let result_two = [oracle_one.account_id(), ", true".to_string()].join(""); 
+//     assert_eq!(result_two, logged_two);
+
+// }
+
+#[test] 
+
+fn when_the_oracle_has_already_been_added() {
     let new_amount: u128 = 50;
     let payment_amount: u128 = 3;
     let deposit: u64 = 100;
@@ -3952,29 +4205,115 @@ fn change_oracles_and_adding_oracles_and_adds_the_address_in_get_oracles() {
     root.call(  
         aca.account_id(),   
         "change_oracles",   
-        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit               
+    ).assert_success();
+   
+    let called_twice = root.call(  
+        aca.account_id(),   
+        "change_oracles",   
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit               
     );
-    let oracles: Vec<String> = test_helper.call(
+
+        if let ExecutionStatus::Failure(execution_error) = &called_twice
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error.to_string().contains("oracle already enabled"));
+    } else {
+        unreachable!();
+    }
+}
+
+#[test]
+
+fn when_called_by_anyone_but_the_owner() {
+    let new_amount: u128 = 50;
+    let payment_amount: u128 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let reserve_rounds: u64 = 2;
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let oracles: Vec<AccountId>;
+    let mut next_round: u128 = 1;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        eac_without_access_controller,
+    ) = init();
+    root.call(
         aca.account_id(),
-        "get_oracles",
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Transfer from link_token contract to ACA.
+    // new_amount * oracles.length * 2
+    root.call(
+        link.account_id(),
+        "transfer_from",
         &json!({
-            
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": 300.to_string()
         })
         .to_string()
         .into_bytes(),
         DEFAULT_GAS,
         36500000000000000000000, // deposit
     )
-    .unwrap_json();
-    // println!("{:?}", oracles);
-    assert_eq!(oracle_one.account_id().to_string(), oracles[0]);
+    .assert_success();
+
+    let called_by_non_owner = oracle_one.call(  
+        aca.account_id(),   
+        "change_oracles",   
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit               
+    );
+
+
+    if let ExecutionStatus::Failure(execution_error) = &called_by_non_owner
+    .promise_errors()
+    .remove(0)
+    .unwrap()
+    .outcome()
+    .status
+{
+    assert!(execution_error.to_string().contains("Only contract owner can call this method."));
+} else {
+    unreachable!();
+}
 }
 
 
 #[test]
-fn change_oracles_and_adding_oracles_and_updates_the_round_details() {
+
+fn when_an_oracle_gets_added_mid_round_and_does_not_allow_the_oracle_to_update_the_round() {
     let new_amount: u128 = 50;
     let payment_amount: u128 = 3;
     let deposit: u64 = 100;
@@ -4032,36 +4371,391 @@ fn change_oracles_and_adding_oracles_and_updates_the_round_details() {
     root.call(  
         aca.account_id(),   
         "change_oracles",   
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string()}).to_string().into_bytes(),
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit               
     );
 
+        oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+        root.call(  
+            aca.account_id(),   
+            "change_oracles",   
+            &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit               
+        );
 
-    let min_submission_count: u64 = root.call(  
+       let not_enabled = oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+
+        if let ExecutionStatus::Failure(execution_error) = &not_enabled
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error.to_string().contains("not yet enabled oracle"));
+    } else {
+        unreachable!();
+    }
+}
+
+#[test]
+
+fn when_an_oracle_gets_added_mid_round_and_does_allow_the_oracle_to_update_future_rounds() {
+    let new_amount: u128 = 50;
+    let payment_amount: u128 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let reserve_rounds: u64 = 2;
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let oracles: Vec<AccountId>;
+    let mut next_round: u128 = 1;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        eac_without_access_controller,
+    ) = init();
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Transfer from link_token contract to ACA.
+    // new_amount * oracles.length * 2
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": 300.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+
+    root.call(  
         aca.account_id(),   
-        "min_submission_count",   
-        &json!({}).to_string().into_bytes(),
+        "change_oracles",   
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit               
-    ).unwrap_json();
-    let max_submission_count: u64 = root.call(  
+    );
+
+        oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+        root.call(  
+            aca.account_id(),   
+            "change_oracles",   
+            &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit               
+        );
+        oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+       oracle_three
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "2", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        ).assert_success();
+}
+
+#[test]
+
+fn when_an_oracle_is_added_after_removed_for_a_round_and_allows_the_oracle_to_update() {
+    let new_amount: u128 = 50;
+    let payment_amount: u128 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let reserve_rounds: u64 = 2;
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let oracles: Vec<AccountId>;
+    let mut next_round: u128 = 1;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        eac_without_access_controller,
+    ) = init();
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Transfer from link_token contract to ACA.
+    // new_amount * oracles.length * 2
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": 300.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+
+    root.call(  
         aca.account_id(),   
-        "max_submission_count",   
-        &json!({}).to_string().into_bytes(),
+        "change_oracles",   
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit               
-    ).unwrap_json();
-    let restart_delay: u64 = root.call(  
+    );
+
+        oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+        oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
+        root.call(  
+            aca.account_id(),   
+            "change_oracles",   
+            &json!({"_removed": [oracle_two.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit               
+        );
+       oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "2", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        ).assert_success();
+
+        root.call(  
+            aca.account_id(),   
+            "change_oracles",   
+            &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_two.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit               
+        );
+
+        oracle_two
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "3", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        ).assert_success();
+}
+
+// #[test]
+
+// fn when_an_oracle_is_added_and_immediately_removed_mid_round() {
+//  // research difference with above test
+// }
+
+// investigate error here
+#[test]
+
+fn when_an_oracle_is_re_added_after_with_a_different_admin_address() {
+    let new_amount: u128 = 50;
+    let payment_amount: u128 = 3;
+    let deposit: u64 = 100;
+    let answer: u128 = 100;
+    let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let reserve_rounds: u64 = 2;
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let oracles: Vec<AccountId>;
+    let mut next_round: u128 = 1;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        eac_without_access_controller,
+    ) = init();
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+    // Transfer from link_token contract to ACA.
+    // new_amount * oracles.length * 2
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": 300.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+
+    root.call(  
         aca.account_id(),   
-        "restart_delay",   
-        &json!({}).to_string().into_bytes(),
+        "change_oracles",   
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit               
-    ).unwrap_json();
+    );
 
-    assert_eq!(min_submission_count, 1);
-    assert_eq!(max_submission_count, 3);
-    assert_eq!(restart_delay, 2);
+        oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": "1", "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        );
 
+        root.call(  
+            aca.account_id(),   
+            "change_oracles",   
+            &json!({"_removed": [oracle_two.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit               
+        ).assert_success();
+
+
+    let owner_cannot_override_admin = root.call(  
+        aca.account_id(),   
+        "change_oracles",   
+        &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [root.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit               
+    );
+
+    println!("after {:?}", owner_cannot_override_admin.promise_results());
+
+    if let ExecutionStatus::Failure(execution_error) = &owner_cannot_override_admin
+    .promise_errors()
+    .remove(0)
+    .unwrap()
+    .outcome()
+    .status
+{
+    assert!(execution_error.to_string().contains("owner cannot overwrite admin"));
+} else {
+    unreachable!();
+}
 }
