@@ -1,5 +1,5 @@
 use near_sdk::serde_json::json;
-use near_sdk::{AccountId};
+use near_sdk::AccountId;
 use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS};
 
 const ACA_ID: &str = "aca";
@@ -17,7 +17,17 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm"
 }
 
-pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount, UserAccount) {
+pub fn init_without_macros() -> (
+    UserAccount,
+    UserAccount,
+    UserAccount,
+    UserAccount,
+    UserAccount,
+    UserAccount,
+    UserAccount,
+    UserAccount,
+    UserAccount,
+) {
     // Use `None` for default genesis configuration; more info below
     let root = init_simulator(None);
     let link = root.deploy(
@@ -69,7 +79,8 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         .into_bytes(),
         DEFAULT_GAS / 2,
         0, // attached deposit
-    ).assert_success();
+    )
+    .assert_success();
 
     let oracle_one = root.create_user(
         "oracle_one".to_string(),
@@ -91,6 +102,12 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         to_yocto("1000"), // initial balance
     );
 
+    // *TODO* Create FluxAggregator test factory contract here
+    // let test_helper_contract = root.create_user(
+    //     "test_helper".to_string(),
+    //     to_yocto("1000"), // initial balance
+    // );
+
     let eac = root.deploy(
         &EAC_WASM_BYTES,
         EAC_ID.to_string(),
@@ -108,7 +125,8 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         .into_bytes(),
         DEFAULT_GAS / 2,
         0, // attached deposit
-    ).assert_success();
+    )
+    .assert_success();
 
     let eac_without_access_controller = root.deploy(
         &EAC_WASM_BYTES,
@@ -116,18 +134,30 @@ pub fn init_without_macros() -> (UserAccount, UserAccount, UserAccount, UserAcco
         to_yocto("1000"), // attached deposit
     );
 
-    eac_without_access_controller.call(
-        EAC_WITHOUT_ACCESS_CONTROLLER_ID.into(),
-        "new",
-        &json!({
-            "owner_id": eac_without_access_controller.account_id(),
-            "_aggregator": aca.account_id(),
-            "_access_controller": "null"
-        })
-        .to_string()
-        .into_bytes(),
-        DEFAULT_GAS / 2,
-        0, // attached deposit
-    ).assert_success();
-    (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, eac, eac_without_access_controller)
+    eac_without_access_controller
+        .call(
+            EAC_WITHOUT_ACCESS_CONTROLLER_ID.into(),
+            "new",
+            &json!({
+                "owner_id": eac_without_access_controller.account_id(),
+                "_aggregator": aca.account_id(),
+                "_access_controller": "null"
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+    (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        eac,
+        eac_without_access_controller,
+    )
 }

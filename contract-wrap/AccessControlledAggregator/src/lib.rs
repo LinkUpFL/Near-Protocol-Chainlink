@@ -216,11 +216,11 @@ impl AccessControlledAggregator {
             self.validate_oracle_round(env::predecessor_account_id(), round_id_u128 as u64);
         assert!(
             submission_u128 >= self.min_submission_value,
-            "value below minSubmissionValue"
+            "value below min_submission_value"
         );
         assert!(
             submission_u128 <= self.max_submission_value,
-            "value above maxsubmissionValue"
+            "value above max_submission_value"
         );
         if error.len() != 0 {
             env::panic(format!("{}", error).as_bytes());
@@ -450,7 +450,6 @@ impl AccessControlledAggregator {
         self.validator.clone()
     }
 
-
     /**
      * @notice get the most recently reported answer
      *
@@ -463,7 +462,7 @@ impl AccessControlledAggregator {
         self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account. {latest_answer}");
+            return 0;
         }
         let round = round_option.unwrap();
         if round.answer == 0 {

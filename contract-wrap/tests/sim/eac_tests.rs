@@ -147,7 +147,6 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     );
 
-
 //     // Callers can call view functions without explicit access
 
 //         test_helper.call(
