@@ -6,96 +6,116 @@ use near_sdk_sim::DEFAULT_GAS;
 
 use crate::utils::init_without_macros as init;
 
-#[test]
+// #[test]
 
-fn simulate_linktoken_transfer() {
-    let (
-        root,
-        aca,
-        link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        test_helper,
-        _eac,
-        eac_without_access_controller,
-    ) = init();
-    // Transfer from link_token contract to ACA.
-    root.call(
-        link.account_id(),
-        "transfer_from",
-        &json!({
-            "owner_id": root.account_id().to_string(),
-            "new_owner_id": aca.account_id().to_string(),
-            "amount": "190"
-        })
-        .to_string()
-        .into_bytes(),
-        DEFAULT_GAS,
-        36500000000000000000000, // deposit
-    )
-    .assert_success();
-    let _outcome = root.call(
-        aca.account_id(),
-        "update_available_funds",
-        &json!({}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-    // First add oracle_one
-    root.call(
-        aca.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": "1", "_max_submissions": "1", "_restart_delay": "0"}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    )
-    .assert_success();
-    // Second, call submit from oracle_one
-    oracle_one
-        .call(
-            aca.account_id(),
-            "submit",
-            &json!({"_round_id": "1", "_submission": "1"})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-    let _root_balance: U128 = root
-        .view(
-            link.account_id(),
-            "get_balance",
-            &json!({
-                "owner_id": root.valid_account_id()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
+// fn simulate_linktoken_transfer() {
+//     // Must initialize all accounts exported, the accounts not being used are underscored for clean linting.
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//     ) = init();
 
-    let withdraw = oracle_one.call(
-        aca.account_id(),
-        "withdraw_payment",
-        &json!({"_oracle": oracle_one.account_id(), "_recipient": oracle_one.account_id(), "_amount": "1"}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        36500000000000000000000, // deposit
-    );
+//     let deposit: u128 = 100;
+//     let min_max: u128 = 1;
+//     let rr_delay: u64 = 0;
+//     // Transfer from link_token contract to ACA.
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": deposit.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+    
+//     root.call(
+//         aca.account_id(),
+//         "update_available_funds",
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
 
-    let oracle_balance: U128 = root
-        .view(
-            link.account_id(),
-            "get_balance",
-            &json!({
-                "owner_id": oracle_one.valid_account_id()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
-    assert_eq!(1, u128::from(oracle_balance));
-}
+//     let aca_balance: String = root
+//     .view(
+//         link.account_id(),
+//         "get_balance",
+//         &json!({
+//             "owner_id": aca.valid_account_id()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//     )
+//     .unwrap_json();
+
+//     assert_eq!(deposit.to_string(), aca_balance);
+//     // First add oracle_one
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+//     // Second, call submit from oracle_one
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": "1", "_submission": "1"})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+//     let _root_balance: U128 = root
+//         .view(
+//             link.account_id(),
+//             "get_balance",
+//             &json!({
+//                 "owner_id": root.valid_account_id()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     let withdraw = oracle_one.call(
+//         aca.account_id(),
+//         "withdraw_payment",
+//         &json!({"_oracle": oracle_one.account_id(), "_recipient": oracle_one.account_id(), "_amount": "1"}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     );
+
+//     let oracle_balance: U128 = root
+//         .view(
+//             link.account_id(),
+//             "get_balance",
+//             &json!({
+//                 "owner_id": oracle_one.valid_account_id()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//         )
+//         .unwrap_json();
+//     assert_eq!(1, u128::from(oracle_balance));
+// }
 
 #[test]
 fn access_control_tests() {
@@ -123,7 +143,7 @@ fn access_control_tests() {
         _ea,
         eac_without_access_controller,
     ) = init();
-    // Transfer from link_token contract to ACA.
+    // Deployment function body as done on line 180 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180
     root.call(
         link.account_id(),
         "transfer_from",
@@ -138,13 +158,13 @@ fn access_control_tests() {
         36500000000000000000000, // deposit
     )
     .assert_success();
-    let _outcome = root.call(
+    root.call(
         aca.account_id(),
         "update_available_funds",
         &json!({}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    );
+    ).assert_success();
     // First add oracle_one
     root.call(
         aca.account_id(),
@@ -373,7 +393,7 @@ fn updates_the_allocated_and_available_funds_counters_and_emits_a_log_event_anno
     root.call(
         aca.account_id(),
         "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     )
@@ -4759,3 +4779,4 @@ fn when_an_oracle_is_re_added_after_with_a_different_admin_address() {
     unreachable!();
 }
 }
+

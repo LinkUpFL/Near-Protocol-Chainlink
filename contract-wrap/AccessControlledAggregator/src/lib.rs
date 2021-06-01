@@ -1,12 +1,12 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::serde::{Serialize, Deserialize};
-use near_sdk::collections::{LookupMap};
+use near_sdk::collections::LookupMap;
 use near_sdk::json_types::{U128, U64};
-use near_sdk::{AccountId, env, near_bindgen, PromiseResult, ext_contract};
-use near_sdk::wee_alloc::{WeeAlloc};
+use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::serde_json::{self, json};
-use std::str;
+use near_sdk::wee_alloc::WeeAlloc;
+use near_sdk::{env, ext_contract, near_bindgen, AccountId, PromiseResult};
 use std::convert::TryInto;
+use std::str;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
@@ -21,29 +21,26 @@ pub trait LinkTokenContract {
     fn transfer(new_owner_id: AccountId, amount: U128);
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
-#[derive(Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Round {
     answer: u128,
     started_at: u64,
     updated_at: u64,
-    answered_in_round: u64
+    answered_in_round: u64,
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
-#[derive(Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct RoundDetails {
     submissions: Vec<u128>,
     max_submissions: u64,
     min_submissions: u64,
     timeout: u64,
-    payment_amount: u128
+    payment_amount: u128,
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
-#[derive(Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct OracleStatus {
     withdrawable: u128,
@@ -54,25 +51,22 @@ pub struct OracleStatus {
     latest_submission: u128,
     index: u64,
     admin: AccountId,
-    pending_admin: AccountId
+    pending_admin: AccountId,
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
-#[derive(Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Requester {
     authorized: bool,
     delay: u64,
-    last_started_round: u64
+    last_started_round: u64,
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Funds {
     available: u128,
-    allocated: u128
+    allocated: u128,
 }
 
 const VERSION: u128 = 3;
@@ -105,7 +99,7 @@ pub struct AccessControlledAggregator {
     details: LookupMap<u128, RoundDetails>,
     requesters: LookupMap<AccountId, Requester>,
     oracle_addresses: Vec<AccountId>,
-    recorded_funds: Funds
+    recorded_funds: Funds,
 }
 
 impl Default for AccessControlledAggregator {
@@ -116,26 +110,41 @@ impl Default for AccessControlledAggregator {
 
 #[near_bindgen]
 impl AccessControlledAggregator {
-
     /**
-   * @notice set up the aggregator with initial configuration
-   * @param _link The address of the LINK token
-   * @param _paymentAmount The amount paid of LINK paid to each oracle per submission, in wei (units of 10⁻¹⁸ LINK)
-   * @param _timeout is the number of seconds after the previous round that are
-   * allowed to lapse before allowing an oracle to skip an unfinished round
-   * @param _validator is an optional contract address for validating
-   * external validation of answers
-   * @param _minSubmissionValue is an immutable check for a lower bound of what
-   * submission values are accepted from an oracle
-   * @param _maxSubmissionValue is an immutable check for an upper bound of what
-   * submission values are accepted from an oracle
-   * @param _decimals represents the number of decimals to offset the answer by
-   * @param _description a short description of what is being reported
-   */
+     * @notice set up the aggregator with initial configuration
+     * @param _link The address of the LINK token
+     * @param _paymentAmount The amount paid of LINK paid to each oracle per submission, in wei (units of 10⁻¹⁸ LINK)
+     * @param _timeout is the number of seconds after the previous round that are
+     * allowed to lapse before allowing an oracle to skip an unfinished round
+     * @param _validator is an optional contract address for validating
+     * external validation of answers
+     * @param _minSubmissionValue is an immutable check for a lower bound of what
+     * submission values are accepted from an oracle
+     * @param _maxSubmissionValue is an immutable check for an upper bound of what
+     * submission values are accepted from an oracle
+     * @param _decimals represents the number of decimals to offset the answer by
+     * @param _description a short description of what is being reported
+     */
     #[init]
-    pub fn new(link_id: AccountId, owner_id: AccountId, _payment_amount: U128, _timeout: U64, _validator: AccountId, _min_submission_value: U128, _max_submission_value: U128, _decimals: U64, _description: Base64String) -> Self {
-        assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");
-        assert!(env::is_valid_account_id(link_id.as_bytes()), "Link token account ID is invalid");
+    pub fn new(
+        link_id: AccountId,
+        owner_id: AccountId,
+        _payment_amount: U128,
+        _timeout: U64,
+        _validator: AccountId,
+        _min_submission_value: U128,
+        _max_submission_value: U128,
+        _decimals: U64,
+        _description: Base64String,
+    ) -> Self {
+        assert!(
+            env::is_valid_account_id(owner_id.as_bytes()),
+            "Owner's account ID is invalid"
+        );
+        assert!(
+            env::is_valid_account_id(link_id.as_bytes()),
+            "Link token account ID is invalid"
+        );
         assert!(!env::state_exists(), "Already initialized");
 
         let payment_amount_u128: u128 = _payment_amount.into();
@@ -143,7 +152,7 @@ impl AccessControlledAggregator {
         let min_submission_value_u128: u128 = _min_submission_value.into();
         let max_submission_value_u128: u128 = _max_submission_value.into();
         let decimals_u64: u64 = _decimals.into();
-        let vector: Vec::<AccountId> = Vec::new();
+        let vector: Vec<AccountId> = Vec::new();
 
         let mut result = Self {
             owner: owner_id,
@@ -167,7 +176,10 @@ impl AccessControlledAggregator {
             details: LookupMap::new(b"details".to_vec()),
             requesters: LookupMap::new(b"requesters".to_vec()),
             oracle_addresses: vector,
-            recorded_funds: Funds { available: 0_u128, allocated: 0_u128 }
+            recorded_funds: Funds {
+                available: 0_u128,
+                allocated: 0_u128,
+            },
         };
         result.check_enabled = true;
 
@@ -181,22 +193,35 @@ impl AccessControlledAggregator {
         };
         result.rounds.insert(&0, &newRound);
         */
-        result.update_future_rounds(U128::from(payment_amount_u128), U64::from(0), U64::from(0), U64::from(0), U64::from(timeout_u64));
+        result.update_future_rounds(
+            U128::from(payment_amount_u128),
+            U64::from(0),
+            U64::from(0),
+            U64::from(0),
+            U64::from(timeout_u64),
+        );
         result.set_validator(_validator);
         result
     }
 
     /**
-   * @notice called by oracles when they have witnessed a need to update
-   * @param _roundId is the ID of the round this submission pertains to
-   * @param _submission is the updated data that the oracle is submitting
-   */
+     * @notice called by oracles when they have witnessed a need to update
+     * @param _roundId is the ID of the round this submission pertains to
+     * @param _submission is the updated data that the oracle is submitting
+     */
     pub fn submit(&mut self, _round_id: U128, _submission: U128) {
         let round_id_u128: u128 = _round_id.into();
         let submission_u128: u128 = _submission.into();
-        let error: Base64String = self.validate_oracle_round(env::predecessor_account_id(), round_id_u128 as u64);
-        assert!(submission_u128 >= self.min_submission_value, "value below minSubmissionValue");
-        assert!(submission_u128 <= self.max_submission_value, "value above maxsubmissionValue");
+        let error: Base64String =
+            self.validate_oracle_round(env::predecessor_account_id(), round_id_u128 as u64);
+        assert!(
+            submission_u128 >= self.min_submission_value,
+            "value below minSubmissionValue"
+        );
+        assert!(
+            submission_u128 <= self.max_submission_value,
+            "value above maxsubmissionValue"
+        );
         if error.len() != 0 {
             env::panic(format!("{}", error).as_bytes());
         }
@@ -205,7 +230,6 @@ impl AccessControlledAggregator {
         self.record_submission(submission_u128, round_id_u128);
         let (updated, new_answer): (bool, u128) = self.update_round_answer(round_id_u128 as u64);
         // off for tests
-        
         self.pay_oracle(round_id_u128 as u64);
         self.delete_round_details(round_id_u128 as u64);
         if updated {
@@ -214,18 +238,26 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice called by the owner to remove and add new oracles as well as
-   * update the round related parameters that pertain to total oracle count
-   * @param _removed is the list of addresses for the new Oracles being removed
-   * @param _added is the list of addresses for the new Oracles being added
-   * @param _addedAdmins is the admin addresses for the new respective _added
-   * list. Only this address is allowed to access the respective oracle's funds
-   * @param _minSubmissions is the new minimum submission count for each round
-   * @param _maxSubmissions is the new maximum submission count for each round
-   * @param _restartDelay is the number of rounds an Oracle has to wait before
-   * they can initiate a round
-   */
-    pub fn change_oracles(&mut self, _removed: Vec<AccountId>, _added: Vec<AccountId>, _added_admins: Vec<AccountId>, _min_submissions: U64, _max_submissions: U64, _restart_delay: U64) {
+     * @notice called by the owner to remove and add new oracles as well as
+     * update the round related parameters that pertain to total oracle count
+     * @param _removed is the list of addresses for the new Oracles being removed
+     * @param _added is the list of addresses for the new Oracles being added
+     * @param _addedAdmins is the admin addresses for the new respective _added
+     * list. Only this address is allowed to access the respective oracle's funds
+     * @param _minSubmissions is the new minimum submission count for each round
+     * @param _maxSubmissions is the new maximum submission count for each round
+     * @param _restartDelay is the number of rounds an Oracle has to wait before
+     * they can initiate a round
+     */
+    pub fn change_oracles(
+        &mut self,
+        _removed: Vec<AccountId>,
+        _added: Vec<AccountId>,
+        _added_admins: Vec<AccountId>,
+        _min_submissions: U64,
+        _max_submissions: U64,
+        _restart_delay: U64,
+    ) {
         self.only_owner();
 
         let min_submissions_u64: u64 = _min_submissions.into();
@@ -236,26 +268,45 @@ impl AccessControlledAggregator {
             self.remove_oracle(_removed[i].clone());
         }
 
-        assert!(_added.len() == _added_admins.len(), "need same oracle and admin count");
-        assert!((self.oracle_count() as usize + _added.len()) as u128 <= MAX_ORACLE_COUNT, "max oracles allowed");
+        assert!(
+            _added.len() == _added_admins.len(),
+            "need same oracle and admin count"
+        );
+        assert!(
+            (self.oracle_count() as usize + _added.len()) as u128 <= MAX_ORACLE_COUNT,
+            "max oracles allowed"
+        );
 
         for i in 0.._added.len() {
             self.add_oracle(_added[i].clone(), _added_admins[i].clone());
         }
 
-        self.update_future_rounds(U128::from(self.payment_amount), U64::from(min_submissions_u64), U64::from(max_submissions_u64), U64::from(restart_delay_u64), U64::from(self.timeout));
+        self.update_future_rounds(
+            U128::from(self.payment_amount),
+            U64::from(min_submissions_u64),
+            U64::from(max_submissions_u64),
+            U64::from(restart_delay_u64),
+            U64::from(self.timeout),
+        );
     }
 
     /**
-   * @notice update the round and payment related parameters for subsequent
-   * rounds
-   * @param _paymentAmount is the payment amount for subsequent rounds
-   * @param _minSubmissions is the new minimum submission count for each round
-   * @param _maxSubmissions is the new maximum submission count for each round
-   * @param _restartDelay is the number of rounds an Oracle has to wait before
-   * they can initiate a round
-   */
-    pub fn update_future_rounds(&mut self, _payment_amount: U128, _min_submissions: U64, _max_submissions: U64, _restart_delay: U64, _timeout: U64) {
+     * @notice update the round and payment related parameters for subsequent
+     * rounds
+     * @param _paymentAmount is the payment amount for subsequent rounds
+     * @param _minSubmissions is the new minimum submission count for each round
+     * @param _maxSubmissions is the new maximum submission count for each round
+     * @param _restartDelay is the number of rounds an Oracle has to wait before
+     * they can initiate a round
+     */
+    pub fn update_future_rounds(
+        &mut self,
+        _payment_amount: U128,
+        _min_submissions: U64,
+        _max_submissions: U64,
+        _restart_delay: U64,
+        _timeout: U64,
+    ) {
         let payment_amount_u128: u128 = _payment_amount.into();
         let min_submissions_u64: u64 = _min_submissions.into();
         let max_submissions_u64: u64 = _max_submissions.into();
@@ -263,9 +314,18 @@ impl AccessControlledAggregator {
         let timeout_u64: u64 = _timeout.into();
 
         let oracle_num: u128 = self.oracle_count(); // Save on storage reads
-        assert!(max_submissions_u64 >= min_submissions_u64, "max must equal/exceed min");
-        assert!(oracle_num >= max_submissions_u64.into(), "max cannot exceed total");
-        assert!(oracle_num == 0 || oracle_num > restart_delay_u64.into(), "delay cannot exceed total");
+        assert!(
+            max_submissions_u64 >= min_submissions_u64,
+            "max must equal/exceed min"
+        );
+        assert!(
+            oracle_num >= max_submissions_u64.into(),
+            "max cannot exceed total"
+        );
+        assert!(
+            oracle_num == 0 || oracle_num > restart_delay_u64.into(),
+            "delay cannot exceed total"
+        );
         // off for tests
         //assert!(self.recorded_funds.available >= self.required_reserve(payment_amount_u128), "insufficient funds for payment");
         if self.oracle_count() > 0 {
@@ -278,19 +338,29 @@ impl AccessControlledAggregator {
         self.restart_delay = restart_delay_u64;
         self.timeout = timeout_u64;
 
-        env::log(format!("{}, {}, {}, {}, {}", payment_amount_u128, min_submissions_u64, max_submissions_u64, restart_delay_u64, timeout_u64).as_bytes());
+        env::log(
+            format!(
+                "{}, {}, {}, {}, {}",
+                payment_amount_u128,
+                min_submissions_u64,
+                max_submissions_u64,
+                restart_delay_u64,
+                timeout_u64
+            )
+            .as_bytes(),
+        );
     }
 
     /**
-   * @notice the amount of payment yet to be withdrawn by oracles
-   */
+     * @notice the amount of payment yet to be withdrawn by oracles
+     */
     pub fn allocated_funds(&self) -> u128 {
         self.recorded_funds.allocated
     }
 
     /**
-   * @notice the amount of future funding available to oracles
-   */
+     * @notice the amount of future funding available to oracles
+     */
     pub fn available_funds(&self) -> u128 {
         self.recorded_funds.available
     }
@@ -298,7 +368,6 @@ impl AccessControlledAggregator {
     pub fn min_submission_count(&self) -> u64 {
         self.min_submission_count
     }
-
 
     pub fn max_submission_count(&self) -> u64 {
         self.max_submission_count
@@ -308,11 +377,9 @@ impl AccessControlledAggregator {
         self.restart_delay
     }
 
-
     /**
-   * @notice recalculate the amount of LINK available for payouts
-   */
-
+     * @notice recalculate the amount of LINK available for payouts
+     */
 
     pub fn update_available_funds(&self) {
         let prepaid_gas = env::prepaid_gas();
@@ -320,21 +387,28 @@ impl AccessControlledAggregator {
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
             b"get_balance",
-            json!({"owner_id": env::current_account_id()}).to_string().as_bytes(),
+            json!({ "owner_id": env::current_account_id() })
+                .to_string()
+                .as_bytes(),
             0,
             SINGLE_CALL_GAS,
         );
-        
-       env::promise_then(get_balance_promise, env::current_account_id(), b"get_balance_promise_results", json!({}).to_string().as_bytes(), 0, prepaid_gas / 4);
 
+        env::promise_then(
+            get_balance_promise,
+            env::current_account_id(),
+            b"get_balance_promise_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            prepaid_gas / 4,
+        );
     }
 
-    pub fn get_balance_promise_results(&mut self)  {
+    pub fn get_balance_promise_results(&mut self) {
         let funds: &Funds = &self.recorded_funds;
         assert_eq!(env::current_account_id(), env::predecessor_account_id());
         assert_eq!(env::promise_results_count(), 1);
-        let get_balance_promise_result: Vec<u8> =
-        match env::promise_result(0) {
+        let get_balance_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
                 env::log(b"Check_promise successful");
                 _x
@@ -349,30 +423,29 @@ impl AccessControlledAggregator {
             self.recorded_funds.available = now_available;
         }
     }
-  
 
     /**
-   * @notice returns the number of oracles
-   */
+     * @notice returns the number of oracles
+     */
     pub fn oracle_count(&self) -> u128 {
         self.oracle_addresses.len() as u128
     }
 
     /**
-   * @notice returns an array of addresses containing the oracles on contract
-   */
+     * @notice returns an array of addresses containing the oracles on contract
+     */
     pub fn get_oracles(&self) -> Vec<AccountId> {
         self.oracle_addresses.clone()
     }
 
     /**
-   * @notice get the most recently reported answer
-   *
-   * @dev #[deprecated] Use latestRoundData instead. This does not error if no
-   * answer has been reached, it will simply return 0. Either wait to point to
-   * an already answered Aggregator or use the recommended latestRoundData
-   * instead which includes better verification information.
-   */
+     * @notice get the most recently reported answer
+     *
+     * @dev #[deprecated] Use latestRoundData instead. This does not error if no
+     * answer has been reached, it will simply return 0. Either wait to point to
+     * an already answered Aggregator or use the recommended latestRoundData
+     * instead which includes better verification information.
+     */
     pub fn latest_answer(&self) -> u128 {
         self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
@@ -387,13 +460,13 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice get the most recent updated at timestamp
-   *
-   * @dev #[deprecated] Use latestRoundData instead. This does not error if no
-   * answer has been reached, it will simply return 0. Either wait to point to
-   * an already answered Aggregator or use the recommended latestRoundData
-   * instead which includes better verification information.
-   */
+     * @notice get the most recent updated at timestamp
+     *
+     * @dev #[deprecated] Use latestRoundData instead. This does not error if no
+     * answer has been reached, it will simply return 0. Either wait to point to
+     * an already answered Aggregator or use the recommended latestRoundData
+     * instead which includes better verification information.
+     */
     pub fn latest_timestamp(&self) -> u64 {
         self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
@@ -405,27 +478,27 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice get the ID of the last updated round
-   *
-   * @dev #[deprecated] Use latestRoundData instead. This does not error if no
-   * answer has been reached, it will simply return 0. Either wait to point to
-   * an already answered Aggregator or use the recommended latestRoundData
-   * instead which includes better verification information.
-   */
+     * @notice get the ID of the last updated round
+     *
+     * @dev #[deprecated] Use latestRoundData instead. This does not error if no
+     * answer has been reached, it will simply return 0. Either wait to point to
+     * an already answered Aggregator or use the recommended latestRoundData
+     * instead which includes better verification information.
+     */
     pub fn latest_round(&self) -> u64 {
         self.check_access();
         self.latest_round_id
     }
 
     /**
-   * @notice get past rounds answers
-   * @param _roundId the round number to retrieve the answer for
-   *
-   * @dev #[deprecated] Use getRoundData instead. This does not error if no
-   * answer has been reached, it will simply return 0. Either wait to point to
-   * an already answered Aggregator or use the recommended getRoundData
-   * instead which includes better verification information.
-   */
+     * @notice get past rounds answers
+     * @param _roundId the round number to retrieve the answer for
+     *
+     * @dev #[deprecated] Use getRoundData instead. This does not error if no
+     * answer has been reached, it will simply return 0. Either wait to point to
+     * an already answered Aggregator or use the recommended getRoundData
+     * instead which includes better verification information.
+     */
     pub fn get_answer(&self, _round_id: U128) -> u128 {
         self.check_access();
         let round_id_u128: u128 = _round_id.into();
@@ -443,14 +516,14 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice get timestamp when an answer was last updated
-   * @param _roundId the round number to retrieve the updated timestamp for
-   *
-   * @dev #[deprecated] Use getRoundData instead. This does not error if no
-   * answer has been reached, it will simply return 0. Either wait to point to
-   * an already answered Aggregator or use the recommended getRoundData
-   * instead which includes better verification information.
-   */
+     * @notice get timestamp when an answer was last updated
+     * @param _roundId the round number to retrieve the updated timestamp for
+     *
+     * @dev #[deprecated] Use getRoundData instead. This does not error if no
+     * answer has been reached, it will simply return 0. Either wait to point to
+     * an already answered Aggregator or use the recommended getRoundData
+     * instead which includes better verification information.
+     */
     pub fn get_timestamp(&self, _round_id: U128) -> u64 {
         self.check_access();
         let round_id_u128: u128 = _round_id.into();
@@ -468,24 +541,24 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice get data about a round. Consumers are encouraged to check
-   * that they're receiving fresh data by inspecting the updatedAt and
-   * answeredInRound return values.
-   * @param _roundId the round ID to retrieve the round data for
-   * @return roundId is the round ID for which data was retrieved
-   * @return answer is the answer for the given round
-   * @return startedAt is the timestamp when the round was started. This is 0
-   * if the round hasn't been started yet.
-   * @return updatedAt is the timestamp when the round last was updated (i.e.
-   * answer was last computed)
-   * @return answeredInRound is the round ID of the round in which the answer
-   * was computed. answeredInRound may be smaller than roundId when the round
-   * timed out. answeredInRound is equal to roundId when the round didn't time out
-   * and was completed regularly.
-   * @dev Note that for in-progress rounds (i.e. rounds that haven't yet received
-   * maxSubmissions) answer and updatedAt may change between queries.
-   */
-    pub fn get_round_data(&self, _round_id: U64) -> (u64, u128,  u64, u64, u64) {
+     * @notice get data about a round. Consumers are encouraged to check
+     * that they're receiving fresh data by inspecting the updatedAt and
+     * answeredInRound return values.
+     * @param _roundId the round ID to retrieve the round data for
+     * @return roundId is the round ID for which data was retrieved
+     * @return answer is the answer for the given round
+     * @return startedAt is the timestamp when the round was started. This is 0
+     * if the round hasn't been started yet.
+     * @return updatedAt is the timestamp when the round last was updated (i.e.
+     * answer was last computed)
+     * @return answeredInRound is the round ID of the round in which the answer
+     * was computed. answeredInRound may be smaller than roundId when the round
+     * timed out. answeredInRound is equal to roundId when the round didn't time out
+     * and was completed regularly.
+     * @dev Note that for in-progress rounds (i.e. rounds that haven't yet received
+     * maxSubmissions) answer and updatedAt may change between queries.
+     */
+    pub fn get_round_data(&self, _round_id: U64) -> (u64, u128, u64, u64, u64) {
         self.check_access();
         let round_id_u64: u64 = _round_id.into();
 
@@ -496,46 +569,49 @@ impl AccessControlledAggregator {
         let round = round_option.unwrap();
 
         let r: Round = round;
-        assert!(r.answered_in_round > 0 && self.valid_round_id(round_id_u64.into()), V3_NO_DATA_ERROR);
+        assert!(
+            r.answered_in_round > 0 && self.valid_round_id(round_id_u64.into()),
+            V3_NO_DATA_ERROR
+        );
 
-        return(
+        return (
             round_id_u64,
             r.answer,
             r.started_at,
             r.updated_at,
-            r.answered_in_round
-        )
+            r.answered_in_round,
+        );
     }
 
     /**
-   * @notice get data about the latest round. Consumers are encouraged to check
-   * that they're receiving fresh data by inspecting the updatedAt and
-   * answeredInRound return values. Consumers are encouraged to
-   * use this more fully featured method over the "legacy" latestRound/
-   * latestAnswer/latestTimestamp functions. Consumers are encouraged to check
-   * that they're receiving fresh data by inspecting the updatedAt and
-   * answeredInRound return values.
-   * @return roundId is the round ID for which data was retrieved
-   * @return answer is the answer for the given round
-   * @return startedAt is the timestamp when the round was started. This is 0
-   * if the round hasn't been started yet.
-   * @return updatedAt is the timestamp when the round last was updated (i.e.
-   * answer was last computed)
-   * @return answeredInRound is the round ID of the round in which the answer
-   * was computed. answeredInRound may be smaller than roundId when the round
-   * timed out. answeredInRound is equal to roundId when the round didn't time
-   * out and was completed regularly.
-   * @dev Note that for in-progress rounds (i.e. rounds that haven't yet
-   * received maxSubmissions) answer and updatedAt may change between queries.
-   */
-    pub fn latest_round_data(&self) -> (u64, u128,  u64, u64, u64) {
+     * @notice get data about the latest round. Consumers are encouraged to check
+     * that they're receiving fresh data by inspecting the updatedAt and
+     * answeredInRound return values. Consumers are encouraged to
+     * use this more fully featured method over the "legacy" latestRound/
+     * latestAnswer/latestTimestamp functions. Consumers are encouraged to check
+     * that they're receiving fresh data by inspecting the updatedAt and
+     * answeredInRound return values.
+     * @return roundId is the round ID for which data was retrieved
+     * @return answer is the answer for the given round
+     * @return startedAt is the timestamp when the round was started. This is 0
+     * if the round hasn't been started yet.
+     * @return updatedAt is the timestamp when the round last was updated (i.e.
+     * answer was last computed)
+     * @return answeredInRound is the round ID of the round in which the answer
+     * was computed. answeredInRound may be smaller than roundId when the round
+     * timed out. answeredInRound is equal to roundId when the round didn't time
+     * out and was completed regularly.
+     * @dev Note that for in-progress rounds (i.e. rounds that haven't yet
+     * received maxSubmissions) answer and updatedAt may change between queries.
+     */
+    pub fn latest_round_data(&self) -> (u64, u128, u64, u64, u64) {
         self.check_access();
         self.get_round_data(U64::from(self.latest_round_id))
     }
 
     /**
-   * @notice query the available amount of LINK for an oracle to withdraw
-   */
+     * @notice query the available amount of LINK for an oracle to withdraw
+     */
     pub fn withdrawable_payment(&self, _oracle: AccountId) -> u128 {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -546,12 +622,12 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice transfers the oracle's LINK to another address. Can only be called
-   * by the oracle's admin.
-   * @param _oracle is the oracle whose LINK is transferred
-   * @param _recipient is the address to send the LINK to
-   * @param _amount is the amount of LINK to send
-   */
+     * @notice transfers the oracle's LINK to another address. Can only be called
+     * by the oracle's admin.
+     * @param _oracle is the oracle whose LINK is transferred
+     * @param _recipient is the address to send the LINK to
+     * @param _amount is the amount of LINK to send
+     */
     #[payable]
     pub fn withdraw_payment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
         let prepaid_gas = env::prepaid_gas();
@@ -561,7 +637,10 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this oracle account. {withdraw_payment}");
         }
         let mut oracle = oracle_option.unwrap();
-        assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
+        assert!(
+            oracle.admin == env::predecessor_account_id(),
+            "only callable by admin"
+        );
 
         let amount_u128: u128 = _amount.into();
         let available: u128 = oracle.withdrawable;
@@ -575,39 +654,46 @@ impl AccessControlledAggregator {
         env::promise_create(
             self.link_token.clone(),
             b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()}).to_string().as_bytes(),
+            json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
+                .to_string()
+                .as_bytes(),
             36500000000000000000000,
-            prepaid_gas / 4);
-        
+            prepaid_gas / 4,
+        );
     }
 
     /**
-   * @notice transfers the owner's LINK to another address
-   * @param _recipient is the address to send the LINK to
-   * @param _amount is the amount of LINK to send
-   */
+     * @notice transfers the owner's LINK to another address
+     * @param _recipient is the address to send the LINK to
+     * @param _amount is the amount of LINK to send
+     */
     #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
         let prepaid_gas = env::prepaid_gas();
 
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
-        assert!((available - self.required_reserve(self.payment_amount)) >= amount_u128, "insufficient reserve funds");
+        assert!(
+            (available - self.required_reserve(self.payment_amount)) >= amount_u128,
+            "insufficient reserve funds"
+        );
         // How do we assert this promise? Requires testing
         env::promise_create(
             self.link_token.clone(),
             b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": amount_u128.clone()}).to_string().as_bytes(),
+            json!({"new_owner_id": _recipient.clone(), "amount": amount_u128.clone()})
+                .to_string()
+                .as_bytes(),
             36500000000000000000000,
-            prepaid_gas / 4);
-        
+            prepaid_gas / 4,
+        );
         self.update_available_funds();
     }
 
     /**
-   * @notice get the admin address of an oracle
-   * @param _oracle is the address of the oracle whose admin is being queried
-   */
+     * @notice get the admin address of an oracle
+     * @param _oracle is the address of the oracle whose admin is being queried
+     */
     pub fn get_admin(&self, _oracle: AccountId) -> AccountId {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -618,40 +704,46 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice transfer the admin address for an oracle
-   * @param _oracle is the address of the oracle whose admin is being transferred
-   * @param _newAdmin is the new admin address
-   */
+     * @notice transfer the admin address for an oracle
+     * @param _oracle is the address of the oracle whose admin is being transferred
+     * @param _newAdmin is the new admin address
+     */
     pub fn transfer_admin(&mut self, _oracle: AccountId, _new_admin: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account. {transfer_admin}");
         }
         let mut oracle = oracle_option.unwrap();
-        assert!(oracle.admin == env::predecessor_account_id(), "only callable by admin");
+        assert!(
+            oracle.admin == env::predecessor_account_id(),
+            "only callable by admin"
+        );
         oracle.pending_admin = _new_admin;
         self.oracles.insert(&_oracle, &oracle);
     }
 
     /**
-   * @notice accept the admin address transfer for an oracle
-   * @param _oracle is the address of the oracle whose admin is being transferred
-   */
+     * @notice accept the admin address transfer for an oracle
+     * @param _oracle is the address of the oracle whose admin is being transferred
+     */
     pub fn accept_admin(&mut self, _oracle: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
             env::panic(b"Did not find this oracle account. {accept_admin}");
         }
         let mut oracle = oracle_option.unwrap();
-        assert!(oracle.pending_admin == env::predecessor_account_id(), "only callable by pending admin");
+        assert!(
+            oracle.pending_admin == env::predecessor_account_id(),
+            "only callable by pending admin"
+        );
         oracle.pending_admin = "".to_string();
         oracle.admin = env::predecessor_account_id();
         self.oracles.insert(&_oracle, &oracle);
     }
 
     /**
-   * @notice allows non-oracles to request a new round
-   */
+     * @notice allows non-oracles to request a new round
+     */
     pub fn request_new_round(&mut self) -> u64 {
         let requester_option = self.requesters.get(&env::predecessor_account_id());
         if requester_option.is_none() {
@@ -666,7 +758,10 @@ impl AccessControlledAggregator {
             env::panic(b"Did not find this round. {request_new_round}");
         }
         let round = round_option.unwrap();
-        assert!(round.updated_at > 0 || self.timed_out(current), "prev round must be supersedable");
+        assert!(
+            round.updated_at > 0 || self.timed_out(current),
+            "prev round must be supersedable"
+        );
 
         let new_round_id: u64 = current + 1;
         self.requester_initialize_new_round(new_round_id);
@@ -674,12 +769,17 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice allows the owner to specify new non-oracles to start new rounds
-   * @param _requester is the address to set permissions for
-   * @param _authorized is a boolean specifying whether they can start new rounds or not
-   * @param _delay is the number of rounds the requester must wait before starting another round
-   */
-    pub fn set_requester_permissions(&mut self, _requester: AccountId, _authorized: bool, _delay: U64) {
+     * @notice allows the owner to specify new non-oracles to start new rounds
+     * @param _requester is the address to set permissions for
+     * @param _authorized is a boolean specifying whether they can start new rounds or not
+     * @param _delay is the number of rounds the requester must wait before starting another round
+     */
+    pub fn set_requester_permissions(
+        &mut self,
+        _requester: AccountId,
+        _authorized: bool,
+        _delay: U64,
+    ) {
         let delay_u64: u64 = _delay.into();
 
         let requester_option = self.requesters.get(&_requester);
@@ -702,46 +802,52 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * @notice called through LINK's transferAndCall to update available funds
-   * in the same transaction as the funds were transferred to the aggregator
-   * @param _data is mostly ignored. It is checked for length, to be sure
-   * nothing strange is passed in.
-   */
+     * @notice called through LINK's transferAndCall to update available funds
+     * in the same transaction as the funds were transferred to the aggregator
+     * @param _data is mostly ignored. It is checked for length, to be sure
+     * nothing strange is passed in.
+     */
     pub fn on_token_transfer(&mut self, _address: AccountId, _num: U128, _data: Base64String) {
         assert!(_data.len() == 0, "transfer doesn't accept calldata");
         self.update_available_funds();
     }
 
     /**
-   * @notice a method to provide all current info oracles need. Intended only
-   * only to be callable by oracles. Not for use by contracts to read state.
-   * @param _oracle the address to look up information for.
-   */
-    pub fn oracle_round_state(&mut self, _oracle: AccountId, _queried_round_id: U64) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
-        assert!(env::predecessor_account_id() == env::signer_account_id(), "off-chain reading only");
+     * @notice a method to provide all current info oracles need. Intended only
+     * only to be callable by oracles. Not for use by contracts to read state.
+     * @param _oracle the address to look up information for.
+     */
+    pub fn oracle_round_state(
+        &mut self,
+        _oracle: AccountId,
+        _queried_round_id: U64,
+    ) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
+        assert!(
+            env::predecessor_account_id() == env::signer_account_id(),
+            "off-chain reading only"
+        );
 
         let queried_round_id_u64: u64 = _queried_round_id.into();
         if queried_round_id_u64 == 0 {
             return self.oracle_round_state_suggest_round(_oracle);
-        }
-        else {
+        } else {
             let round_option = self.rounds.get(&queried_round_id_u64);
-        if round_option.is_none() {
-            env::panic(b"Did not find this round. {oracle_round_state}");
-        }
-        let round = round_option.unwrap();
+            if round_option.is_none() {
+                env::panic(b"Did not find this round. {oracle_round_state}");
+            }
+            let round = round_option.unwrap();
 
-        let detail_option = self.details.get(&(queried_round_id_u64 as u128));
-        if detail_option.is_none() {
-            env::panic(b"Did not find this round. {oracle_round_state}");
-        }
-        let detail = detail_option.unwrap();
+            let detail_option = self.details.get(&(queried_round_id_u64 as u128));
+            if detail_option.is_none() {
+                env::panic(b"Did not find this round. {oracle_round_state}");
+            }
+            let detail = detail_option.unwrap();
 
-        let oracle_option = self.oracles.get(&_oracle);
-        if oracle_option.is_none() {
-            env::panic(b"Did not find this round. {oracle_round_state}");
-        }
-        let oracle = oracle_option.unwrap();
+            let oracle_option = self.oracles.get(&_oracle);
+            if oracle_option.is_none() {
+                env::panic(b"Did not find this round. {oracle_round_state}");
+            }
+            let oracle = oracle_option.unwrap();
             let round: Round = round;
             return (
                 self.eligible_for_specific_round(_oracle, queried_round_id_u64),
@@ -751,16 +857,19 @@ impl AccessControlledAggregator {
                 detail.timeout,
                 self.recorded_funds.available,
                 self.oracle_count() as u64,
-                if round.started_at > 0 { detail.payment_amount } else { self.payment_amount }
-            )
+                if round.started_at > 0 {
+                    detail.payment_amount
+                } else {
+                    self.payment_amount
+                },
+            );
         }
-        
     }
 
     /**
-   * @notice method to update the address which does external data validation.
-   * @param _newValidator designates the address of the new validation contract.
-   */
+     * @notice method to update the address which does external data validation.
+     * @param _newValidator designates the address of the new validation contract.
+     */
     pub fn set_validator(&mut self, _new_validator: AccountId) {
         let previous: AccountId = String::from(&self.validator) as AccountId;
 
@@ -770,8 +879,8 @@ impl AccessControlledAggregator {
     }
 
     /**
-   * Private
-   */
+     * Private
+     */
 
     fn initialize_new_round(&mut self, _round_id: u64) {
         self.update_timed_out_round_info(_round_id - 1);
@@ -783,13 +892,13 @@ impl AccessControlledAggregator {
             max_submissions: self.max_submission_count,
             min_submissions: self.min_submission_count,
             timeout: self.timeout,
-            payment_amount: self.payment_amount
+            payment_amount: self.payment_amount,
         };
         let new_round: Round = Round {
             answer: 0_u128,
             started_at: env::block_timestamp() as u64,
             updated_at: 0_u64,
-            answered_in_round: 0_u64
+            answered_in_round: 0_u64,
         };
         self.details.insert(&(_round_id as u128), &next_details);
         self.rounds.insert(&_round_id, &new_round);
@@ -802,7 +911,13 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(format!("{} Did not find this oracle.", &env::predecessor_account_id()).as_bytes());
+            env::panic(
+                format!(
+                    "{} Did not find this oracle.",
+                    &env::predecessor_account_id()
+                )
+                .as_bytes(),
+            );
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -826,12 +941,16 @@ impl AccessControlledAggregator {
         let mut requester = requester_option.unwrap();
 
         let last_started: u128 = requester.last_started_round.into(); // cache storage reads
-        assert!((_round_id as u128) > last_started + (requester.delay as u128) || last_started == 0, "must delay requests");
+        assert!(
+            (_round_id as u128) > last_started + (requester.delay as u128) || last_started == 0,
+            "must delay requests"
+        );
 
         self.initialize_new_round(_round_id);
 
         requester.last_started_round = _round_id;
-        self.requesters.insert(&env::predecessor_account_id(), &requester);
+        self.requesters
+            .insert(&env::predecessor_account_id(), &requester);
     }
 
     fn update_timed_out_round_info(&mut self, _round_id: u64) {
@@ -868,13 +987,24 @@ impl AccessControlledAggregator {
         }
         let round = round_option.unwrap();
         if round.started_at > 0 {
-            return self.accepting_submissions(_queried_round_id.into()) && self.validate_oracle_round(init_oracle.to_string(), _queried_round_id).len() == 0
+            return self.accepting_submissions(_queried_round_id.into())
+                && self
+                    .validate_oracle_round(init_oracle.to_string(), _queried_round_id)
+                    .len()
+                    == 0;
         } else {
-            return self.delayed(_oracle.to_string(), _queried_round_id) && self.validate_oracle_round(init_oracle.to_string(), _queried_round_id).len() == 0
+            return self.delayed(_oracle.to_string(), _queried_round_id)
+                && self
+                    .validate_oracle_round(init_oracle.to_string(), _queried_round_id)
+                    .len()
+                    == 0;
         }
     }
 
-    fn oracle_round_state_suggest_round(&mut self, _oracle: AccountId) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
+    fn oracle_round_state_suggest_round(
+        &mut self,
+        _oracle: AccountId,
+    ) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
         let round_option = self.rounds.get(&1);
         let init_oracle = &_oracle;
         if round_option.is_none() {
@@ -888,7 +1018,8 @@ impl AccessControlledAggregator {
         }
         let oracle = oracle_option.unwrap();
 
-        let should_supersede: bool = oracle.last_reported_round == self.reporting_round_id || !self.accepting_submissions(self.reporting_round_id as u128);
+        let should_supersede: bool = oracle.last_reported_round == self.reporting_round_id
+            || !self.accepting_submissions(self.reporting_round_id as u128);
         // Instead of nudging oracles to submit to the next round, the inclusion of
         // the should_supersede bool in the if condition pushes them towards
         // submitting in a currently open round.
@@ -929,7 +1060,11 @@ impl AccessControlledAggregator {
             _eligible_to_submit = self.accepting_submissions(_round_id.into());
         }
 
-        if self.validate_oracle_round(init_oracle.to_string(), _round_id).len() != 0 {
+        if self
+            .validate_oracle_round(init_oracle.to_string(), _round_id)
+            .len()
+            != 0
+        {
             _eligible_to_submit = false;
         }
 
@@ -941,7 +1076,7 @@ impl AccessControlledAggregator {
             detail.timeout,
             self.recorded_funds.available,
             self.oracle_count() as u64,
-            _payment_amount
+            _payment_amount,
         );
     }
 
@@ -994,7 +1129,6 @@ impl AccessControlledAggregator {
         // TRY CATCH
     }
 
-
     // fn validate(&self, _previous_round_id: u64, _previous_answer: u128, _current_round_id: u64, _current_answer: u128) {
     //     let av: AccountId = self.validator.clone(); // cache storage reads
     //     if av == "" {
@@ -1041,7 +1175,10 @@ impl AccessControlledAggregator {
     }
 
     fn record_submission(&mut self, _submission: u128, _round_id: u128) {
-        assert!(self.accepting_submissions(_round_id), "round not accepting submissions");
+        assert!(
+            self.accepting_submissions(_round_id),
+            "round not accepting submissions"
+        );
 
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
@@ -1094,7 +1231,9 @@ impl AccessControlledAggregator {
         let started_at: u64 = round.started_at;
         let round_timeout: u64 = detail.timeout;
         // commented out for test failure
-        return started_at > 0 && round_timeout > 0 && ((started_at + round_timeout) < env::block_timestamp());
+        return started_at > 0
+            && round_timeout > 0
+            && ((started_at + round_timeout) < env::block_timestamp());
     }
 
     fn get_starting_round(&self, _oracle: AccountId) -> u64 {
@@ -1114,7 +1253,7 @@ impl AccessControlledAggregator {
     fn previous_and_current_unanswered(&self, _round_id: u64, _rr_id: u64) -> bool {
         let round_option = self.rounds.get(&_rr_id);
         if round_option.is_none() {
-            return false
+            return false;
             // env::panic(b"Did not find this round. {previous_and_current_unanswered}");
         }
         let round = round_option.unwrap();
@@ -1128,7 +1267,10 @@ impl AccessControlledAggregator {
     fn add_oracle(&mut self, _oracle: AccountId, _admin: AccountId) {
         let init_oracle = &_oracle;
         let init_admin = &_admin;
-        assert!(!self.oracle_enabled(init_oracle.to_string()), "oracle already enabled");
+        assert!(
+            !self.oracle_enabled(init_oracle.to_string()),
+            "oracle already enabled"
+        );
         assert!(_admin != "", "cannot set admin to 0");
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -1142,24 +1284,28 @@ impl AccessControlledAggregator {
                 latest_submission: 0_u128,
                 index: self.oracle_addresses.len() as u64,
                 admin: _admin.clone(),
-                pending_admin: "".to_string()
+                pending_admin: "".to_string(),
             };
             self.oracles.insert(&_oracle, &oracle);
             self.oracle_addresses.push(_oracle.clone());
-        }
-        else {
-            assert!(oracle_option.unwrap().admin == _admin, "owner cannot overwrite admin");
+        } else {
+            assert!(
+                oracle_option.unwrap().admin == _admin,
+                "owner cannot overwrite admin"
+            );
         }
         // Oracle Permissions Updated
         env::log(format!("{}, {}", &init_oracle.clone(), true).as_bytes());
         // Oracle Admin Updated
         env::log(format!("{}, {}", &init_admin.clone(), true).as_bytes());
-
     }
 
     fn remove_oracle(&mut self, _oracle: AccountId) {
         let init_oracle = &_oracle;
-        assert!(self.oracle_enabled(init_oracle.to_string()), "oracle not enabled");
+        assert!(
+            self.oracle_enabled(init_oracle.to_string()),
+            "oracle not enabled"
+        );
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
@@ -1201,24 +1347,20 @@ impl AccessControlledAggregator {
         // maybe add logs here?
         if starting_round == 0 {
             return "not enabled oracle".to_string();
-        }
-        else if starting_round > _round_id {
+        } else if starting_round > _round_id {
             return "not yet enabled oracle".to_string();
-        }
-        else if oracle.ending_round < _round_id.into() {
+        } else if oracle.ending_round < _round_id.into() {
             return "no longer allowed oracle".to_string();
-        }
-        else if oracle.last_reported_round >= _round_id {
+        } else if oracle.last_reported_round >= _round_id {
             return "cannot report on previous rounds".to_string();
-        }
-        else if _round_id != rr_id && _round_id != rr_id + 1 && !self.previous_and_current_unanswered(_round_id, rr_id) {
+        } else if _round_id != rr_id
+            && _round_id != rr_id + 1
+            && !self.previous_and_current_unanswered(_round_id, rr_id)
+        {
             return "invalid round to report".to_string();
-        }
-        else if _round_id != 1 && !self.supersedable(_round_id - 1) {
+        } else if _round_id != 1 && !self.supersedable(_round_id - 1) {
             return "previous round not supersedable".to_string();
-        }
-
-        else {
+        } else {
             return "".to_string();
         }
     }
@@ -1248,7 +1390,7 @@ impl AccessControlledAggregator {
     fn accepting_submissions(&self, _round_id: u128) -> bool {
         let round_option = self.details.get(&_round_id);
         if round_option.is_none() {
-            return false
+            return false;
             // env::panic(b"hey not find this round.");
         }
         let round = round_option.unwrap();
@@ -1274,7 +1416,11 @@ impl AccessControlledAggregator {
     }
 
     fn only_owner(&mut self) {
-        assert_eq!(self.owner, env::predecessor_account_id(), "Only contract owner can call this method.");
+        assert_eq!(
+            self.owner,
+            env::predecessor_account_id(),
+            "Only contract owner can call this method."
+        );
     }
     // Review implementation of this
     fn median(&mut self, mut numbers: Vec<u128>) -> u128 {
@@ -1282,7 +1428,7 @@ impl AccessControlledAggregator {
         let _mid = numbers.len() / 2;
         // numbers[mid]
         let sum: u128 = numbers.iter().sum();
-        let len: u128 =  numbers.len().try_into().unwrap();
+        let len: u128 = numbers.len().try_into().unwrap();
         sum / len
     }
 
@@ -1350,4 +1496,3 @@ impl AccessControlledAggregator {
         assert!(self.has_access(env::predecessor_account_id()), "No access")
     }
 }
-
