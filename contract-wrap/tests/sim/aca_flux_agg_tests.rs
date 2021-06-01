@@ -1,4 +1,3 @@
-use near_sdk::json_types::U128;
 use near_sdk::serde_json::json;
 use near_sdk::AccountId;
 use near_sdk_sim::transaction::ExecutionStatus;
@@ -6,144 +5,118 @@ use near_sdk_sim::DEFAULT_GAS;
 
 use crate::utils::init_without_macros as init;
 
-// #[test]
 
-// fn simulate_linktoken_transfer() {
-//     // Must initialize all accounts exported, the accounts not being used are underscored for clean linting.
-//     let (
-//         root,
-//         aca,
-//         link,
-//         oracle_one,
-//         _oracle_two,
-//         _oracle_three,
-//         _test_helper,
-//         _eac,
-//         _eac_without_access_controller,
-//     ) = init();
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180
+// Suite of simulation tests matching TypeScript tests for AccessControlledAggregator and FluxAggregator as closely as possible.
 
-//     let deposit: u128 = 100;
-//     let min_max: u128 = 1;
-//     let rr_delay: u64 = 0;
-//     // Transfer from link_token contract to ACA.
-//     root.call(
-//         link.account_id(),
-//         "transfer_from",
-//         &json!({
-//             "owner_id": root.account_id().to_string(),
-//             "new_owner_id": aca.account_id().to_string(),
-//             "amount": deposit.to_string()
-//         })
-//         .to_string()
-//         .into_bytes(),
-//         DEFAULT_GAS,
-//         36500000000000000000000, // deposit
-//     )
-//     .assert_success();
-    
-//     root.call(
-//         aca.account_id(),
-//         "update_available_funds",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+#[test]
+fn constructor_tests() {
+    let (
+        root,
+        aca,
+        _link,
+        _oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _ea,
+        _eac_without_access_controller,
+    ) = init();
+    let payment_amount: u128 = 3;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let version: u128 = 3;
+    let validator: String = "".to_string();
+    let description: String = "LINK/USD".to_string();
+    let min_submission_value: u128 = 1;
+    let max_submission_value: u128 = 100000000000000000000;
+    let empty_address: AccountId = "".to_string();
 
-//     let aca_balance: String = root
-//     .view(
-//         link.account_id(),
-//         "get_balance",
-//         &json!({
-//             "owner_id": aca.valid_account_id()
-//         })
-//         .to_string()
-//         .into_bytes(),
-//     )
-//     .unwrap_json();
+    let expected_payment_amount: u128 = root.call(
+        aca.account_id(),
+        "get_payment_amount",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
 
-//     assert_eq!(deposit.to_string(), aca_balance);
-//     // First add oracle_one
-//     root.call(
-//         aca.account_id(),
-//         "change_oracles",
-//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
-//     // Second, call submit from oracle_one
-//     oracle_one
-//         .call(
-//             aca.account_id(),
-//             "submit",
-//             &json!({"_round_id": "1", "_submission": "1"})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
-//     let _root_balance: U128 = root
-//         .view(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({
-//                 "owner_id": root.valid_account_id()
-//             })
-//             .to_string()
-//             .into_bytes(),
-//         )
-//         .unwrap_json();
+    assert_eq!(payment_amount, expected_payment_amount);
 
-//     let withdraw = oracle_one.call(
-//         aca.account_id(),
-//         "withdraw_payment",
-//         &json!({"_oracle": oracle_one.account_id(), "_recipient": oracle_one.account_id(), "_amount": "1"}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         36500000000000000000000, // deposit
-//     );
+    let expected_timeout: u64 = root.call(
+        aca.account_id(),
+        "get_timeout",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
 
-//     let oracle_balance: U128 = root
-//         .view(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({
-//                 "owner_id": oracle_one.valid_account_id()
-//             })
-//             .to_string()
-//             .into_bytes(),
-//         )
-//         .unwrap_json();
-//     assert_eq!(1, u128::from(oracle_balance));
-// }
+    assert_eq!(timeout, expected_timeout);
+
+    let expected_decimals: u64 = root.call(
+        aca.account_id(),
+        "get_decimals",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
+
+    assert_eq!(decimals, expected_decimals);
+
+
+    let expected_description: String = root.call(
+        aca.account_id(),
+        "get_description",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
+
+    assert_eq!(description, expected_description);
+
+    let expected_version: u128 = root.call(
+        aca.account_id(),
+        "get_version",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
+
+    assert_eq!(version, expected_version);
+
+    let expected_validator: String = root.call(
+        aca.account_id(),
+        "get_validator",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
+
+    assert_eq!(validator, expected_validator);
+
+}
 
 #[test]
 fn access_control_tests() {
-    let payment_amount: u64 = 3;
     let deposit: u64 = 100;
     let answer: u128 = 100;
     let min_ans: u64 = 1;
     let max_ans: u64 = 1;
     let rr_delay: u64 = 0;
-    let timeout: u64 = 1800;
-    let decimals: u64 = 24;
-    let description: String = "LINK/USD".to_string();
-    let min_submission_value: u128 = 1;
-    let max_submission_value: u128 = 100000000000000000000;
-    let empty_address: AccountId = "".to_string();
     let next_round: u128 = 1;
     let (
         root,
         aca,
         link,
         oracle_one,
-        oracle_two,
-        oracle_three,
+        _oracle_two,
+        _oracle_three,
         test_helper,
         _ea,
-        eac_without_access_controller,
+        _eac_without_access_controller,
     ) = init();
-    // Deployment function body as done on line 180 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180
+
+    // BegDeployment function body as done on line 180-196 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180
     root.call(
         link.account_id(),
         "transfer_from",
@@ -158,6 +131,7 @@ fn access_control_tests() {
         36500000000000000000000, // deposit
     )
     .assert_success();
+
     root.call(
         aca.account_id(),
         "update_available_funds",
@@ -165,6 +139,7 @@ fn access_control_tests() {
         DEFAULT_GAS,
         0, // deposit
     ).assert_success();
+
     // First add oracle_one
     root.call(
         aca.account_id(),
@@ -188,7 +163,6 @@ fn access_control_tests() {
         .assert_success();
 
     // Unauthorized Calls
-
     // Unauthorized call from test_helper for get_answer
     let mut get_answer_unauthorized = test_helper.call(
         aca.account_id(),
@@ -1550,6 +1524,7 @@ fn when_a_round_is_passed_in_higher_than_expected_and_when_called_by_a_non_oracl
         DEFAULT_GAS,
         0, // deposit
     );
+
     // #submit
 
     let min_max: u64 = 3;

@@ -438,6 +438,19 @@ impl AccessControlledAggregator {
         self.oracle_addresses.clone()
     }
 
+    pub fn get_payment_amount(&self) -> u128 {
+        self.payment_amount
+    }
+
+    pub fn get_timeout(&self) -> u64 {
+        self.timeout
+    }
+
+    pub fn get_validator(&self) -> AccountId {
+        self.validator.clone()
+    }
+
+
     /**
      * @notice get the most recently reported answer
      *

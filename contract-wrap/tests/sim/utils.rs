@@ -6,6 +6,7 @@ const ACA_ID: &str = "aca";
 const LINKTOKEN_ID: &str = "lt";
 const EAC_ID: &str = "eac";
 const EAC_WITHOUT_ACCESS_CONTROLLER_ID: &str = "eac_without_access_controller";
+
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     // update `contract.wasm` for your contract's name
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
