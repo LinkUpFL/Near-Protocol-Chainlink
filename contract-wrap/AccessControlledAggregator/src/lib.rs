@@ -483,7 +483,8 @@ impl AccessControlledAggregator {
         self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account. {latest_timestamp}");
+            // env::panic(b"Did not find this oracle account. {latest_timestamp}");
+            return 0;
         }
         let round = round_option.unwrap();
         round.updated_at
@@ -576,7 +577,8 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&round_id_u64);
         if round_option.is_none() {
-            env::panic(b"Did not find this oracle account. {get_round_data}");
+            env::panic(b"No data present");
+            // env::panic(b"Did not find this oracle account. {get_round_data}");
         }
         let round = round_option.unwrap();
 
@@ -980,6 +982,7 @@ impl AccessControlledAggregator {
         let prev_option = self.rounds.get(&prev_id);
         if prev_option.is_none() {
             env::panic(format!("{} Did not find this prev round.", prev_id.to_string()).as_bytes());
+            // return;
         }
         let prev = prev_option.unwrap();
 
@@ -1384,7 +1387,8 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this round. {supersedable}");
+            // Check logic here
+            return false
         }
         let round = round_option.unwrap();
         round.updated_at > 0

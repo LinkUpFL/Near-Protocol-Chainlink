@@ -17,6 +17,10 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm"
 }
 
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts
+// Initialization and constructor tests
+
 pub fn init_without_macros() -> (
     UserAccount,
     UserAccount,
@@ -53,13 +57,15 @@ pub fn init_without_macros() -> (
         to_yocto("1000"), // attached deposit
     );
 
-    let payment_amount: u64 = 3;
+    let payment_amount: u128 = 3;
     let timeout: u64 = 1800;
     let decimals: u64 = 24;
     let description: String = "LINK/USD".to_string();
     let min_submission_value: u128 = 1;
     let max_submission_value: u128 = 100000000000000000000;
-    let empty_address: AccountId = "".to_string();
+    let version: u128 = 3;
+    let validator: String = "".to_string();
+    let deposit: u64 = 100;
 
     aca.call(
         ACA_ID.into(),
@@ -69,7 +75,7 @@ pub fn init_without_macros() -> (
             "owner_id": root.account_id(),
             "_payment_amount": payment_amount.to_string(),
             "_timeout": timeout.to_string(),
-            "_validator": empty_address,
+            "_validator": validator,
             "_min_submission_value": min_submission_value.to_string(),
             "_max_submission_value": max_submission_value.to_string(),
             "_decimals": decimals.to_string(),
@@ -81,6 +87,104 @@ pub fn init_without_macros() -> (
         0, // attached deposit
     )
     .assert_success();
+
+    let expected_payment_amount: u128 = root
+        .call(
+            aca.account_id(),
+            "get_payment_amount",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(payment_amount, expected_payment_amount);
+
+    let expected_timeout: u64 = root
+        .call(
+            aca.account_id(),
+            "get_timeout",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(timeout, expected_timeout);
+
+    let expected_decimals: u64 = root
+        .call(
+            aca.account_id(),
+            "get_decimals",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(decimals, expected_decimals);
+
+    let expected_description: String = root
+        .call(
+            aca.account_id(),
+            "get_description",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(description, expected_description);
+
+    let expected_version: u128 = root
+        .call(
+            aca.account_id(),
+            "get_version",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(version, expected_version);
+
+    let expected_validator: String = root
+        .call(
+            aca.account_id(),
+            "get_validator",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(validator, expected_validator);
+
+    // Deployment function body as done on line 180-196 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180 (beforeEach)
+    root.call(
+        link.account_id(),
+        "transfer_from",
+        &json!({
+            "owner_id": root.account_id().to_string(),
+            "new_owner_id": aca.account_id().to_string(),
+            "amount": deposit.to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        36500000000000000000000, // deposit
+    )
+    .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "update_available_funds",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
 
     let oracle_one = root.create_user(
         "oracle_one".to_string(),
