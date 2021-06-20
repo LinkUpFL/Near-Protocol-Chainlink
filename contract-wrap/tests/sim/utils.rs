@@ -31,6 +31,8 @@ pub fn init_without_macros() -> (
     UserAccount,
     UserAccount,
     UserAccount,
+    UserAccount,
+    UserAccount
 ) {
     // Use `None` for default genesis configuration; more info below
     let root = init_simulator(None);
@@ -39,6 +41,7 @@ pub fn init_without_macros() -> (
         LINKTOKEN_ID.to_string(),
         to_yocto("1000"), // attached deposit
     );
+
     link.call(
         LINKTOKEN_ID.into(),
         "new",
@@ -185,19 +188,29 @@ pub fn init_without_macros() -> (
     )
     .assert_success();
 
-
+    // Alias: Neil
     let oracle_one = root.create_user(
         "oracle_one".to_string(),
         to_yocto("1000000"), // initial balance
     );
-
+    // Alias: Ned
     let oracle_two = root.create_user(
         "oracle_two".to_string(),
         to_yocto("1000000"), // initial balance
     );
-
+    // Alias: Nelly
     let oracle_three = root.create_user(
         "oracle_three".to_string(),
+        to_yocto("1000000"), // initial balance
+    );
+    // Alias: Nancy
+    let oracle_four = root.create_user(
+        "oracle_four".to_string(),
+        to_yocto("1000000"), // initial balance
+    );
+    // Alias: Norbert
+    let oracle_five = root.create_user(
+        "oracle_five".to_string(),
         to_yocto("1000000"), // initial balance
     );
 
@@ -263,5 +276,7 @@ pub fn init_without_macros() -> (
         test_helper,
         eac,
         eac_without_access_controller,
+        oracle_four,
+        oracle_five
     )
 }

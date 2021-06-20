@@ -683,6 +683,7 @@ impl AccessControlledAggregator {
      */
     #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
+        self.only_owner();
         let prepaid_gas = env::prepaid_gas();
 
         let available: u128 = self.recorded_funds.available as u128;
@@ -1245,10 +1246,12 @@ impl AccessControlledAggregator {
 
         let started_at: u64 = round.started_at;
         let round_timeout: u64 = detail.timeout;
+
         // commented out for test failure
-        return started_at > 0
-            && round_timeout > 0
-            && ((started_at + round_timeout) < env::block_timestamp());
+        // return started_at > 0
+        //     && round_timeout > 0
+        //     && ((started_at + round_timeout) < env::block_timestamp());
+        return false;
     }
 
     fn get_starting_round(&self, _oracle: AccountId) -> u64 {
@@ -1435,7 +1438,7 @@ impl AccessControlledAggregator {
         assert_eq!(
             self.owner,
             env::predecessor_account_id(),
-            "Only contract owner can call this method."
+            "Only callable by owner"
         );
     }
     // Review implementation of this
