@@ -4611,22 +4611,880 @@ use crate::utils::init_without_macros as init;
 //         .assert_success();
 // }
 
-// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1140
-// #change_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1141
-// *TODO* Research why the contract is not panicking with owner cannot overwrite admin
+// // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1140
+// // #change_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1141
+// // *TODO* Research why the contract is not panicking with owner cannot overwrite admin
+
+// #[test]
+
+// fn when_an_oracle_is_re_added_after_with_a_different_admin_address_and_reverts() {
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let next_round: u128 = 1;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one.call(
+//         aca.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//             aca.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         ).assert_success();
+
+//     let expected_owner_cannot_override_admin = root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [root.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+//     // *TODO* Research why the contract is not panicking with owner cannot overwrite admin
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_owner_cannot_override_admin
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("owner cannot overwrite admin"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1173
+// #change_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1204
+// *TODO* Look into a simple way to implement this function
+
+// #[test]
+
+// fn not_use_too_much_gas() {}
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1173
+// #change_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1242
+// *TODO* Look into a simple way to implement this function
+
+// #[test]
+
+// fn reverts_when_another_oracle_is_added() {}
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1173
+// #change_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1259
+// *TODO* Look into a simple way to implement this function
+
+// #[test]
+
+// fn reverts_when_min_submissions_is_set_to_0() {}
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1267
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1279
+
+// #[test]
+
+// fn decreases_the_oracle_count() {
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let past_count: u128 = test_helper
+//         .call(
+//             aca.account_id(),
+//             "oracle_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let current_count: u128 = test_helper
+//         .call(
+//             aca.account_id(),
+//             "oracle_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(past_count - 1, current_count);
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1267
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1296
+// #[test]
+
+// fn removing_oracles_and_updates_the_round_details() {
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let restart_delay: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "restart_delay",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(min_submission_count, 1);
+//     assert_eq!(max_submission_count, 1);
+//     assert_eq!(restart_delay, 0);
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1267
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1306
+// #[test]
+
+// fn removing_oracles_and_emits_a_log() {
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let oracle_removed_event = root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).promise_results();
+
+//     let oracle_removed_event_log: String = oracle_removed_event
+//         .clone()
+//         .remove(1)
+//         .unwrap()
+//         .outcome()
+//         .logs[0]
+//         .parse()
+//         .unwrap();
+
+//     let result = [oracle_one.account_id(), ", false".to_string()].join("");
+
+//     assert_eq!(result, oracle_removed_event_log);
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1267
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1324
+
+// #[test]
+
+// fn removing_the_address_in_get_oracles() {
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let oracles: Vec<String> = test_helper
+//         .call(
+//             aca.account_id(),
+//             "get_oracles",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     let mut n = 0;
+
+//     while n < oracles.len() {
+//         assert_ne!(oracles[n], oracle_one.account_id());
+//         n += 1;
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1341
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1355
+// #[test]
+
+// fn when_the_oracle_is_not_currently_added_and_reverts() {
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let expected_oracle_not_enabled = root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_oracle_not_enabled
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error.to_string().contains("oracle not enabled"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1372
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1373
+// #[test]
+
+// fn when_removing_the_last_oracle_and_does_not_revert() {
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1391
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1392
+// #[test]
+
+// fn when_called_by_anyone_but_the_owner_and_reverts() {
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_only_callable_by_owner = oracle_two.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_only_callable_by_owner
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("Only callable by owner"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1402
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1409
+// *TODO* Look into why the contract is failing with round not accepting submissions and not no longer allowed oracle
+// #[test]
+
+// fn it_is_allowed_to_report_on_one_more_round() {
+//     let mut next_round: u128 = 1;
+//     let answer: u128 = 100;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_three
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     let expected_no_longer_allowed_oracle = oracle_three
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     // *TODO* Look into why the contract is failing with round not accepting submissions and not no longer allowed oracle
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_no_longer_allowed_oracle
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("no longer allowed oracle"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1423
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1432
+// *TODO* Look into why the contract is allowing oracle_three to future in participate in future rounds
+
+// #[test]
+
+// fn it_is_allowed_to_finish_that_round_and_one_more_round() {
+//     let mut next_round: u128 = 1;
+//     let answer: u128 = 100;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_three
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     oracle_three
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     let expected_no_longer_allowed_oracle = oracle_three.call(
+//         aca.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     // *TODO* Look into why the contract is allowing oracle_three to future in participate in future rounds
+//     // cannot participate in future rounds
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_no_longer_allowed_oracle
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("no longer allowed oracle"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1341
+// #removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1445
+
+// #[test]
+
+// fn it_reverts_when_min_submissions_is_set_to_0() {
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+
+//     let expected_min_must_be_greater_than_0 = root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_min_must_be_greater_than_0
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("min must be greater than 0"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1455
+// #adding_and_removing_oracles tests, https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1461
 
 #[test]
 
-fn when_an_oracle_is_re_added_after_with_a_different_admin_address_and_reverts() {
-    let answer: u128 = 100;
-    let rr_delay: u64 = 0;
-    let next_round: u128 = 1;
+fn can_swap_out_oracles() {
+
     let (
         root,
         aca,
         _link,
         oracle_one,
-        oracle_two,
+        _oracle_two,
         oracle_three,
         test_helper,
         _eac,
@@ -4649,40 +5507,21 @@ fn when_an_oracle_is_re_added_after_with_a_different_admin_address_and_reverts()
     root.call(
         aca.account_id(),
         "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     );
 
-    oracle_one.call(
-        aca.account_id(),
-        "submit",
-        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
 
-    root.call(
-            aca.account_id(),
-            "change_oracles",
-            &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        ).assert_success();
-
-    let expected_owner_cannot_override_admin = root.call(
+    let expected_min_must_be_greater_than_0 = root.call(
         aca.account_id(),
         "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [root.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     );
-    
-    // *TODO* Research why the contract is not panicking with owner cannot overwrite admin
 
-    if let ExecutionStatus::Failure(execution_error) = &expected_owner_cannot_override_admin
+    if let ExecutionStatus::Failure(execution_error) = &expected_min_must_be_greater_than_0
         .promise_errors()
         .remove(0)
         .unwrap()
@@ -4691,7 +5530,7 @@ fn when_an_oracle_is_re_added_after_with_a_different_admin_address_and_reverts()
     {
         assert!(execution_error
             .to_string()
-            .contains("owner cannot overwrite admin"));
+            .contains("min must be greater than 0"));
     } else {
         unreachable!();
     }

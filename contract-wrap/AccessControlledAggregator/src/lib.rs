@@ -1350,6 +1350,8 @@ impl AccessControlledAggregator {
 
         self.oracles.insert(&_oracle, &oracle);
         self.oracles.insert(&tail, &oracle_tail);
+        // Oracle Permissions Updated
+        env::log(format!("{}, {}", &init_oracle.clone(), false).as_bytes());
     }
 
     fn validate_oracle_round(&mut self, _oracle: AccountId, _round_id: u64) -> Base64String {
@@ -1391,7 +1393,7 @@ impl AccessControlledAggregator {
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
             // Check logic here
-            return false
+            return false;
         }
         let round = round_option.unwrap();
         round.updated_at > 0
