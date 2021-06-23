@@ -696,7 +696,7 @@ impl AccessControlledAggregator {
         env::promise_create(
             self.link_token.clone(),
             b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": amount_u128.clone()})
+            json!({"new_owner_id": _recipient.clone(), "amount": _amount})
                 .to_string()
                 .as_bytes(),
             36500000000000000000000,
