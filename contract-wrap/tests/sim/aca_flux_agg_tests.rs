@@ -6524,25 +6524,1349 @@ use crate::utils::init_without_macros as init;
 // #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
 // *TODO* Try to implement a more type heavy assertion from the log instead of comparing strings
 
+// #[test]
+
+// fn emits_a_log_announcing_the_new_round_details() {
+//     let rr_delay: u64 = 0;
+//     let new_delay: u64 = 2;
+//     let new_min: u64 = 1;
+//     let new_max: u64 = 3;
+//     let new_payment_amount: u64 = 2;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+
+//     let receipt = root.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": new_payment_amount.to_string(), "_min_submissions": new_min.to_string(), "_max_submissions": new_max.to_string(), "_restart_delay": new_delay.to_string(), "_timeout": (timeout + 1).to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     // let expected_min_submission_count_log: u64 =
+//     //     receipt.promise_results().remove(1).unwrap().outcome().logs[1]
+//     //         .parse()
+//     //         .unwrap();
+//     // let expected_max_submission_count_log: u64 =
+//     //     receipt.promise_results().remove(1).unwrap().outcome().logs[2]
+//     //         .parse()
+//     //         .unwrap();
+//     // let expected_restart_delay_log: u64 =
+//     //     receipt.promise_results().remove(1).unwrap().outcome().logs[3]
+//     //         .parse()
+//     //         .unwrap();
+//     // let expected_timeout_log: u64 = receipt.promise_results().remove(1).unwrap().outcome().logs[4]
+//     //     .parse()
+//     //     .unwrap();
+
+//     assert_eq!(receipt.promise_results().remove(1).unwrap().outcome().logs[0], "2, 1, 3, 2, 1801");
+//     // assert_eq!(expected_min_submission_count_log, new_min);
+//     // assert_eq!(expected_max_submission_count_log, new_max);
+//     // assert_eq!(expected_restart_delay_log, new_min);
+//     // assert_eq!(expected_timeout_log, (timeout + 1));
+// }
+
+// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1680
+// #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
+// #[test]
+
+// fn when_it_is_set_to_higher_than_the_number_or_oracles() {
+//     let rr_delay: u64 = 0;
+//     let new_delay: u64 = 2;
+//     let new_min: u64 = 1;
+//     let new_max: u64 = 3;
+//     let new_payment_amount: u64 = 2;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+
+//     let expected_max_cannot_exceed_total = root.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min_submission_count.to_string(), "_max_submissions": 4.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_max_cannot_exceed_total
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("max cannot exceed total"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// // #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
+// #[test]
+
+// fn when_it_is_sets_the_min_higher_than_the_max() {
+//     let rr_delay: u64 = 0;
+//     let new_delay: u64 = 2;
+//     let new_min: u64 = 1;
+//     let new_max: u64 = 3;
+//     let new_payment_amount: u64 = 2;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+
+//     let expected_max_must_equal_exceed_min = root.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_max_must_equal_exceed_min
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("max must equal/exceed min"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
+// #[test]
+
+// fn when_delay_equal_or_greater_the_oracle_count() {
+//     let rr_delay: u64 = 0;
+//     let new_delay: u64 = 2;
+//     let new_min: u64 = 1;
+//     let new_max: u64 = 3;
+//     let new_payment_amount: u64 = 2;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+
+//     let expected_revert_delay_cannot_exceed_total = root.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": 3.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_revert_delay_cannot_exceed_total
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("revert delay cannot exceed total"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
+// *TODO* Look into why you cannot pass a decimal number into the update_future_rounds payment_amount
+// #[test]
+
+// fn when_the_payment_amount_does_not_cover_reserve_rounds_and_reverts() {
+//     let rr_delay: u64 = 0;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+//     // *TODO* Look into why you cannot pass a decimal number into the update_future_rounds payment_amount (17.67)
+
+//     let expected_insufficient_funds_for_payment = root.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": "18", "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_insufficient_funds_for_payment
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("insufficient funds for payment"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// // #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
+
+// #[test]
+
+// fn min_oracles_is_set_to_0_and_reverts() {
+//     let rr_delay: u64 = 0;
+//     let new_delay: u64 = 2;
+//     let new_min: u64 = 1;
+//     let new_max: u64 = 3;
+//     let new_payment_amount: u64 = 2;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+
+//     let expected_min_must_be_greater_than_0 = root.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_min_must_be_greater_than_0
+//     .promise_errors()
+//     .remove(0)
+//     .unwrap()
+//     .outcome()
+//     .status
+// {
+//     assert!(execution_error
+//         .to_string()
+//         .contains("min must be greater than 0"));
+// } else {
+//     unreachable!();
+// }
+// }
+
+// #update_future_rounds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1727
+// *TODO* Look into why the self.only_owner() function breaks the contract in update_future_rounds
+// #[test]
+
+// fn when_called_by_anyone_but_the_owner_and_reverts() {
+//     let rr_delay: u64 = 0;
+//     let new_delay: u64 = 2;
+//     let new_min: u64 = 1;
+//     let new_max: u64 = 3;
+//     let new_payment_amount: u64 = 2;
+//     let min_submission_count: u64 = 3;
+//     let max_submission_count: u64 = 3;
+//     let payment_amount: u64 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let expected_payment_amount: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_min_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let expected_max_submission_count: u64 = root
+//         .call(
+//             aca.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected_payment_amount, payment_amount);
+//     assert_eq!(expected_min_submission_count, min_submission_count);
+//     assert_eq!(expected_max_submission_count, max_submission_count);
+
+//     let expected_only_callable_by_owner = oracle_one.call(
+//         aca.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_only_callable_by_owner
+//     .promise_errors()
+//     .remove(0)
+//     .unwrap()
+//     .outcome()
+//     .status
+// {
+//     assert!(execution_error
+//         .to_string()
+//         .contains("Only callable by owner"));
+// } else {
+//     unreachable!();
+// }
+// }
+
+// #update_available_funds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1449
+
+// #[test]
+
+// fn checks_the_link_token_to_see_if_any_additional_funds_are_available() {
+
+//     let deposit: u64 = 100;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         _oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let original_balance: u64 = root
+//     .view(
+//         aca.account_id(),
+//         "available_funds",
+//         &json!({}).to_string().into_bytes(),
+//     )
+//     .unwrap_json();
+
+//     root.call(
+//         aca.account_id(),
+//         "update_available_funds",
+//         &json!({})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let original_balance_updated: u64 = root
+//     .view(
+//         aca.account_id(),
+//         "available_funds",
+//         &json!({}).to_string().into_bytes(),
+//     )
+//     .unwrap_json();
+
+//     assert_eq!(original_balance, original_balance_updated);
+
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": deposit.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+//     root.call(
+//         aca.account_id(),
+//         "update_available_funds",
+//         &json!({})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let new_balance: u64 = root
+//     .view(
+//         aca.account_id(),
+//         "available_funds",
+//         &json!({}).to_string().into_bytes(),
+//     )
+//     .unwrap_json();
+
+//     assert_eq!((original_balance + deposit), new_balance);
+
+// }
+
+// // #update_available_funds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1449
+// #[test]
+
+// fn removes_allocated_funds_from_the_available_balance() {
+//     let deposit: u64 = 100;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let original_balance: u64 = root
+//         .view(
+//             aca.account_id(),
+//             "available_funds",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": deposit.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "update_available_funds",
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let expected: u64 = (original_balance + deposit) - 3;
+//     let new_balance: u64 = root
+//         .view(
+//             aca.account_id(),
+//             "available_funds",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(expected, new_balance);
+// }
+
+// // #update_available_funds https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1449
+// // *TODO* Figure out how to assert a failure here.
+
+// #[test]
+
+// fn update_available_funds_and_emits_a_log() {
+//     let deposit: u64 = 100;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         link.account_id(),
+//         "transfer_from",
+//         &json!({
+//             "owner_id": root.account_id().to_string(),
+//             "new_owner_id": aca.account_id().to_string(),
+//             "amount": deposit.to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         36500000000000000000000, // deposit
+//     )
+//     .assert_success();
+
+//     let receipt = root.call(
+//         aca.account_id(),
+//         "update_available_funds",
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let reported_balance: u64 = receipt.promise_results().remove(5).unwrap().outcome().logs[1]
+//         .parse()
+//         .unwrap();
+
+//     let new_balance: u64 = root
+//         .view(
+//             aca.account_id(),
+//             "available_funds",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(new_balance, reported_balance);
+// }
+
+// // #update_available_funds, when the available funds have not changed https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1449
+// #[test]
+
+// fn does_not_emit_a_log() {
+//     let deposit: u64 = 100;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let receipt = root.call(
+//         aca.account_id(),
+//         "update_available_funds",
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     // *TODO* Figure out how to assert a failure here.
+
+//     let no_log_available: u64 = receipt.promise_results().remove(5).unwrap().outcome().logs[1]
+//         .parse()
+//         .unwrap();
+// }
+
+// // #withdraw_payment https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1497
+// // *TODO* Look into why unwrapping the JSON object from the get_balance is of type string.
+
+// #[test]
+
+// fn transfers_link_to_the_recipient() {
+//     let payment_amount: u64 = 3;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     let original_balance: String = root
+//         .call(
+//             link.account_id(),
+//             "get_balance",
+//             &json!({"owner_id": aca.account_id().to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     let original_oracle_one_balance: String = root
+//         .call(
+//             link.account_id(),
+//             "get_balance",
+//             &json!({"owner_id": oracle_one.account_id().to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!("0", original_oracle_one_balance);
+
+//     oracle_one
+//     .call(
+//         aca.account_id(),
+//         "withdraw_payment",
+//         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": payment_amount.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let updated_balance: String = root
+//         .call(
+//             link.account_id(),
+//             "get_balance",
+//             &json!({"owner_id": aca.account_id().to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!("97", updated_balance);
+
+//     let updated_oracle_one_balance: String = root
+//         .call(
+//             link.account_id(),
+//             "get_balance",
+//             &json!({"owner_id": oracle_one.account_id().to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!("3", updated_oracle_one_balance);
+// }
+
+// // #withdraw_payment https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1497
+// // *TODO* Look into why unwrapping the JSON object from the get_balance is of type string.
+
+// #[test]
+
+// fn decrements_the_allocated_funds_counter() {
+//     let payment_amount: u128 = 3;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     let original_allocation: u128 = root
+//         .call(
+//             aca.account_id(),
+//             "allocated_funds",
+//             &json!({})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     oracle_one
+//     .call(
+//         aca.account_id(),
+//         "withdraw_payment",
+//         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": payment_amount.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let updated_allocation: u128 = root
+//     .call(
+//         aca.account_id(),
+//         "allocated_funds",
+//         &json!({})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .unwrap_json();
+
+//     assert_eq!((original_allocation - payment_amount), updated_allocation);
+
+// }
+
+// // #withdraw_payment https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1497
+// // *TODO* Look into why unwrapping the JSON object from the get_balance is of type string.
+// #[test]
+
+// fn when_the_caller_withdraws_more_than_they_have_and_reverts() {
+//     let payment_amount: u128 = 3;
+//     let (
+//         root,
+//         aca,
+//         link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     let expected_revert_insufficient_withdrawable_funds = oracle_one
+//     .call(
+//         aca.account_id(),
+//         "withdraw_payment",
+//         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": (payment_amount + 1).to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_revert_insufficient_withdrawable_funds
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("revert insufficient withdrawable funds"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// #withdraw_payment https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1497
+// *TODO* Look into why unwrapping the JSON object from the get_balance is of type string.
 #[test]
 
-fn emits_a_log_announcing_the_new_round_details() {
-    let rr_delay: u64 = 0;
-    let new_delay: u64 = 2;
-    let new_min: u64 = 1;
-    let new_max: u64 = 3;
-    let new_payment_amount: u64 = 2;
-    let min_submission_count: u64 = 3;
-    let max_submission_count: u64 = 3;
-    let payment_amount: u64 = 3;
-    let timeout: u64 = 1800;
-
+fn when_the_caller_is_not_the_admin_and_reverts() {
+    let payment_amount: u128 = 3;
     let (
         root,
         aca,
-        _link,
+        link,
         oracle_one,
-        oracle_two,
+        _oracle_two,
         oracle_three,
         test_helper,
         _eac,
@@ -6565,72 +7889,45 @@ fn emits_a_log_announcing_the_new_round_details() {
     root.call(
         aca.account_id(),
         "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    );
+    ).assert_success();
 
-    let expected_payment_amount: u64 = root
+    oracle_one
         .call(
             aca.account_id(),
-            "get_payment_amount",
-            &json!({}).to_string().into_bytes(),
+            "submit",
+            &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
+                .to_string()
+                .into_bytes(),
             DEFAULT_GAS,
             0, // deposit
         )
-        .unwrap_json();
+        .assert_success();
 
-    let expected_min_submission_count: u64 = root
-        .call(
-            aca.account_id(),
-            "min_submission_count",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .unwrap_json();
-
-    let expected_max_submission_count: u64 = root
-        .call(
-            aca.account_id(),
-            "max_submission_count",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .unwrap_json();
-
-    assert_eq!(expected_payment_amount, payment_amount);
-    assert_eq!(expected_min_submission_count, min_submission_count);
-    assert_eq!(expected_max_submission_count, max_submission_count);
-
-    let receipt = root.call(
+    let expected_only_callable_by_admin = oracle_three
+    .call(
         aca.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": new_payment_amount.to_string(), "_min_submissions": new_min.to_string(), "_max_submissions": new_max.to_string(), "_restart_delay": new_delay.to_string(), "_timeout": (timeout + 1).to_string()}).to_string().into_bytes(),
+        "withdraw_payment",
+        &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_three.account_id().to_string(), "_amount": 1.to_string()})
+            .to_string()
+            .into_bytes(),
         DEFAULT_GAS,
         0, // deposit
     );
 
-    // let expected_min_submission_count_log: u64 =
-    //     receipt.promise_results().remove(1).unwrap().outcome().logs[1]
-    //         .parse()
-    //         .unwrap();
-    // let expected_max_submission_count_log: u64 =
-    //     receipt.promise_results().remove(1).unwrap().outcome().logs[2]
-    //         .parse()
-    //         .unwrap();
-    // let expected_restart_delay_log: u64 =
-    //     receipt.promise_results().remove(1).unwrap().outcome().logs[3]
-    //         .parse()
-    //         .unwrap();
-    // let expected_timeout_log: u64 = receipt.promise_results().remove(1).unwrap().outcome().logs[4]
-    //     .parse()
-    //     .unwrap();
-
-    assert_eq!(receipt.promise_results().remove(1).unwrap().outcome().logs[0], "2, 1, 3, 2, 1801");
-    // assert_eq!(expected_min_submission_count_log, new_min);
-    // assert_eq!(expected_max_submission_count_log, new_max);
-    // assert_eq!(expected_restart_delay_log, new_min);
-    // assert_eq!(expected_timeout_log, (timeout + 1));
+    if let ExecutionStatus::Failure(execution_error) = &expected_only_callable_by_admin
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error
+            .to_string()
+            .contains("only callable by admin"));
+    } else {
+        unreachable!();
+    }
 }

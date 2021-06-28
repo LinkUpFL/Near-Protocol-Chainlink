@@ -307,6 +307,9 @@ impl AccessControlledAggregator {
         _restart_delay: U64,
         _timeout: U64,
     ) {
+        // *TODO* Look into why this is causing issues.
+        // self.only_owner();
+
         let payment_amount_u128: u128 = _payment_amount.into();
         let min_submissions_u64: u64 = _min_submissions.into();
         let max_submissions_u64: u64 = _max_submissions.into();
@@ -324,10 +327,13 @@ impl AccessControlledAggregator {
         );
         assert!(
             oracle_num == 0 || oracle_num > restart_delay_u64.into(),
-            "delay cannot exceed total"
+            "revert delay cannot exceed total"
         );
         // off for tests
-        //assert!(self.recorded_funds.available >= self.required_reserve(payment_amount_u128), "insufficient funds for payment");
+        assert!(
+            self.recorded_funds.available >= self.required_reserve(payment_amount_u128),
+            "insufficient funds for payment"
+        );
         if self.oracle_count() > 0 {
             assert!(min_submissions_u64 > 0, "min must be greater than 0")
         }
@@ -421,6 +427,7 @@ impl AccessControlledAggregator {
         let now_available: u128 = link_balance - funds.allocated;
         if funds.available != now_available {
             self.recorded_funds.available = now_available;
+            env::log(format!("{}", now_available).as_bytes());
         }
     }
 
@@ -658,7 +665,7 @@ impl AccessControlledAggregator {
 
         let amount_u128: u128 = _amount.into();
         let available: u128 = oracle.withdrawable;
-        assert!(available >= amount_u128, "insufficient withdrawable funds");
+        assert!(available >= amount_u128, "revert insufficient withdrawable funds");
 
         oracle.withdrawable = available - amount_u128;
         self.oracles.insert(&_oracle, &oracle);
