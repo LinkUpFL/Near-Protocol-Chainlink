@@ -13507,17 +13507,14 @@ fn latest_answer_when_an_answer_has_already_been_received_and_returns_the_latest
             0, // deposit
         )
         .unwrap_json();
-    
     assert_eq!(answer, latest_answer);
 }
-
 
 // // #latest_answer https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1830
 
 #[test]
 
-fn latest_answer_and_returns_zero(
-) {
+fn latest_answer_and_returns_zero() {
     let previous_submission: u128 = 42;
     let min_answers: u64 = 3;
     let max_answers: u64 = 4;
@@ -13569,9 +13566,7 @@ fn latest_answer_and_returns_zero(
             0, // deposit
         )
         .unwrap_json();
-    
     assert_eq!(0, latest_answer);
 }
-
 
 // *TODO* set_validator & integrating with historic deviation checker.
