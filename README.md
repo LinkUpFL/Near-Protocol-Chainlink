@@ -7,3 +7,4 @@
 - NEAR's simulation testing SDK does not allow you to nest tests, hence the instances of repeated code
 - Brainstorm and implement a better way of handling is_none cases, such as 0 states
 - Uncomment test with *TODO* comments to debug
+- Update references to TypeScript tests as the library has been updated

@@ -665,7 +665,10 @@ impl AccessControlledAggregator {
 
         let amount_u128: u128 = _amount.into();
         let available: u128 = oracle.withdrawable;
-        assert!(available >= amount_u128, "revert insufficient withdrawable funds");
+        assert!(
+            available >= amount_u128,
+            "revert insufficient withdrawable funds"
+        );
 
         oracle.withdrawable = available - amount_u128;
         self.oracles.insert(&_oracle, &oracle);
@@ -738,10 +741,19 @@ impl AccessControlledAggregator {
         let mut oracle = oracle_option.unwrap();
         assert!(
             oracle.admin == env::predecessor_account_id(),
-            "only callable by admin"
+            "revert only callable by admin"
         );
         oracle.pending_admin = _new_admin;
         self.oracles.insert(&_oracle, &oracle);
+        env::log(
+            format!(
+                "{}, {}, {}",
+                _oracle,
+                env::predecessor_account_id(),
+                oracle.pending_admin
+            )
+            .as_bytes(),
+        );
     }
 
     /**
@@ -761,6 +773,7 @@ impl AccessControlledAggregator {
         oracle.pending_admin = "".to_string();
         oracle.admin = env::predecessor_account_id();
         self.oracles.insert(&_oracle, &oracle);
+        env::log(format!("{}, {}", _oracle, env::predecessor_account_id()).as_bytes());
     }
 
     /**
@@ -769,7 +782,7 @@ impl AccessControlledAggregator {
     pub fn request_new_round(&mut self) -> u64 {
         let requester_option = self.requesters.get(&env::predecessor_account_id());
         if requester_option.is_none() {
-            env::panic(b"Did not find this round. {request_new_round}");
+            env::panic(b"not authorized requester");
         }
         let requester = requester_option.unwrap();
         assert!(requester.authorized, "not authorized requester");
@@ -802,16 +815,23 @@ impl AccessControlledAggregator {
         _authorized: bool,
         _delay: U64,
     ) {
+        self.only_owner();
         let delay_u64: u64 = _delay.into();
 
         let requester_option = self.requesters.get(&_requester);
-        if requester_option.is_none() {
-            env::panic(b"Did not find this round. {set_requester_permissions}");
-        }
-        let mut requester = requester_option.unwrap();
 
-        if requester.authorized == _authorized {
-            return;
+        let mut requester: Requester;
+        if requester_option.is_none() {
+            requester = Requester {
+                authorized: _authorized,
+                delay: u64::from(_delay),
+                last_started_round: 0,
+            };
+        } else {
+            requester = requester_option.unwrap();
+            if requester.authorized == _authorized {
+                return;
+            }
         }
 
         if _authorized {
@@ -821,6 +841,8 @@ impl AccessControlledAggregator {
         } else {
             self.requesters.remove(&_requester);
         }
+
+        env::log(format!("{}, {}, {}", _requester, _authorized, u64::from(_delay)).as_bytes());
     }
 
     /**
@@ -850,24 +872,22 @@ impl AccessControlledAggregator {
         );
 
         let queried_round_id_u64: u64 = _queried_round_id.into();
-        if queried_round_id_u64 == 0 {
-            return self.oracle_round_state_suggest_round(_oracle);
-        } else {
+        if queried_round_id_u64 > 0 {
             let round_option = self.rounds.get(&queried_round_id_u64);
             if round_option.is_none() {
-                env::panic(b"Did not find this round. {oracle_round_state}");
+                env::panic(b"Did not find this round. FIRST {oracle_round_state}");
             }
             let round = round_option.unwrap();
 
-            let detail_option = self.details.get(&(queried_round_id_u64 as u128));
+            let detail_option = self.details.get(&u128::from(queried_round_id_u64));
             if detail_option.is_none() {
-                env::panic(b"Did not find this round. {oracle_round_state}");
+                env::panic(b"Did not find this round. SECOND {oracle_round_state}");
             }
             let detail = detail_option.unwrap();
 
             let oracle_option = self.oracles.get(&_oracle);
             if oracle_option.is_none() {
-                env::panic(b"Did not find this round. {oracle_round_state}");
+                env::panic(b"Did not find this round. THIRD {oracle_round_state}");
             }
             let oracle = oracle_option.unwrap();
             let round: Round = round;
@@ -885,6 +905,8 @@ impl AccessControlledAggregator {
                     self.payment_amount
                 },
             );
+        } else {
+            return self.oracle_round_state_suggest_round(_oracle);
         }
     }
 
@@ -922,8 +944,18 @@ impl AccessControlledAggregator {
             updated_at: 0_u64,
             answered_in_round: 0_u64,
         };
-        self.details.insert(&(_round_id as u128), &next_details);
+        self.details.insert(&u128::from(_round_id), &next_details);
         self.rounds.insert(&_round_id, &new_round);
+
+        env::log(
+            format!(
+                "{}, {}, {}",
+                _round_id,
+                env::predecessor_account_id(),
+                new_round.started_at
+            )
+            .as_bytes(),
+        );
     }
 
     fn oracle_initialize_new_round(&mut self, _round_id: u64) {
@@ -1030,19 +1062,28 @@ impl AccessControlledAggregator {
     ) -> (bool, u64, u128, u64, u64, u128, u64, u128) {
         let round_option = self.rounds.get(&1);
         let init_oracle = &_oracle;
+        let mut round: Round;
+
         if round_option.is_none() {
-            env::panic(b"Did not find this round. {oracle_round_state_suggest_round}");
+            round = Round {
+                answer: 0,
+                started_at: 0,
+                updated_at: 0,
+                answered_in_round: 0,
+            };
+        } else {
+            round = round_option.unwrap();
         }
-        let round = round_option.unwrap();
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {oracle_round_state_suggest_round}");
+            env::panic(b"Did not find this oracle account.");
         }
         let oracle = oracle_option.unwrap();
 
         let should_supersede: bool = oracle.last_reported_round == self.reporting_round_id
             || !self.accepting_submissions(self.reporting_round_id as u128);
+
         // Instead of nudging oracles to submit to the next round, the inclusion of
         // the should_supersede bool in the if condition pushes them towards
         // submitting in a currently open round.
@@ -1053,31 +1094,43 @@ impl AccessControlledAggregator {
         let _reporting_round_id: u64 = self.reporting_round_id;
 
         let detail_option = self.details.get(&(_reporting_round_id as u128));
-        if detail_option.is_none() {
-            env::panic(b"Did not find this round. {oracle_round_state_suggest_round}");
-        }
-        let detail = detail_option.unwrap();
+        let mut detail: RoundDetails;
 
+        if detail_option.is_none() {
+            detail = RoundDetails {
+                submissions: Vec::new(),
+                max_submissions: 0,
+                min_submissions: 0,
+                timeout: 0,
+                payment_amount: 0,
+            }
+        } else {
+            detail = detail_option.unwrap();
+        }
         if self.supersedable(self.reporting_round_id) && should_supersede {
             _round_id = self.reporting_round_id + 1;
 
             let round_from_id_option = self.rounds.get(&_round_id);
             if round_from_id_option.is_none() {
-                env::panic(b"Did not find this round. {oracle_round_state_suggest_round}");
+                // Do nothing, keep the round the same
+                
             }
-            let round_from_id = round_from_id_option.unwrap();
-            self.rounds.insert(&0, &round_from_id);
-
+            else {
+                round = round_from_id_option.unwrap();
+            }
             _payment_amount = self.payment_amount;
             _eligible_to_submit = self.delayed(_oracle.to_string(), _round_id);
         } else {
             _round_id = self.reporting_round_id;
+
             let round_from_id_option = self.rounds.get(&_reporting_round_id);
             if round_from_id_option.is_none() {
-                env::panic(b"Did not find this round. {oracle_round_state_suggest_round}");
+                // Do nothing, keep the round the same
+                
             }
-            let round_from_id = round_from_id_option.unwrap();
-            self.rounds.insert(&0, &round_from_id);
+            else {
+                round = round_from_id_option.unwrap();
+            }
 
             _payment_amount = detail.payment_amount;
             _eligible_to_submit = self.accepting_submissions(_round_id.into());
@@ -1366,12 +1419,10 @@ impl AccessControlledAggregator {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
             return "not enabled oracle".to_string();
-            // return "oracle_option_is_none".to_string();
         }
         let oracle = oracle_option.unwrap();
         let starting_round: u64 = oracle.starting_round;
         let rr_id: u64 = self.reporting_round_id;
-        // maybe add logs here?
         if starting_round == 0 {
             return "not enabled oracle".to_string();
         } else if starting_round > _round_id {
