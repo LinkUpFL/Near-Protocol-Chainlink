@@ -77,7 +77,7 @@ const V3_NO_DATA_ERROR: &str = "No data present";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct AccessControlledAggregator {
+pub struct FluxAggregator {
     pub owner: AccountId,
     pending_owner: AccountId,
     pub link_token: AccountId,
@@ -91,7 +91,6 @@ pub struct AccessControlledAggregator {
     pub description: Base64String,
     pub min_submission_value: u128,
     pub max_submission_value: u128,
-    pub check_enabled: bool,
     access_list: LookupMap<AccountId, bool>,
     reporting_round_id: u64,
     latest_round_id: u64,
@@ -103,14 +102,14 @@ pub struct AccessControlledAggregator {
     recorded_funds: Funds,
 }
 
-impl Default for AccessControlledAggregator {
+impl Default for FluxAggregator {
     fn default() -> Self {
-        panic!("AccessControlledAggregator should be initialized before usage");
+        panic!("FluxAggregator should be initialized before usage");
     }
 }
 
 #[near_bindgen]
-impl AccessControlledAggregator {
+impl FluxAggregator {
     /**
      * @notice set up the aggregator with initial configuration
      * @param _link The address of the LINK token
@@ -169,7 +168,6 @@ impl AccessControlledAggregator {
             description: _description,
             min_submission_value: min_submission_value_u128,
             max_submission_value: max_submission_value_u128,
-            check_enabled: true,
             access_list: LookupMap::new(b"access_list".to_vec()),
             reporting_round_id: 0_u64,
             latest_round_id: 0_u64,
@@ -183,7 +181,6 @@ impl AccessControlledAggregator {
                 allocated: 0_u128,
             },
         };
-        result.check_enabled = true;
         let updated_at_insert: u64 = env::block_timestamp().saturating_sub(timeout_u64);
         let new_round: Round = Round {
             answer: 0_u128,
@@ -469,7 +466,6 @@ impl AccessControlledAggregator {
      * instead which includes better verification information.
      */
     pub fn latest_answer(&self) -> u128 {
-        self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
             return 0;
@@ -490,10 +486,8 @@ impl AccessControlledAggregator {
      * instead which includes better verification information.
      */
     pub fn latest_timestamp(&self) -> u64 {
-        self.check_access();
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
-            // env::panic(b"Did not find this oracle account. {latest_timestamp}");
             return 0;
         }
         let round = round_option.unwrap();
@@ -509,7 +503,6 @@ impl AccessControlledAggregator {
      * instead which includes better verification information.
      */
     pub fn latest_round(&self) -> u64 {
-        self.check_access();
         self.latest_round_id
     }
 
@@ -523,7 +516,6 @@ impl AccessControlledAggregator {
      * instead which includes better verification information.
      */
     pub fn get_answer(&self, _round_id: U128) -> u128 {
-        self.check_access();
         let round_id_u128: u128 = _round_id.into();
 
         let round_option = self.rounds.get(&(round_id_u128 as u64));
@@ -548,7 +540,6 @@ impl AccessControlledAggregator {
      * instead which includes better verification information.
      */
     pub fn get_timestamp(&self, _round_id: U128) -> u64 {
-        self.check_access();
         let round_id_u128: u128 = _round_id.into();
 
         let round_option = self.rounds.get(&(round_id_u128 as u64));
@@ -582,7 +573,6 @@ impl AccessControlledAggregator {
      * maxSubmissions) answer and updatedAt may change between queries.
      */
     pub fn get_round_data(&self, _round_id: U64) -> (u64, u128, u64, u64, u64) {
-        self.check_access();
         let round_id_u64: u64 = _round_id.into();
 
         let round_option = self.rounds.get(&round_id_u64);
@@ -628,7 +618,6 @@ impl AccessControlledAggregator {
      * received maxSubmissions) answer and updatedAt may change between queries.
      */
     pub fn latest_round_data(&self) -> (u64, u128, u64, u64, u64) {
-        self.check_access();
         self.get_round_data(U64::from(self.latest_round_id))
     }
 
@@ -765,7 +754,7 @@ impl AccessControlledAggregator {
     pub fn accept_admin(&mut self, _oracle: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {accept_admin}");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(
@@ -792,7 +781,7 @@ impl AccessControlledAggregator {
         let current: u64 = self.reporting_round_id;
         let round_option = self.rounds.get(&current);
         if round_option.is_none() {
-            env::panic(b"Did not find this round.");
+            env::panic(b"Did not find this round. {request_new_round}");
         }
         let round = round_option.unwrap();
         assert!(
@@ -1016,7 +1005,7 @@ impl AccessControlledAggregator {
         }
         let requester_option = self.requesters.get(&env::predecessor_account_id());
         if requester_option.is_none() {
-            env::panic(b"Did not find this requester.");
+            env::panic(b"Did not find this round. {requester_initialize_new_round}");
         }
         let mut requester = requester_option.unwrap();
 
@@ -1047,7 +1036,7 @@ impl AccessControlledAggregator {
 
         let prev_option = self.rounds.get(&prev_id);
         if prev_option.is_none() {
-            env::panic(format!("{} Did not find this previous round.", prev_id.to_string()).as_bytes());
+            env::panic(format!("{} Did not find this prev round.", prev_id.to_string()).as_bytes());
             // return;
         }
         let prev = prev_option.unwrap();
@@ -1189,7 +1178,7 @@ impl AccessControlledAggregator {
     fn update_round_answer(&mut self, _round_id: u64) -> (bool, u128) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find details for this Round ID.");
+            env::panic(b"Did not find this oracle account. {update_round_answer}");
         }
         let detail = detail_option.unwrap();
         let submissions_length = detail.submissions.len() as u64;
@@ -1200,7 +1189,7 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this round.");
+            env::panic(b"Did not find this round. {update_round_answer}");
         }
         let mut round = round_option.unwrap();
 
@@ -1226,7 +1215,7 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this round.");
+            env::panic(b"Did not find this round. {validate_answer}");
         }
         let round = round_option.unwrap();
 
@@ -1239,19 +1228,18 @@ impl AccessControlledAggregator {
     fn pay_oracle(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find details for this Round ID.");
+            env::panic(b"Did not find this oracle account. {pay_oracle}");
         }
         let detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {pay_oracle}");
         }
         let mut oracle = oracle_option.unwrap();
 
         let payment: u128 = detail.payment_amount;
         let mut funds: Funds = self.recorded_funds.clone();
-
         env::log(format!("{}", funds.available.saturating_sub(payment)).as_bytes());
         env::log(format!("{}", funds.allocated.saturating_add(payment)).as_bytes());
 
@@ -1271,13 +1259,13 @@ impl AccessControlledAggregator {
 
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find details for this Round ID.");
+            env::panic(b"Did not find this oracle account. {record_submission}");
         }
         let mut detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {record_submission}");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -1293,7 +1281,7 @@ impl AccessControlledAggregator {
     fn delete_round_details(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find details for this Round ID.");
+            env::panic(b"Did not find this rounds details.");
         }
         let detail = detail_option.unwrap();
 
@@ -1399,7 +1387,7 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {remove_oracle}");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -1409,7 +1397,7 @@ impl AccessControlledAggregator {
 
         let oracle_tail_option = self.oracles.get(&tail);
         if oracle_tail_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {remove_oracle}");
         }
         let mut oracle_tail = oracle_tail_option.unwrap();
 
@@ -1489,7 +1477,7 @@ impl AccessControlledAggregator {
     fn delayed(&self, _oracle: AccountId, _round_id: u64) -> bool {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account.");
+            env::panic(b"Did not find this oracle account. {delayed}");
         }
         let oracle = oracle_option.unwrap();
         let last_started: u64 = oracle.last_started_round;
@@ -1549,69 +1537,5 @@ impl AccessControlledAggregator {
         env::log(format!("{}, {}", self.owner, init_to).as_bytes());
     }
 
-    pub fn get_check_enabled(&self) -> bool {
-        self.check_enabled
-    }
-    
-    pub fn has_access(&self, _user: AccountId) -> bool {
-        if !self.check_enabled {
-            !self.check_enabled
-        } else {
-            let user_option = self.access_list.get(&_user);
-            if user_option.is_none() {
-                return false;
-            }
-            let user = user_option.unwrap();
-            user
-        }
-    }
 
-    pub fn add_access(&mut self, _user: AccountId) {
-        self.only_owner();
-
-        let user_option = self.access_list.get(&_user);
-        if user_option.is_none() {
-            self.access_list.insert(&_user, &true);
-
-            env::log(format!("{}", &_user).as_bytes());
-        }
-    }
-
-    pub fn remove_access(&mut self, _user: AccountId) {
-        self.only_owner();
-
-        let user_option = self.access_list.get(&_user);
-        if user_option.is_none() {
-            env::panic(b"Did not find the address in the access list.");
-        } else {
-            self.access_list.insert(&_user, &false);
-            env::log(format!("{}", &_user).as_bytes());
-        }
-    }
-
-    pub fn enable_access_check(&mut self) {
-        self.only_owner();
-
-        if !self.check_enabled {
-            self.check_enabled = true;
-
-            env::log(format!("CheckAccessEnabled").as_bytes());
-        }
-    }
-
-    pub fn disable_access_check(&mut self) {
-        self.only_owner();
-
-        if self.check_enabled {
-            self.check_enabled = false;
-            env::log(format!("CheckAccessDisabled").as_bytes());
-
-        }
-    }
-
-    fn check_access(&self) {
-        assert!(self.has_access(env::predecessor_account_id()), "No access")
-    }
-
-    
 }

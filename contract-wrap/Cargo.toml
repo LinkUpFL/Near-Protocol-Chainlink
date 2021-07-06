@@ -12,6 +12,7 @@ LinkToken = { path = "./LinkToken" }
 EACAggregatorProxy = { path = "./EACAggregatorProxy" }
 AggregatorVaildatorMock = { path = "./AggregatorVaildatorMock" }
 Flags = { path = "./Flags" }
+FluxAggregator = { path = "./FluxAggregator" }
 
 [profile.release]
 codegen-units = 1
@@ -28,5 +29,6 @@ members = [
   "LinkToken",
   "EACAggregatorProxy",
   "AggregatorVaildatorMock",
-  "Flags"
+  "Flags",
+  "FluxAggregator"
 ]

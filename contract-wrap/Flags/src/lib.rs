@@ -107,15 +107,55 @@ impl Flags {
         }
     }
 
-    // PRIVATE
-
-    pub fn has_access(&self, user: AccountId) -> bool {
-        let user_has_access = self.access_list.get(&user);
-        if user_has_access.is_none() {
-            env::panic(b"The subject is invalid.");
+    pub fn has_access(&self, _user: AccountId) -> bool {
+        if !self.check_enabled {
+            !self.check_enabled
+        } else {
+            let user_option = self.access_list.get(&_user);
+            if user_option.is_none() {
+                return false;
+            }
+            let user = user_option.unwrap();
+            user
         }
-        user_has_access.unwrap() || !self.check_enabled
     }
+
+    pub fn add_access(&mut self, _user: AccountId) {
+        self.only_owner();
+
+        let user_option = self.access_list.get(&_user);
+        if user_option.is_none() {
+            self.access_list.insert(&_user, &true);
+        }
+    }
+
+    pub fn remove_access(&mut self, _user: AccountId) {
+        self.only_owner();
+
+        let user_option = self.access_list.get(&_user);
+        if user_option.is_none() {
+            env::panic(b"Did not find the oracle account to remove.");
+        }
+        self.access_list.insert(&_user, &false);
+    }
+
+    pub fn enable_access_check(&mut self) {
+        self.only_owner();
+
+        if !self.check_enabled {
+            self.check_enabled = true;
+        }
+    }
+
+    pub fn disable_access_check(&mut self) {
+        self.only_owner();
+
+        if self.check_enabled {
+            self.check_enabled = false;
+        }
+    }
+
+    // PRIVATE
 
     fn allowed_to_raise_flags(&self) -> bool {
         env::predecessor_account_id() == self.owner
@@ -152,7 +192,11 @@ impl Flags {
     }
 
     pub fn accept_ownership(&mut self) {
-        assert_eq!(env::predecessor_account_id(), self.pending_owner, "Must be proposed owner");
+        assert_eq!(
+            env::predecessor_account_id(),
+            self.pending_owner,
+            "Must be proposed owner"
+        );
         let old_owner: AccountId = self.owner.clone();
         self.owner = env::predecessor_account_id();
         self.pending_owner = "".to_string();

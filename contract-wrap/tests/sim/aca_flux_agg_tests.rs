@@ -13660,7 +13660,7 @@ fn set_validator_and_when_called_by_a_non_owner_and_reverts() {
         oracle_one,
         _oracle_two,
         _oracle_three,
-        test_helper,
+        _test_helper,
         _eac,
         _eac_without_access_controller,
         _oracle_four,
