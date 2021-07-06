@@ -1,617 +1,169 @@
-/**
-* LinkToken Token implementation with JSON serialization.
-* NOTES:
-*  - The maximum balance value is limited by U128 (2**128 - 1).
-*  - JSON calls should pass U128 as a base-10 string. E.g. "100".
-*  - The contract optimizes the inner trie structure by hashing account IDs. It will prevent some
-*    abuse of deep tries. Shouldn't be an issue, once NEAR clients implement full hashing of keys.
-*  - The contract tracks the change in storage before and after the call. If the storage increases,
-*    the contract requires the caller of the contract to attach enough deposit to the function call
-*    to cover the storage cost.
-*    This is done to prevent a denial of service attack on the contract by taking all available storage.
-*    If the storage decreases, the contract will issue a refund for the cost of the released storage.
-*    The unused tokens from the attached deposit are also refunded, so it's safe to
-*    attach more deposit than required.
-*  - To prevent the deployed contract from being modified or deleted, it should not have any access
-*    keys on its account.
+/*!
+Fungible Token implementation with JSON serialization.
+NOTES:
+  - The maximum balance value is limited by U128 (2**128 - 1).
+  - JSON calls should pass U128 as a base-10 string. E.g. "100".
+  - The contract optimizes the inner trie structure by hashing account IDs. It will prevent some
+    abuse of deep tries. Shouldn't be an issue, once NEAR clients implement full hashing of keys.
+  - The contract tracks the change in storage before and after the call. If the storage increases,
+    the contract requires the caller of the contract to attach enough deposit to the function call
+    to cover the storage cost.
+    This is done to prevent a denial of service attack on the contract by taking all available storage.
+    If the storage decreases, the contract will issue a refund for the cost of the released storage.
+    The unused tokens from the attached deposit are also refunded, so it's safe to
+    attach more deposit than required.
+  - To prevent the deployed contract from being modified or deleted, it should not have any access
+    keys on its account.
 */
+use near_contract_standards::fungible_token::metadata::{
+    FungibleTokenMetadata, FungibleTokenMetadataProvider, FT_METADATA_SPEC,
+};
+use near_contract_standards::fungible_token::FungibleToken;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::UnorderedMap;
-use near_sdk::json_types::U128;
-use near_sdk::wee_alloc::WeeAlloc;
-use near_sdk::{env, near_bindgen, AccountId, Balance, Promise, StorageUsage};
-use std::str;
+use near_sdk::collections::LazyOption;
+use near_sdk::json_types::{ValidAccountId, U128};
+use near_sdk::{env, log, near_bindgen, AccountId, Balance, PanicOnDefault, PromiseOrValue};
 
-#[global_allocator]
-static ALLOC: WeeAlloc = WeeAlloc::INIT;
-
-pub type Base64String = String;
-
-/// Price per 1 byte of storage from mainnet genesis config.
-const STORAGE_PRICE_PER_BYTE: Balance = 100000000000000000000;
-
-/// Contains balance and allowances information for one account.
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct Account {
-    /// Current account balance.
-    pub balance: Balance,
-    /// Escrow Account ID hash to the allowance amount.
-    /// Allowance is the amount of tokens the Escrow Account ID can spent on behalf of the account
-    /// owner.
-    pub allowances: UnorderedMap<Vec<u8>, Balance>,
-}
-
-impl Account {
-    /// Initializes a new Account with 0 balance and no allowances for a given `account_hash`.
-    pub fn new(account_hash: Vec<u8>) -> Self {
-        Self {
-            balance: 0,
-            allowances: UnorderedMap::new(account_hash),
-        }
-    }
-
-    /// Sets allowance for account `escrow_account_id` to `allowance`.
-    pub fn set_allowance(&mut self, escrow_account_id: &AccountId, allowance: Balance) {
-        let escrow_hash = env::sha256(escrow_account_id.as_bytes());
-        if allowance > 0 {
-            self.allowances.insert(&escrow_hash, &allowance);
-        } else {
-            self.allowances.remove(&escrow_hash);
-        }
-    }
-
-    /// Returns the allowance of account `escrow_account_id`.
-    pub fn get_allowance(&self, escrow_account_id: &AccountId) -> Balance {
-        let escrow_hash = env::sha256(escrow_account_id.as_bytes());
-        self.allowances.get(&escrow_hash).unwrap_or(0)
-    }
-}
+near_sdk::setup_alloc!();
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct LinkToken {
-    /// sha256(AccountID) -> Account details.
-    pub accounts: UnorderedMap<Vec<u8>, Account>,
-
-    /// Total supply of the all token.
-    pub total_supply: Balance,
+#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+pub struct Contract {
+    token: FungibleToken,
+    metadata: LazyOption<FungibleTokenMetadata>,
 }
 
-impl Default for LinkToken {
-    fn default() -> Self {
-        panic!("Fun token should be initialized before usage")
-    }
-}
+const DATA_IMAGE_SVG_NEAR_ICON: &str = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 288 288'%3E%3Cg id='l' data-name='l'%3E%3Cpath d='M187.58,79.81l-30.1,44.69a3.2,3.2,0,0,0,4.75,4.2L191.86,103a1.2,1.2,0,0,1,2,.91v80.46a1.2,1.2,0,0,1-2.12.77L102.18,77.93A15.35,15.35,0,0,0,90.47,72.5H87.34A15.34,15.34,0,0,0,72,87.84V201.16A15.34,15.34,0,0,0,87.34,216.5h0a15.35,15.35,0,0,0,13.08-7.31l30.1-44.69a3.2,3.2,0,0,0-4.75-4.2L96.14,186a1.2,1.2,0,0,1-2-.91V104.61a1.2,1.2,0,0,1,2.12-.77l89.55,107.23a15.35,15.35,0,0,0,11.71,5.43h3.13A15.34,15.34,0,0,0,216,201.16V87.84A15.34,15.34,0,0,0,200.66,72.5h0A15.35,15.35,0,0,0,187.58,79.81Z'/%3E%3C/g%3E%3C/svg%3E";
 
 #[near_bindgen]
-impl LinkToken {
-    /// Initializes the contract with the given total supply owned by the given `owner_id`.
+impl Contract {
+    /// Initializes the contract with the given total supply owned by the given `owner_id` with
+    /// default metadata (for example purposes only).
     #[init]
-    pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
-        let total_supply = total_supply.into();
-        assert!(!env::state_exists(), "Already initialized");
-        let mut ft = Self {
-            accounts: UnorderedMap::new(b"a".to_vec()),
+    pub fn new_default_meta(owner_id: ValidAccountId, total_supply: U128) -> Self {
+        Self::new(
+            owner_id,
             total_supply,
+            FungibleTokenMetadata {
+                spec: FT_METADATA_SPEC.to_string(),
+                name: "link".to_string(),
+                symbol: "LINK".to_string(),
+                icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
+                reference: None,
+                reference_hash: None,
+                decimals: 24,
+            },
+        )
+    }
+
+    /// Initializes the contract with the given total supply owned by the given `owner_id` with
+    /// the given fungible token metadata.
+    #[init]
+    pub fn new(
+        owner_id: ValidAccountId,
+        total_supply: U128,
+        metadata: FungibleTokenMetadata,
+    ) -> Self {
+        assert!(!env::state_exists(), "Already initialized");
+        metadata.assert_valid();
+        let mut this = Self {
+            token: FungibleToken::new(b"a".to_vec()),
+            metadata: LazyOption::new(b"m".to_vec(), Some(&metadata)),
         };
-        let mut account = ft.get_account(&owner_id);
-        account.balance = total_supply;
-        ft.set_account(&owner_id, &account);
-        ft
+        this.token.internal_register_account(owner_id.as_ref());
+        this.token.internal_deposit(owner_id.as_ref(), total_supply.into());
+        this
     }
 
-    /// Increments the `allowance` for `escrow_account_id` by `amount` on the account of the caller of this contract
-    /// (`predecessor_id`) who is the balance owner.
-    /// Requirements:
-    /// * Caller of the method has to attach deposit enough to cover storage difference at the
-    ///   fixed storage price defined in the contract.
-    #[payable]
-    pub fn inc_allowance(&mut self, escrow_account_id: AccountId, amount: U128) {
-        let initial_storage = env::storage_usage();
-        assert!(
-            env::is_valid_account_id(escrow_account_id.as_bytes()),
-            "Escrow account ID is invalid"
-        );
-        let owner_id = env::predecessor_account_id();
-        assert_ne!(
-            escrow_account_id, owner_id,
-            "Can not increment allowance for yourself"
-        );
-        let mut account = self.get_account(&owner_id);
-        let current_allowance = account.get_allowance(&escrow_account_id);
-        account.set_allowance(
-            &escrow_account_id,
-            current_allowance.saturating_add(amount.0),
-        );
-        self.set_account(&owner_id, &account);
-        self.refund_storage(initial_storage);
+    fn on_account_closed(&mut self, account_id: AccountId, balance: Balance) {
+        log!("Closed @{} with {}", account_id, balance);
     }
 
-    /// Decrements the `allowance` for `escrow_account_id` by `amount` on the account of the caller of this contract
-    /// (`predecessor_id`) who is the balance owner.
-    /// Requirements:
-    /// * Caller of the method has to attach deposit enough to cover storage difference at the
-    ///   fixed storage price defined in the contract.
-    #[payable]
-    pub fn dec_allowance(&mut self, escrow_account_id: AccountId, amount: U128) {
-        let initial_storage = env::storage_usage();
-        assert!(
-            env::is_valid_account_id(escrow_account_id.as_bytes()),
-            "Escrow account ID is invalid"
-        );
-        let owner_id = env::predecessor_account_id();
-        assert_ne!(
-            escrow_account_id, owner_id,
-            "Can not decrement allowance for yourself"
-        );
-        let mut account = self.get_account(&owner_id);
-        let current_allowance = account.get_allowance(&escrow_account_id);
-        account.set_allowance(
-            &escrow_account_id,
-            current_allowance.saturating_sub(amount.0),
-        );
-        self.set_account(&owner_id, &account);
-        self.refund_storage(initial_storage);
+    fn on_tokens_burned(&mut self, account_id: AccountId, amount: Balance) {
+        log!("Account @{} burned {}", account_id, amount);
     }
 
-    /// Transfers the `amount` of tokens from `owner_id` to the `new_owner_id`.
-    /// Requirements:
-    /// * `amount` should be a positive integer.
-    /// * `owner_id` should have balance on the account greater or equal than the transfer `amount`.
-    /// * If this function is called by an escrow account (`owner_id != predecessor_account_id`),
-    ///   then the allowance of the caller of the function (`predecessor_account_id`) on
-    ///   the account of `owner_id` should be greater or equal than the transfer `amount`.
-    /// * Caller of the method has to attach deposit enough to cover storage difference at the
-    ///   fixed storage price defined in the contract.
-    #[payable]
-    pub fn transfer_from(&mut self, owner_id: AccountId, new_owner_id: AccountId, amount: U128) {
-        let initial_storage = env::storage_usage();
-        assert!(
-            env::is_valid_account_id(new_owner_id.as_bytes()),
-            "New owner's account ID is invalid"
-        );
-        let amount = amount.into();
-        if amount == 0 {
-            env::panic(b"Can't transfer 0 tokens");
-        }
-        assert_ne!(
-            owner_id, new_owner_id,
-            "The new owner should be different from the current owner"
-        );
-        // Retrieving the account from the state.
-        let mut account = self.get_account(&owner_id);
-
-        // Checking and updating unlocked balance
-        if account.balance < amount {
-            env::panic(b"Not enough balance");
-        }
-        account.balance -= amount;
-
-        // If transferring by escrow, need to check and update allowance.
-        let escrow_account_id = env::predecessor_account_id();
-        if escrow_account_id != owner_id {
-            let allowance = account.get_allowance(&escrow_account_id);
-            if allowance < amount {
-                env::panic(b"Not enough allowance");
-            }
-            account.set_allowance(&escrow_account_id, allowance - amount);
-        }
-
-        // Saving the account back to the state.
-        self.set_account(&owner_id, &account);
-
-        // Deposit amount to the new owner and save the new account to the state.
-        let mut new_account = self.get_account(&new_owner_id);
-        new_account.balance += amount;
-        self.set_account(&new_owner_id, &new_account);
-        self.refund_storage(initial_storage);
-    }
-
-    /// Transfer `amount` of tokens from the caller of the contract (`predecessor_id`) to
-    /// `new_owner_id`.
-    /// Act the same was as `transfer_from` with `owner_id` equal to the caller of the contract
-    /// (`predecessor_id`).
-    /// Requirements:
-    /// * Caller of the method has to attach deposit enough to cover storage difference at the
-    ///   fixed storage price defined in the contract.
-    #[payable]
-    pub fn transfer(&mut self, new_owner_id: AccountId, amount: U128) {
-        // NOTE: New owner's Account ID checked in transfer_from.
-        // Storage fees are also refunded in transfer_from.
-        self.transfer_from(env::predecessor_account_id(), new_owner_id, amount);
-    }
-
-    /// Returns total supply of tokens.
-    pub fn get_total_supply(&self) -> U128 {
-        self.total_supply.into()
-    }
-
-    /// Returns balance of the `owner_id` account.
-    pub fn get_balance(&self, owner_id: AccountId) -> U128 {
-        self.get_account(&owner_id).balance.into()
-    }
-
-    /// Returns current allowance of `escrow_account_id` for the account of `owner_id`.
-    ///
-    /// NOTE: Other contracts should not rely on this information, because by the moment a contract
-    /// receives this information, the allowance may already be changed by the owner.
-    /// So this method should only be used on the front-end to see the current allowance.
-    pub fn get_allowance(&self, owner_id: AccountId, escrow_account_id: AccountId) -> U128 {
-        assert!(
-            env::is_valid_account_id(escrow_account_id.as_bytes()),
-            "Escrow account ID is invalid"
-        );
-        self.get_account(&owner_id)
-            .get_allowance(&escrow_account_id)
-            .into()
-    }
-
-    /// Helper method to get the account details for `owner_id`.
-    fn get_account(&self, owner_id: &AccountId) -> Account {
-        assert!(
-            env::is_valid_account_id(owner_id.as_bytes()),
-            "Owner's account ID is invalid"
-        );
-        let account_hash = env::sha256(owner_id.as_bytes());
-        self.accounts
-            .get(&account_hash)
-            .unwrap_or_else(|| Account::new(account_hash))
-    }
-
-    /// Helper method to set the account details for `owner_id` to the state.
-    fn set_account(&mut self, owner_id: &AccountId, account: &Account) {
-        let account_hash = env::sha256(owner_id.as_bytes());
-        if account.balance > 0 || !account.allowances.is_empty() {
-            self.accounts.insert(&account_hash, &account);
-        } else {
-            self.accounts.remove(&account_hash);
-        }
-    }
-
-    fn refund_storage(&self, initial_storage: StorageUsage) {
-        let current_storage = env::storage_usage();
-        let attached_deposit = env::attached_deposit();
-        let refund_amount = if current_storage > initial_storage {
-            let required_deposit =
-                Balance::from(current_storage - initial_storage) * STORAGE_PRICE_PER_BYTE;
-            assert!(
-                required_deposit <= attached_deposit,
-                "The required attached deposit is {}, but the given attached deposit is is {}",
-                required_deposit,
-                attached_deposit,
-            );
-            attached_deposit - required_deposit
-        } else {
-            attached_deposit
-                + Balance::from(initial_storage - current_storage) * STORAGE_PRICE_PER_BYTE
-        };
-        if refund_amount > 0 {
-            env::log(format!("Refunding {} tokens for storage", refund_amount).as_bytes());
-            Promise::new(env::predecessor_account_id()).transfer(refund_amount);
-        }
-    }
-
-    // 677
-
-    /*pub fn transferAndCall(&self, _to: AccountId, _value: U128, _data: Base64String) -> bool {
-        let value_u128: u128 = _value.into();
-        self.transfer(&_to, &value_u128);
-        // Whether the _to AccountId is a contract cannot be established with Near unless using an
-        // oracle to query all shards to find if an there exists an AccountId that matches
-        // _to.
-        self.contractFallback(&_to, &value_u128, &_data);
-        return true;
-    }
-
-    fn contractFallback(&self, _to: AccountId, _value: U128, _data: Base64String) {
-        let receiver: AccountId = _to;
-        // onTokenTransfer
-    }*/
+    // fn transfer_and_call(&mut self, _to: ValidAccountId, value: U128, data: String) {
+    //     self.token.ft_transfer(_to, value, None);
+    //     // log!("{},{},{}", _to, u128::from(value), data);
+    // }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-#[cfg(test)]
+near_contract_standards::impl_fungible_token_core!(Contract, token, on_tokens_burned);
+near_contract_standards::impl_fungible_token_storage!(Contract, token, on_account_closed);
+
+#[near_bindgen]
+impl FungibleTokenMetadataProvider for Contract {
+    fn ft_metadata(&self) -> FungibleTokenMetadata {
+        self.metadata.get().unwrap()
+    }
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
+    use near_sdk::test_utils::{accounts, VMContextBuilder};
     use near_sdk::MockedBlockchain;
-    use near_sdk::{testing_env, VMContext};
+    use near_sdk::{testing_env, Balance};
 
     use super::*;
 
-    fn alice() -> AccountId {
-        "alice.near".to_string()
-    }
-    fn bob() -> AccountId {
-        "bob.near".to_string()
-    }
-    fn carol() -> AccountId {
-        "carol.near".to_string()
-    }
+    const TOTAL_SUPPLY: Balance = 1_000_000_000_000_000;
 
-    fn get_context(predecessor_account_id: AccountId) -> VMContext {
-        VMContext {
-            current_account_id: alice(),
-            signer_account_id: bob(),
-            signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id,
-            input: vec![],
-            block_index: 0,
-            block_timestamp: 0,
-            account_balance: 1_000_000_000_000_000_000_000_000_000u128,
-            account_locked_balance: 0,
-            storage_usage: 10u64.pow(6),
-            attached_deposit: 0,
-            prepaid_gas: 10u64.pow(18),
-            random_seed: vec![0, 1, 2],
-            is_view: false,
-            output_data_receivers: vec![],
-            epoch_height: 0,
-        }
+    fn get_context(predecessor_account_id: ValidAccountId) -> VMContextBuilder {
+        let mut builder = VMContextBuilder::new();
+        builder
+            .current_account_id(accounts(0))
+            .signer_account_id(predecessor_account_id.clone())
+            .predecessor_account_id(predecessor_account_id);
+        builder
     }
 
     #[test]
     fn test_new() {
-        let context = get_context(carol());
-        testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let contract = LinkToken::new(bob(), total_supply.into());
-        assert_eq!(contract.get_total_supply().0, total_supply);
-        assert_eq!(contract.get_balance(bob()).0, total_supply);
+        let mut context = get_context(accounts(1));
+        testing_env!(context.build());
+        let contract = Contract::new_default_meta(accounts(1).into(), TOTAL_SUPPLY.into());
+        testing_env!(context.is_view(true).build());
+        assert_eq!(contract.ft_total_supply().0, TOTAL_SUPPLY);
+        assert_eq!(contract.ft_balance_of(accounts(1)).0, TOTAL_SUPPLY);
     }
 
     #[test]
-    #[should_panic]
-    fn test_new_twice_fails() {
-        let context = get_context(carol());
-        testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        {
-            let _contract = LinkToken::new(bob(), total_supply.into());
-        }
-        LinkToken::new(bob(), total_supply.into());
+    #[should_panic(expected = "The contract is not initialized")]
+    fn test_default() {
+        let context = get_context(accounts(1));
+        testing_env!(context.build());
+        let _contract = Contract::default();
     }
 
     #[test]
     fn test_transfer() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.storage_usage = env::storage_usage();
+        let mut context = get_context(accounts(2));
+        testing_env!(context.build());
+        let mut contract = Contract::new_default_meta(accounts(2).into(), TOTAL_SUPPLY.into());
+        testing_env!(context
+            .storage_usage(env::storage_usage())
+            .attached_deposit(contract.storage_balance_bounds().min.into())
+            .predecessor_account_id(accounts(1))
+            .build());
+        // Paying for account registration, aka storage deposit
+        contract.storage_deposit(None, None);
 
-        context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
-        testing_env!(context.clone());
-        let transfer_amount = total_supply / 3;
-        contract.transfer(bob(), transfer_amount.into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
+        testing_env!(context
+            .storage_usage(env::storage_usage())
+            .attached_deposit(1)
+            .predecessor_account_id(accounts(2))
+            .build());
+        let transfer_amount = TOTAL_SUPPLY / 3;
+        contract.ft_transfer(accounts(1), transfer_amount.into(), None);
 
-        context.is_view = true;
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        assert_eq!(
-            contract.get_balance(carol()).0,
-            (total_supply - transfer_amount)
-        );
-        assert_eq!(contract.get_balance(bob()).0, transfer_amount);
-    }
-
-    #[test]
-    #[should_panic(expected = "The new owner should be different from the current owner")]
-    fn test_transfer_fail_self() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.storage_usage = env::storage_usage();
-
-        context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
-        testing_env!(context.clone());
-        let transfer_amount = total_supply / 3;
-        contract.transfer(carol(), transfer_amount.into());
-    }
-
-    #[test]
-    #[should_panic(expected = "Can not increment allowance for yourself")]
-    fn test_self_inc_allowance_fail() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.inc_allowance(carol(), (total_supply / 2).into());
-    }
-
-    #[test]
-    #[should_panic(expected = "Can not decrement allowance for yourself")]
-    fn test_self_dec_allowance_fail() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.dec_allowance(carol(), (total_supply / 2).into());
-    }
-
-    #[test]
-    fn test_saturating_dec_allowance() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.dec_allowance(bob(), (total_supply / 2).into());
-        assert_eq!(contract.get_allowance(carol(), bob()), 0.into())
-    }
-
-    #[test]
-    fn test_saturating_inc_allowance() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = std::u128::MAX;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.inc_allowance(bob(), total_supply.into());
-        contract.inc_allowance(bob(), total_supply.into());
-        assert_eq!(
-            contract.get_allowance(carol(), bob()),
-            std::u128::MAX.into()
-        )
-    }
-
-    #[test]
-    #[should_panic(
-        expected = "The required attached deposit is 33100000000000000000000, but the given attached deposit is is 0"
-    )]
-    fn test_self_allowance_fail_no_deposit() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        contract.inc_allowance(bob(), (total_supply / 2).into());
-    }
-
-    #[test]
-    fn test_carol_escrows_to_bob_transfers_to_alice() {
-        // Acting as carol
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.storage_usage = env::storage_usage();
-
-        context.is_view = true;
-        testing_env!(context.clone());
-        assert_eq!(contract.get_total_supply().0, total_supply);
-
-        let allowance = total_supply / 3;
-        let transfer_amount = allowance / 3;
-        context.is_view = false;
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.inc_allowance(bob(), allowance.into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
-
-        context.is_view = true;
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        assert_eq!(contract.get_allowance(carol(), bob()).0, allowance);
-
-        // Acting as bob now
-        context.is_view = false;
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        context.predecessor_account_id = bob();
-        testing_env!(context.clone());
-        contract.transfer_from(carol(), alice(), transfer_amount.into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
-
-        context.is_view = true;
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        assert_eq!(
-            contract.get_balance(carol()).0,
-            total_supply - transfer_amount
-        );
-        assert_eq!(contract.get_balance(alice()).0, transfer_amount);
-        assert_eq!(
-            contract.get_allowance(carol(), bob()).0,
-            allowance - transfer_amount
-        );
-    }
-
-    #[test]
-    fn test_carol_escrows_to_bob_locks_and_transfers_to_alice() {
-        // Acting as carol
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.storage_usage = env::storage_usage();
-
-        context.is_view = true;
-        testing_env!(context.clone());
-        assert_eq!(contract.get_total_supply().0, total_supply);
-
-        let allowance = total_supply / 3;
-        let transfer_amount = allowance / 3;
-        context.is_view = false;
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.inc_allowance(bob(), allowance.into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
-
-        context.is_view = true;
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        assert_eq!(contract.get_allowance(carol(), bob()).0, allowance);
-        assert_eq!(contract.get_balance(carol()).0, total_supply);
-
-        // Acting as bob now
-        context.is_view = false;
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        context.predecessor_account_id = bob();
-        testing_env!(context.clone());
-        contract.transfer_from(carol(), alice(), transfer_amount.into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
-
-        context.is_view = true;
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        assert_eq!(
-            contract.get_balance(carol()).0,
-            (total_supply - transfer_amount)
-        );
-        assert_eq!(contract.get_balance(alice()).0, transfer_amount);
-        assert_eq!(
-            contract.get_allowance(carol(), bob()).0,
-            allowance - transfer_amount
-        );
-    }
-
-    #[test]
-    fn test_self_allowance_set_for_refund() {
-        let mut context = get_context(carol());
-        testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = LinkToken::new(carol(), total_supply.into());
-        context.storage_usage = env::storage_usage();
-
-        let initial_balance = context.account_balance;
-        let initial_storage = context.storage_usage;
-        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
-        testing_env!(context.clone());
-        contract.inc_allowance(bob(), (total_supply / 2).into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
-        assert_eq!(
-            context.account_balance,
-            initial_balance
-                + Balance::from(context.storage_usage - initial_storage) * STORAGE_PRICE_PER_BYTE
-        );
-
-        let initial_balance = context.account_balance;
-        let initial_storage = context.storage_usage;
-        testing_env!(context.clone());
-        context.attached_deposit = 0;
-        testing_env!(context.clone());
-        contract.dec_allowance(bob(), (total_supply / 2).into());
-        context.storage_usage = env::storage_usage();
-        context.account_balance = env::account_balance();
-        assert!(context.storage_usage < initial_storage);
-        assert!(context.account_balance < initial_balance);
-        assert_eq!(
-            context.account_balance,
-            initial_balance
-                - Balance::from(initial_storage - context.storage_usage) * STORAGE_PRICE_PER_BYTE
-        );
+        testing_env!(context
+            .storage_usage(env::storage_usage())
+            .account_balance(env::account_balance())
+            .is_view(true)
+            .attached_deposit(0)
+            .build());
+        assert_eq!(contract.ft_balance_of(accounts(2)).0, (TOTAL_SUPPLY - transfer_amount));
+        assert_eq!(contract.ft_balance_of(accounts(1)).0, transfer_amount);
     }
 }

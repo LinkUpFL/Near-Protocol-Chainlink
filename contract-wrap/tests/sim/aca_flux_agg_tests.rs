@@ -13372,201 +13372,339 @@ use crate::utils::init_without_macros as init;
 // }
 
 // // #latest_round_data https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1830
+// #[test]
+
+// fn latest_round_data_when_an_answer_has_been_received_and_reverts_if_a_round_is_not_present() {
+//     let previous_submission: u128 = 42;
+//     let min_answers: u64 = 3;
+//     let max_answers: u64 = 4;
+//     let latest_round_id: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u64 = 1;
+//     let answer: u128 = 100;
+//     let current_funds: u128 = 73;
+//     let timeout: u64 = 1800;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         oracle_four,
+//         oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let expected_no_data_present = test_helper.call(
+//         aca.account_id(),
+//         "latest_round_data",
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_no_data_present
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error.to_string().contains("No data present"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// // // #latest_answer https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1830
+
+// #[test]
+
+// fn latest_answer_when_an_answer_has_already_been_received_and_returns_the_latest_answer_without_reverting(
+// ) {
+//     let previous_submission: u128 = 42;
+//     let min_answers: u64 = 3;
+//     let max_answers: u64 = 4;
+//     let latest_round_id: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u64 = 1;
+//     let answer: u128 = 100;
+//     let current_funds: u128 = 73;
+//     let timeout: u64 = 1800;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         oracle_four,
+//         oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_three
+//         .call(
+//             aca.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     let latest_answer: u128 = test_helper
+//         .call(
+//             aca.account_id(),
+//             "latest_answer",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+//     assert_eq!(answer, latest_answer);
+// }
+
+// // // #latest_answer https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1830
+
+// #[test]
+
+// fn latest_answer_and_returns_zero() {
+//     let previous_submission: u128 = 42;
+//     let min_answers: u64 = 3;
+//     let max_answers: u64 = 4;
+//     let latest_round_id: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u64 = 1;
+//     let answer: u128 = 100;
+//     let current_funds: u128 = 73;
+//     let timeout: u64 = 1800;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         oracle_four,
+//         oracle_five,
+//     ) = init();
+
+//     root.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     root.call(
+//         aca.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let latest_answer: u128 = test_helper
+//         .call(
+//             aca.account_id(),
+//             "latest_answer",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+//     assert_eq!(0, latest_answer);
+// }
+
+//  #set_validator https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L2459
+
+// #[test]
+
+// fn set_validator_and_emits_a_log_event_showing_the_validator_was_changed() {
+//     let previous_submission: u128 = 42;
+//     let min_answers: u64 = 3;
+//     let max_answers: u64 = 4;
+//     let latest_round_id: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u64 = 1;
+//     let answer: u128 = 100;
+//     let current_funds: u128 = 73;
+//     let timeout: u64 = 1800;
+//     let (
+//         root,
+//         aca,
+//         _link,
+//         _oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//     ) = init();
+
+//     aca.call(
+//         aca.account_id(),
+//         "add_access",
+//         &json!({"_user": test_helper.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let empty_address: String = aca
+//         .call(
+//             aca.account_id(),
+//             "get_validator",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!("", empty_address);
+
+//     let receipt = aca.call(
+//         aca.account_id(),
+//         "set_validator",
+//         &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     assert_eq!(
+//         receipt.promise_results().remove(1).unwrap().outcome().logs[0],
+//         ", aggregator_validator_mock"
+//     );
+
+//     let receipt_two = aca.call(
+//         aca.account_id(),
+//         "set_validator",
+//         &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     assert_eq!(receipt_two.logs().len(), 0);
+// }
+
+//  #set_validator https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L2459
 #[test]
 
-fn latest_round_data_when_an_answer_has_been_received_and_reverts_if_a_round_is_not_present() {
-    let previous_submission: u128 = 42;
-    let min_answers: u64 = 3;
-    let max_answers: u64 = 4;
-    let latest_round_id: u64 = 1;
-    let rr_delay: u64 = 0;
-    let mut next_round: u64 = 1;
-    let answer: u128 = 100;
-    let current_funds: u128 = 73;
-    let timeout: u64 = 1800;
+fn set_validator_and_when_called_by_a_non_owner_and_reverts() {
     let (
         root,
         aca,
         _link,
         oracle_one,
-        oracle_two,
-        oracle_three,
+        _oracle_two,
+        _oracle_three,
         test_helper,
         _eac,
         _eac_without_access_controller,
-        oracle_four,
-        oracle_five,
+        _oracle_four,
+        _oracle_five,
+        aggregator_validator_mock,
+        _flags
     ) = init();
 
-    root.call(
+    let empty_address: String = root
+        .call(
+            aca.account_id(),
+            "get_validator",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!("", empty_address);
+
+    let expected_only_callable_by_owner = oracle_one.call(
         aca.account_id(),
-        "add_access",
-        &json!({"_user": test_helper.account_id().to_string()})
+        "set_validator",
+        &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
             .to_string()
             .into_bytes(),
         DEFAULT_GAS,
         0, // deposit
-    )
-    .assert_success();
+    );    
 
-    root.call(
-        aca.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    let expected_no_data_present = test_helper.call(
-        aca.account_id(),
-        "latest_round_data",
-        &json!({}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-    if let ExecutionStatus::Failure(execution_error) = &expected_no_data_present
+    if let ExecutionStatus::Failure(execution_error) = &expected_only_callable_by_owner
         .promise_errors()
         .remove(0)
         .unwrap()
         .outcome()
         .status
     {
-        assert!(execution_error.to_string().contains("No data present"));
+        assert!(execution_error
+            .to_string()
+            .contains("Only callable by owner"));
     } else {
         unreachable!();
     }
 }
 
-// // #latest_answer https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1830
 
-#[test]
-
-fn latest_answer_when_an_answer_has_already_been_received_and_returns_the_latest_answer_without_reverting(
-) {
-    let previous_submission: u128 = 42;
-    let min_answers: u64 = 3;
-    let max_answers: u64 = 4;
-    let latest_round_id: u64 = 1;
-    let rr_delay: u64 = 0;
-    let mut next_round: u64 = 1;
-    let answer: u128 = 100;
-    let current_funds: u128 = 73;
-    let timeout: u64 = 1800;
-    let (
-        root,
-        aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        test_helper,
-        _eac,
-        _eac_without_access_controller,
-        oracle_four,
-        oracle_five,
-    ) = init();
-
-    root.call(
-        aca.account_id(),
-        "add_access",
-        &json!({"_user": test_helper.account_id().to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    )
-    .assert_success();
-
-    root.call(
-        aca.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    oracle_three
-        .call(
-            aca.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    let latest_answer: u128 = test_helper
-        .call(
-            aca.account_id(),
-            "latest_answer",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .unwrap_json();
-    assert_eq!(answer, latest_answer);
-}
-
-// // #latest_answer https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1830
-
-#[test]
-
-fn latest_answer_and_returns_zero() {
-    let previous_submission: u128 = 42;
-    let min_answers: u64 = 3;
-    let max_answers: u64 = 4;
-    let latest_round_id: u64 = 1;
-    let rr_delay: u64 = 0;
-    let mut next_round: u64 = 1;
-    let answer: u128 = 100;
-    let current_funds: u128 = 73;
-    let timeout: u64 = 1800;
-    let (
-        root,
-        aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        test_helper,
-        _eac,
-        _eac_without_access_controller,
-        oracle_four,
-        oracle_five,
-    ) = init();
-
-    root.call(
-        aca.account_id(),
-        "add_access",
-        &json!({"_user": test_helper.account_id().to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    )
-    .assert_success();
-
-    root.call(
-        aca.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    let latest_answer: u128 = test_helper
-        .call(
-            aca.account_id(),
-            "latest_answer",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .unwrap_json();
-    assert_eq!(0, latest_answer);
-}
-
-// *TODO* set_validator & integrating with historic deviation checker.
+// *TODO*: integrating with historic deviation checker.

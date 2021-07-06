@@ -3,18 +3,18 @@ use near_sdk::AccountId;
 use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS};
 
 const ACA_ID: &str = "aca";
-const LINKTOKEN_ID: &str = "lt";
+const LINKTOKEN_ID: &str = "link";
 const EAC_ID: &str = "eac";
 const EAC_WITHOUT_ACCESS_CONTROLLER_ID: &str = "eac_without_access_controller";
+const AVM_ID: &str = "aggregator_validator_mock";
+const FLAGS_ID: &str = "flags";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
-    // update `contract.wasm` for your contract's name
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
-
-    // if you run `cargo build` without `--release` flag:
     LINKTOKEN_WASM_BYTES => "target/wasm32-unknown-unknown/debug/LinkToken.wasm",
-
-    EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm"
+    EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm",
+    AVM_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AggregatorVaildatorMock.wasm",
+    FLAGS_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Flags.wasm"
 }
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
@@ -32,10 +32,13 @@ pub fn init_without_macros() -> (
     UserAccount,
     UserAccount,
     UserAccount,
-    UserAccount
+    UserAccount,
+    UserAccount,
+    UserAccount,
 ) {
     // Use `None` for default genesis configuration; more info below
     let root = init_simulator(None);
+
     let link = root.deploy(
         &LINKTOKEN_WASM_BYTES,
         LINKTOKEN_ID.to_string(),
@@ -44,7 +47,7 @@ pub fn init_without_macros() -> (
 
     link.call(
         LINKTOKEN_ID.into(),
-        "new",
+        "new_default_meta",
         &json!({
             "owner_id": root.account_id().to_string(), "total_supply": "100000"
         })
@@ -54,6 +57,7 @@ pub fn init_without_macros() -> (
         0, // attached deposit
     )
     .assert_success();
+
     let aca = root.deploy(
         &ACA_WASM_BYTES,
         ACA_ID.to_string(),
@@ -97,7 +101,7 @@ pub fn init_without_macros() -> (
             "get_payment_amount",
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS,
-            0, // deposit
+            0,
         )
         .unwrap_json();
 
@@ -109,7 +113,7 @@ pub fn init_without_macros() -> (
             "get_timeout",
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS,
-            0, // deposit
+            0,
         )
         .unwrap_json();
 
@@ -121,7 +125,7 @@ pub fn init_without_macros() -> (
             "get_decimals",
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS,
-            0, // deposit
+            0,
         )
         .unwrap_json();
 
@@ -133,7 +137,7 @@ pub fn init_without_macros() -> (
             "get_description",
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS,
-            0, // deposit
+            0,
         )
         .unwrap_json();
 
@@ -145,7 +149,7 @@ pub fn init_without_macros() -> (
             "get_version",
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS,
-            0, // deposit
+            0,
         )
         .unwrap_json();
 
@@ -157,25 +161,36 @@ pub fn init_without_macros() -> (
             "get_validator",
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS,
-            0, // deposit
+            0,
         )
         .unwrap_json();
 
     assert_eq!(validator, expected_validator);
 
+    aca.call(
+        link.account_id(),
+        "storage_deposit",
+        &json!({
+            "account_id": aca.account_id().to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS / 2,
+        near_sdk::env::storage_byte_cost() * 125
+    )
+    .assert_success();
+
     // Deployment function body as done on line 180-196 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180 (beforeEach)
     root.call(
         link.account_id(),
-        "transfer_from",
+        "ft_transfer",
         &json!({
-            "owner_id": root.account_id().to_string(),
-            "new_owner_id": aca.account_id().to_string(),
-            "amount": deposit.to_string()
+            "receiver_id": aca.account_id().to_string(), "amount": deposit.to_string(), "memo": "None"
         })
         .to_string()
         .into_bytes(),
         DEFAULT_GAS,
-        36500000000000000000000, // deposit
+        1
     )
     .assert_success();
 
@@ -184,9 +199,15 @@ pub fn init_without_macros() -> (
         "update_available_funds",
         &json!({}).to_string().into_bytes(),
         DEFAULT_GAS,
-        0, // deposit
+        0,
     )
     .assert_success();
+
+    let aggregator_validator_mock_factory = root.deploy(
+        &AVM_WASM_BYTES,
+        AVM_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
 
     // Alias: Neil
     let oracle_one = root.create_user(
@@ -236,7 +257,7 @@ pub fn init_without_macros() -> (
         &json!({
             "owner_id": eac.account_id(),
             "_aggregator": aca.account_id(),
-            "_access_controller": "null"
+            "_access_controller": ""
         })
         .to_string()
         .into_bytes(),
@@ -258,7 +279,28 @@ pub fn init_without_macros() -> (
             &json!({
                 "owner_id": eac_without_access_controller.account_id(),
                 "_aggregator": aca.account_id(),
-                "_access_controller": "null"
+                "_access_controller": ""
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
+    let flags = root.deploy(
+        &FLAGS_WASM_BYTES,
+        FLAGS_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    flags
+        .call(
+            FLAGS_ID.into(),
+            "new",
+            &json!({
+                "owner_id": root.account_id().to_string(),
+                "rac_address": "".to_string(),
             })
             .to_string()
             .into_bytes(),
@@ -277,6 +319,8 @@ pub fn init_without_macros() -> (
         eac,
         eac_without_access_controller,
         oracle_four,
-        oracle_five
+        oracle_five,
+        aggregator_validator_mock_factory,
+        flags,
     )
 }

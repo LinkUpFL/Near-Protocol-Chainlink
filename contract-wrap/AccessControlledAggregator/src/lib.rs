@@ -182,17 +182,14 @@ impl AccessControlledAggregator {
             },
         };
         result.check_enabled = true;
-
-        // Subtraction overlflow error at runtime
-        /*let updated_at_insert: u64 = (env::block_timestamp() - timeout_u64) as u64;
-        let newRound: Round = Round {
+        let updated_at_insert: u64 = env::block_timestamp().saturating_sub(timeout_u64);
+        let new_round: Round = Round {
             answer: 0_u128,
             started_at: 0_u64,
             updated_at: updated_at_insert,
             answered_in_round: 0_u64
         };
-        result.rounds.insert(&0, &newRound);
-        */
+        result.rounds.insert(&0, &new_round);
         result.update_future_rounds(
             U128::from(payment_amount_u128),
             U64::from(0),
@@ -229,7 +226,6 @@ impl AccessControlledAggregator {
         self.oracle_initialize_new_round(round_id_u128 as u64);
         self.record_submission(submission_u128, round_id_u128);
         let (updated, new_answer): (bool, u128) = self.update_round_answer(round_id_u128 as u64);
-        // off for tests
         self.pay_oracle(round_id_u128 as u64);
         self.delete_round_details(round_id_u128 as u64);
         if updated {
@@ -307,9 +303,10 @@ impl AccessControlledAggregator {
         _restart_delay: U64,
         _timeout: U64,
     ) {
-        // *TODO* Look into why this is causing issues.
-        // self.only_owner();
-
+        // Look into how to call this function in the initialization while having a an owner_id provided that is not the contract
+        if env::predecessor_account_id() != env::current_account_id() {
+            self.only_owner();
+        }
         let payment_amount_u128: u128 = _payment_amount.into();
         let min_submissions_u64: u64 = _min_submissions.into();
         let max_submissions_u64: u64 = _max_submissions.into();
@@ -455,6 +452,10 @@ impl AccessControlledAggregator {
 
     pub fn get_validator(&self) -> AccountId {
         self.validator.clone()
+    }
+
+    pub fn get_owner(&self) -> AccountId {
+        self.owner.clone()
     }
 
     /**
@@ -926,10 +927,22 @@ impl AccessControlledAggregator {
      * @param _newValidator designates the address of the new validation contract.
      */
     pub fn set_validator(&mut self, _new_validator: AccountId) {
+        // Look into how to call this function in the initialization while having a an owner_id provided that is not the contract
+        if env::predecessor_account_id() != env::current_account_id() {
+            self.only_owner();
+        }
         let previous: AccountId = String::from(&self.validator) as AccountId;
-
+        let init_new: AccountId = _new_validator.clone();
         if previous != _new_validator {
             self.validator = _new_validator;
+            env::log(
+                format!(
+                    "{}, {}",
+                    previous,
+                    init_new
+                )
+                .as_bytes(),
+            );
         }
     }
 
@@ -1220,24 +1233,6 @@ impl AccessControlledAggregator {
         // TRY CATCH
     }
 
-    // fn validate(&self, _previous_round_id: u64, _previous_answer: u128, _current_round_id: u64, _current_answer: u128) {
-    //     let av: AccountId = self.validator.clone(); // cache storage reads
-    //     if av == "" {
-    //         return;
-    //     }
-
-    //     let prev_round: u64 = _round_id - 1;
-
-    //     let round_option = self.rounds.get(&_round_id);
-    //     if round_option.is_none() {
-    //         env::panic(b"Did not find this round. {validate_answer}");
-    //     }
-    //     let round = round_option.unwrap();
-
-    //     let prev_answer_round_id: u64 = round.answered_in_round;
-    //     let prev_round_answer: u128 = round.answer;
-    //     // TRY CATCH
-    // }
 
     fn pay_oracle(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
@@ -1347,7 +1342,6 @@ impl AccessControlledAggregator {
         let round_option = self.rounds.get(&_rr_id);
         if round_option.is_none() {
             return false;
-            // env::panic(b"Did not find this round. {previous_and_current_unanswered}");
         }
         let round = round_option.unwrap();
         return (_round_id + 1) == _rr_id && round.updated_at == 0;
@@ -1465,7 +1459,6 @@ impl AccessControlledAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            // Check logic here
             return false;
         }
         let round = round_option.unwrap();
@@ -1480,12 +1473,11 @@ impl AccessControlledAggregator {
         let oracle = oracle_option.unwrap();
         oracle.ending_round == ROUND_MAX
     }
-    // see why the round_option is none, see where it's failing in the tree
+
     fn accepting_submissions(&self, _round_id: u128) -> bool {
         let round_option = self.details.get(&_round_id);
         if round_option.is_none() {
             return false;
-            // env::panic(b"hey not find this round.");
         }
         let round = round_option.unwrap();
         round.max_submissions != 0
@@ -1509,18 +1501,17 @@ impl AccessControlledAggregator {
         _round_id <= ROUND_MAX
     }
 
-    fn only_owner(&mut self) {
+    fn only_owner(&self) {
         assert_eq!(
             self.owner,
             env::predecessor_account_id(),
             "Only callable by owner"
         );
     }
-    // Review implementation of this
+
     fn median(&mut self, mut numbers: Vec<u128>) -> u128 {
         numbers.sort();
         let _mid = numbers.len() / 2;
-        // numbers[mid]
         let sum: u128 = numbers.iter().sum();
         let len: u128 = numbers.len().try_into().unwrap();
         sum / len
@@ -1535,8 +1526,6 @@ impl AccessControlledAggregator {
     pub fn get_version(&self) -> u128 {
         VERSION
     }
-
-    // Access Control
 
     pub fn has_access(&self, _user: AccountId) -> bool {
         if !self.check_enabled {
