@@ -1,181 +1,714 @@
 use near_sdk::json_types::U128;
 use near_sdk::serde_json::json;
+use near_sdk_sim::transaction::ExecutionStatus;
 use near_sdk_sim::DEFAULT_GAS;
 
 use crate::utils::init_without_macros as init;
 
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L65
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L67
 // #[test]
-// fn external_access_tests() {
-//     let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac, eac_without_access_controller) = init();
-//     // Transfer from link_token contract to ACA.
-//     root.call(
-//         link.account_id(),
-//         "transfer_from",
+// fn raise_flag_when_called_by_the_owner_and_updates_the_warning_flag() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let expected_false_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+//     assert_eq!(false, expected_false_value);
+
+//     oracle_three
+//         .call(
+//             flags.account_id(),
+//             "raise_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     let expected_true_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(true, expected_true_value);
+// }
+
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L65
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L75
+// *TODO* Look into naming Events and parsing the names for verification the event exists.
+
+// #[test]
+// fn raise_flag_when_called_by_the_owner_and_emits_an_event_log() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let tx = oracle_three.call(
+//         flags.account_id(),
+//         "raise_flag",
 //         &json!({
-//             "owner_id": root.account_id().to_string(),
-//             "new_owner_id": aca.account_id().to_string(),
-//             "amount": "190"
+//             "subject": consumer.account_id().to_string()
 //         })
 //         .to_string()
 //         .into_bytes(),
 //         DEFAULT_GAS,
-//         36500000000000000000000, // deposit
-//     )
-//     .assert_success();
-//     let _outcome = root.call(
-//         aca.account_id(),
-//         "update_available_funds",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
+//         0,
 //     );
-//     // First add oracle_one
-//     root.call(
-//         aca.account_id(),
-//         "change_oracles",
-//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": "1", "_max_submissions": "1", "_restart_delay": "0"}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
-//     // Second, call submit from oracle_one
-//     oracle_one
+
+//     // *TODO* Look into naming Events and parsing the names for verification the event exists.
+
+//     assert_eq!(tx.logs()[0], consumer.account_id().to_string());
+// }
+
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L65
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L93
+
+// #[test]
+// fn raise_flag_when_called_by_the_owner_and_if_a_flag_has_already_been_raised_emits_an_event_log() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     oracle_three
 //         .call(
-//             aca.account_id(),
-//             "submit",
-//             &json!({"_round_id": "1", "_submission": "3"})
-//                 .to_string()
-//                 .into_bytes(),
+//             flags.account_id(),
+//             "raise_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
 //             DEFAULT_GAS,
-//             0, // deposit
+//             0,
 //         )
 //         .assert_success();
-//     let _root_balance: U128 = root
-//         .view(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({
-//                 "owner_id": root.valid_account_id()
-//             })
-//             .to_string()
-//             .into_bytes(),
-//         )
-//         .unwrap_json();
 
-//     // let aca_balance: String = aca
-//     //     .view(
-//     //         link.account_id(),
-//     //         "withdraw_payment",
-//     //         &json!({
-//     //             "owner_id": aca.valid_account_id()
-//     //         })
-//     //         .to_string()
-//     //         .into_bytes(),
-//     //     )
-//     //     .unwrap_json();
-
-//     // let oracle_available_withdrawable: String = aca
-//     //     .view(
-//     //         aca.account_id(),
-//     //         "withdrawable_payment",
-//     //         &json!({"_oracle": oracle_one.account_id()}).to_string().into_bytes(),
-//     //     )
-//     //     .unwrap_json();
-//     // println!("{:?}", oracle_available_withdrawable);
-
-//     let _withdraw = oracle_one.call(
-//         aca.account_id(),
-//         "withdraw_payment",
-//         &json!({"_oracle": oracle_one.account_id(), "_recipient": oracle_one.account_id(), "_amount": "1"}).to_string().into_bytes(),
+//     let tx = oracle_three.call(
+//         flags.account_id(),
+//         "raise_flag",
+//         &json!({
+//             "subject": consumer.account_id().to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
 //         DEFAULT_GAS,
-//         36500000000000000000000, // deposit
+//         0,
 //     );
-//     // println!("{:?}", withdraw.promise_results());
-//     let _add_access = root.call(
-//         aca.account_id(),
-//         "add_access",
-//         &json!({"_user": oracle_one.account_id()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
-//     let _add_access_1 = root.call(
-//         aca.account_id(),
-//         "add_access",
-//         &json!({"_user": eac_without_access_controller.account_id()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
-//     let oracle_balance: U128 = root
-//         .view(
-//             link.account_id(),
-//             "get_balance",
+
+//     assert_eq!(0, tx.logs().len());
+// }
+
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L65
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L110
+
+// #[test]
+// fn raise_flag_when_called_by_an_enabled_setter_sets_the_flags() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     oracle_three
+//         .call(
+//             flags.account_id(),
+//             "add_access",
 //             &json!({
-//                 "owner_id": oracle_one.valid_account_id()
+//                 "_user": oracle_one.account_id().to_string()
 //             })
 //             .to_string()
 //             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
 //         )
-//         .unwrap_json();
-//     println!("{:?}", oracle_balance);
+//         .assert_success();
 
-//     // let latest_answer: U128 = oracle_one
-//     // .call(
-//     //     aca.account_id(),
-//     //     "latest_answer",
-//     //     &json!({})
-//     //     .to_string()
-//     //     .into_bytes(),
-//     //     DEFAULT_GAS,
-//     //     0, // deposit
-//     // )
-//     // .unwrap_json();
-//     // println!("{:?}", latest_answer);
-//     // let _update_aggregator = root
-//     // .call(
-//     //     eac.account_id(),
-//     //     "set_aggregator",
-//     //     &json!({"_aggregator": oracle_one.account_id()}).to_string().into_bytes(),
-//     //     DEFAULT_GAS,
-//     //     0, // deposit
-//     // ).assert_success();
 //     oracle_one
-//     .call(
-//         eac_without_access_controller.account_id(),
-//         "decimals",
-//         &json!({}).to_string().into_bytes(),
+//         .call(
+//             flags.account_id(),
+//             "raise_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     let expected_true_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(true, expected_true_value);
+// }
+
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L65
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L117
+// *TODO* Look into how this can pass while access check is disabled.
+
+// #[test]
+// fn raise_flag_when_called_by_a_non_enabled_setter_and_reverts() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let expected_not_allowed_to_raise_flags = oracle_one.call(
+//         flags.account_id(),
+//         "raise_flag",
+//         &json!({
+//             "subject": consumer.account_id().to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
 //         DEFAULT_GAS,
-//         0, // deposit
+//         0,
 //     );
 
-//     // Callers can call view functions without explicit access
+//     // *TODO* Look into how this can pass while access check is disabled.
 
-//         test_helper.call(
-//         eac_without_access_controller.account_id(),
-//             "latest_answer",
+//     if let ExecutionStatus::Failure(execution_error) = &expected_not_allowed_to_raise_flags
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("Not allowed to raise flags"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L65
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L52
+// *TODO* Look into how this can pass while access check is disabled.
+// #[test]
+// fn raise_flag_when_called_when_there_is_no_raising_access_controller_and_succeeds_for_the_owner() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let tx = oracle_three.call(
+//         flags.account_id(),
+//         "set_raising_access_controller",
+//         &json!({
+//             "rac_address": "".to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         0,
+//     );
+
+//     assert_eq!(tx.logs()[0], "oracle_three, ");
+
+//     let current_raising_access_controller: String = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_raising_access_controller",
 //             &json!({}).to_string().into_bytes(),
 //             DEFAULT_GAS,
-//             0, // deposit
-//         ).assert_success();
-//         test_helper.call(
-//             eac_without_access_controller.account_id(),
-//                 "latest_timestamp",
-//                 &json!({}).to_string().into_bytes(),
-//                 DEFAULT_GAS,
-//                 0, // deposit
-//             ).assert_success();
-//             // test_helper.call(
-//             //     eac_without_access_controller.account_id(),
-//             //         "get_answer",
-//             //         &json!({}).to_string().into_bytes(),
-//             //         DEFAULT_GAS,
-//             //         0, // deposit
-//             //     ).assert_success();
-//             //     test_helper.call(
-//             //         eac_without_access_controller.account_id(),
-//             //             "get_answer",
-//             //             &json!({}).to_string().into_bytes(),
-//             //             DEFAULT_GAS,
-//             //             0, // deposit
-//             //         ).assert_success();
-//         assert_eq!(true, true);
+//             0,
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(current_raising_access_controller, "");
+
+//     oracle_three
+//         .call(
+//             flags.account_id(),
+//             "raise_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     let expected_true_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(true, expected_true_value);
 // }
+// #[test]
+// fn raise_flag_when_called_when_there_is_no_raising_access_controller_and_reverts_for_non_owner() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let tx = oracle_three.call(
+//         flags.account_id(),
+//         "set_raising_access_controller",
+//         &json!({
+//             "rac_address": "".to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         0,
+//     );
+
+//     assert_eq!(tx.logs()[0], "oracle_three, ");
+
+//     let current_raising_access_controller: String = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_raising_access_controller",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(current_raising_access_controller, "");
+
+//     let expected_not_allowed_to_raise_flags = oracle_one.call(
+//         flags.account_id(),
+//         "raise_flag",
+//         &json!({
+//             "subject": consumer.account_id().to_string()
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         0,
+//     );
+
+//     // *TODO* Look into how this can pass while access check is disabled.
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_not_allowed_to_raise_flags
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("Not allowed to raise flags"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+
+// #raise_flags https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L160
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L162
+// #[test]
+// fn raise_flags_when_called_by_the_owner_and_updates_the_warning_flag() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let expected_false_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(false, expected_false_value);
+
+//     oracle_three
+//         .call(
+//             flags.account_id(),
+//             "raise_flags",
+//             &json!({
+//                 "subjects": [consumer.account_id().to_string()]
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     let expected_true_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(true, expected_true_value);
+// }
+
+// #raise_flags https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#160
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L170
+// *TODO* Look into naming Events and parsing the names for verification the event exists.
+
+// #[test]
+// fn raise_flags_when_called_by_the_owner_and_emits_an_event_log() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     let tx = oracle_three.call(
+//         flags.account_id(),
+//         "raise_flags",
+//         &json!({
+//             "subjects": [consumer.account_id().to_string()]
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         0,
+//     );
+
+//     // *TODO* Look into naming Events and parsing the names for verification the event exists.
+
+//     assert_eq!(tx.logs()[0], consumer.account_id().to_string());
+// }
+
+// #raise_flags https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#160
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L188
+// #[test]
+// fn raise_flags_when_called_by_the_owner_and_if_a_flag_has_already_been_raised_emits_an_event_log() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     oracle_three
+//         .call(
+//             flags.account_id(),
+//             "raise_flags",
+//             &json!({
+//                 "subjects": [consumer.account_id().to_string()]
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     let tx = oracle_three.call(
+//         flags.account_id(),
+//         "raise_flags",
+//         &json!({
+//             "subjects": [consumer.account_id().to_string()]
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         0,
+//     );
+
+//     assert_eq!(0, tx.logs().len());
+// }
+
+// #raise_flags https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L160
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L205
+
+// #[test]
+// fn raise_flags_when_called_by_an_enabled_setter_sets_the_flags() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
+//     ) = init();
+
+//     oracle_three
+//         .call(
+//             flags.account_id(),
+//             "add_access",
+//             &json!({
+//                 "_user": oracle_one.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     oracle_one
+//         .call(
+//             flags.account_id(),
+//             "raise_flags",
+//             &json!({
+//                 "subjects": [consumer.account_id().to_string()]
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .assert_success();
+
+//     let expected_true_value: bool = oracle_three
+//         .call(
+//             flags.account_id(),
+//             "get_flag",
+//             &json!({
+//                 "subject": consumer.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//             DEFAULT_GAS,
+//             36500000000000000000000, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(true, expected_true_value);
+// }
+
+// #raise_flag https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L160
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/6bf9ede9130ff4206b2a81b12168ec007d419682/contracts/test/v0.6/Flags.test.ts#L212
+// *TODO* Look into how this can pass while access check is disabled.
+
+#[test]
+fn raise_flags_when_called_by_a_non_enabled_setter_and_reverts() {
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        aggregator_validator_mock,
+        flags,
+        consumer,
+    ) = init();
+
+    let expected_not_allowed_to_raise_flags = oracle_one.call(
+        flags.account_id(),
+        "raise_flags",
+        &json!({
+            "subjects": [consumer.account_id().to_string()]
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS,
+        0,
+    );
+
+    // *TODO* Look into how this can pass while access check is disabled.
+
+    if let ExecutionStatus::Failure(execution_error) = &expected_not_allowed_to_raise_flags
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error
+            .to_string()
+            .contains("Not allowed to raise flags"));
+    } else {
+        unreachable!();
+    }
+}

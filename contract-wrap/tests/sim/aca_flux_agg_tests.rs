@@ -6,7 +6,7 @@ use near_sdk_sim::DEFAULT_GAS;
 use crate::utils::init_without_macros as init;
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts
-// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180
+// https://github.com/smartcontractkit/chainlink/blob/develop/contracts/test/v0.6/FluxAggregator.test.ts
 // Suite of simulation tests matching TypeScript tests for AccessControlledAggregator and FluxAggregator as closely as possible.
 
 // #[test]
@@ -339,9 +339,14 @@ use crate::utils::init_without_macros as init;
 //         oracle_one,
 //         oracle_two,
 //         oracle_three,
-//         test_helper,
-//         _eac,
-//         _eac_without_access_controller,
+//          test_helper,
+//          eac,
+//          eac_without_access_controller,
+//          oracle_four,
+//          oracle_five,
+//         aggregator_validator_mock,
+//         flags,
+//         consumer,
 //     ) = init();
 //     root.call(
 //         aca.account_id(),
@@ -7570,121 +7575,124 @@ use crate::utils::init_without_macros as init;
 // // #withdraw_payment https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1497
 // // *TODO* Look into why unwrapping the JSON object from the get_balance is of type string.
 
-// #[test]
+#[test]
 
-// fn transfers_link_to_the_recipient() {
-//     let payment_amount: u64 = 3;
-//     let (
-//         root,
-//         aca,
-//         link,
-//         oracle_one,
-//         _oracle_two,
-//         _oracle_three,
-//         test_helper,
-//         _eac,
-//         _eac_without_access_controller,
-//         _oracle_four,
-//         _oracle_five,
-//     ) = init();
+fn transfers_link_to_the_recipient() {
+    let payment_amount: u64 = 3;
+    let (
+        root,
+        aca,
+        link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        eac,
+        eac_without_access_controller,
+        oracle_four,
+        oracle_five,
+        aggregator_validator_mock,
+        flags,
+        consumer,
+    ) = init();
 
-//     root.call(
-//         aca.account_id(),
-//         "add_access",
-//         &json!({"_user": test_helper.account_id().to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": test_helper.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
 
-//     root.call(
-//         aca.account_id(),
-//         "change_oracles",
-//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
 
-//     oracle_one
-//         .call(
-//             aca.account_id(),
-//             "submit",
-//             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
 
-//     let original_balance: String = root
-//         .call(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({"owner_id": aca.account_id().to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .unwrap_json();
+    let original_balance: String = root
+    .call(
+        link.account_id(),
+        "ft_balance_of",
+        &json!({"account_id": aca.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).unwrap_json();
+    
 
-//     let original_oracle_one_balance: String = root
-//         .call(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({"owner_id": oracle_one.account_id().to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .unwrap_json();
+    let original_oracle_one_balance: String = root
+    .call(
+        link.account_id(),
+        "ft_balance_of",
+        &json!({"account_id": oracle_one.account_id().to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .unwrap_json();
 
-//     assert_eq!("0", original_oracle_one_balance);
+    assert_eq!("0", original_oracle_one_balance);
 
-//     oracle_one
-//     .call(
-//         aca.account_id(),
-//         "withdraw_payment",
-//         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": payment_amount.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+    oracle_one
+    .call(
+        aca.account_id(),
+        "withdraw_payment",
+        &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": payment_amount.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        1, // deposit
+    )
+    .assert_success();
 
-//     let updated_balance: String = root
-//         .call(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({"owner_id": aca.account_id().to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .unwrap_json();
+    // let updated_balance: String = root
+    //     .call(
+    //         link.account_id(),
+    //         "ft_balance_of",
+    //         &json!({"account_id": aca.account_id().to_string()})
+    //             .to_string()
+    //             .into_bytes(),
+    //         DEFAULT_GAS,
+    //         0, // deposit
+    //     )
+    //     .unwrap_json();
 
-//     assert_eq!("97", updated_balance);
+    // assert_eq!("97", updated_balance);
 
-//     let updated_oracle_one_balance: String = root
-//         .call(
-//             link.account_id(),
-//             "get_balance",
-//             &json!({"owner_id": oracle_one.account_id().to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .unwrap_json();
+    let updated_oracle_one_balance: String = root
+        .call(
+            link.account_id(),
+            "ft_balance_of",
+            &json!({"account_id": oracle_one.account_id().to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
 
-//     assert_eq!("3", updated_oracle_one_balance);
-// }
+    assert_eq!("3", updated_oracle_one_balance);
+}
 
 // // #withdraw_payment https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L1497
 // // *TODO* Look into why unwrapping the JSON object from the get_balance is of type string.
@@ -13666,7 +13674,8 @@ fn set_validator_and_when_called_by_a_non_owner_and_reverts() {
         _oracle_four,
         _oracle_five,
         aggregator_validator_mock,
-        _flags
+        _flags,
+        consumer
     ) = init();
 
     let empty_address: String = root

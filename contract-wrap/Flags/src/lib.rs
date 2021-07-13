@@ -52,9 +52,11 @@ impl Flags {
         self.check_access();
         let flag = self.flags.get(&subject);
         if flag.is_none() {
-            env::panic(b"The subject is invalid.");
+            false
         }
-        flag.unwrap()
+        else {
+            flag.unwrap()
+        }
     }
 
     pub fn get_flags(&self, subjects: Vec<AccountId>) -> Vec<bool> {
@@ -95,6 +97,11 @@ impl Flags {
             }
         }
     }
+    
+    pub fn get_raising_access_controller(&self) -> String {
+        self.raising_access_controller.clone()
+    }
+
     pub fn set_raising_access_controller(&mut self, rac_address: AccountId) {
         if env::predecessor_account_id() != env::current_account_id() {
             self.only_owner();
@@ -165,11 +172,15 @@ impl Flags {
     fn try_to_raise_flag(&mut self, subject: AccountId) {
         let flag = self.flags.get(&subject);
         if flag.is_none() {
-            env::panic(b"The subject is invalid.");
+            self.flags.insert(&subject, &true);
+            env::log(format!("{}", &subject).as_bytes());
         }
+        else {
         if flag.unwrap() == false {
             self.flags.insert(&subject, &true);
+            env::log(format!("{}", &subject).as_bytes());
         }
+    }
     }
 
     fn only_owner(&self) {

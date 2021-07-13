@@ -12,14 +12,9 @@ use std::str;
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
+pub const DEFAULT_GAS: u64 = 300_000_000_000_000;
 
 pub type Base64String = String;
-
-#[ext_contract(link_token_contract)]
-pub trait LinkTokenContract {
-    fn new(owner_id: AccountId, total_supply: U128);
-    fn transfer(new_owner_id: AccountId, amount: U128);
-}
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -189,7 +184,7 @@ impl AccessControlledAggregator {
             answer: 0_u128,
             started_at: 0_u64,
             updated_at: updated_at_insert,
-            answered_in_round: 0_u64
+            answered_in_round: 0_u64,
         };
         result.rounds.insert(&0, &new_round);
         result.update_future_rounds(
@@ -389,10 +384,30 @@ impl AccessControlledAggregator {
     pub fn update_available_funds(&self) {
         let prepaid_gas = env::prepaid_gas();
 
+        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
+        // let get_balance_promise = env::promise_create(
+        //     self.link_token.clone(),
+        //     b"get_balance",
+        //     json!({ "owner_id": env::current_account_id() })
+        //         .to_string()
+        //         .as_bytes(),
+        //     0,
+        //     SINGLE_CALL_GAS,
+        // );
+
+        // env::promise_then(
+        //     get_balance_promise,
+        //     env::current_account_id(),
+        //     b"get_balance_promise_results",
+        //     json!({}).to_string().as_bytes(),
+        //     0,
+        //     prepaid_gas / 4,
+        // );
+
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
-            b"get_balance",
-            json!({ "owner_id": env::current_account_id() })
+            b"ft_balance_of",
+            json!({ "account_id": env::current_account_id() })
                 .to_string()
                 .as_bytes(),
             0,
@@ -638,7 +653,7 @@ impl AccessControlledAggregator {
     pub fn withdrawable_payment(&self, _oracle: AccountId) -> u128 {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {withdrawable_payment}");
+            env::panic(b"Did not find this oracle account.");
         }
         let oracle = oracle_option.unwrap();
         oracle.withdrawable
@@ -657,7 +672,7 @@ impl AccessControlledAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {withdraw_payment}");
+            env::panic(b"Did not find this oracle.");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(
@@ -676,15 +691,24 @@ impl AccessControlledAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        // How do we assert this promise? Requires testing
+        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
+        // env::promise_create(
+        //     self.link_token.clone(),
+        //     b"transfer",
+        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
+        //         .to_string()
+        //         .as_bytes(),
+        //     36500000000000000000000,
+        //     prepaid_gas / 4,
+        // );
         env::promise_create(
             self.link_token.clone(),
-            b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
+            b"ft_transfer",
+            json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            36500000000000000000000,
-            prepaid_gas / 4,
+            DEFAULT_GAS.into(),
+            1,
         );
     }
 
@@ -696,7 +720,6 @@ impl AccessControlledAggregator {
     #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
         self.only_owner();
-        let prepaid_gas = env::prepaid_gas();
 
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
@@ -704,15 +727,24 @@ impl AccessControlledAggregator {
             (available - self.required_reserve(self.payment_amount)) >= amount_u128,
             "insufficient reserve funds"
         );
-        // How do we assert this promise? Requires testing
+        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
+        // env::promise_create(
+        //     self.link_token.clone(),
+        //     b"transfer",
+        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount})
+        //         .to_string()
+        //         .as_bytes(),
+        //     36500000000000000000000,
+        //     prepaid_gas / 4,
+        // );
         env::promise_create(
             self.link_token.clone(),
-            b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": _amount})
+            b"ft_transfer",
+            json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            36500000000000000000000,
-            prepaid_gas / 4,
+            DEFAULT_GAS.into(),
+            1,
         );
         self.update_available_funds();
     }
@@ -724,7 +756,7 @@ impl AccessControlledAggregator {
     pub fn get_admin(&self, _oracle: AccountId) -> AccountId {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {get_admin}");
+            env::panic(b"Did not find this oracle.");
         }
         let oracle = oracle_option.unwrap();
         oracle.admin
@@ -738,7 +770,7 @@ impl AccessControlledAggregator {
     pub fn transfer_admin(&mut self, _oracle: AccountId, _new_admin: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {transfer_admin}");
+            env::panic(b"Did not find this oracle.");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(
@@ -937,14 +969,7 @@ impl AccessControlledAggregator {
         let init_new: AccountId = _new_validator.clone();
         if previous != _new_validator {
             self.validator = _new_validator;
-            env::log(
-                format!(
-                    "{}, {}",
-                    previous,
-                    init_new
-                )
-                .as_bytes(),
-            );
+            env::log(format!("{}, {}", previous, init_new).as_bytes());
         }
     }
 
@@ -1047,7 +1072,9 @@ impl AccessControlledAggregator {
 
         let prev_option = self.rounds.get(&prev_id);
         if prev_option.is_none() {
-            env::panic(format!("{} Did not find this previous round.", prev_id.to_string()).as_bytes());
+            env::panic(
+                format!("{} Did not find this previous round.", prev_id.to_string()).as_bytes(),
+            );
             // return;
         }
         let prev = prev_option.unwrap();
@@ -1071,8 +1098,7 @@ impl AccessControlledAggregator {
                 updated_at: 0,
                 answered_in_round: 0,
             };
-        }
-        else {
+        } else {
             round = round_option.unwrap();
         }
         if round.started_at > 0 {
@@ -1234,7 +1260,6 @@ impl AccessControlledAggregator {
         let prev_round_answer: u128 = round.answer;
         // TRY CATCH
     }
-
 
     fn pay_oracle(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
@@ -1552,7 +1577,6 @@ impl AccessControlledAggregator {
     pub fn get_check_enabled(&self) -> bool {
         self.check_enabled
     }
-    
     pub fn has_access(&self, _user: AccountId) -> bool {
         if !self.check_enabled {
             !self.check_enabled
@@ -1605,13 +1629,10 @@ impl AccessControlledAggregator {
         if self.check_enabled {
             self.check_enabled = false;
             env::log(format!("CheckAccessDisabled").as_bytes());
-
         }
     }
 
     fn check_access(&self) {
         assert!(self.has_access(env::predecessor_account_id()), "No access")
     }
-
-    
 }

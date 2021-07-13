@@ -1,5 +1,4 @@
 use near_sdk::serde_json::json;
-use near_sdk::AccountId;
 use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS};
 
 const ACA_ID: &str = "aca";
@@ -8,13 +7,15 @@ const EAC_ID: &str = "eac";
 const EAC_WITHOUT_ACCESS_CONTROLLER_ID: &str = "eac_without_access_controller";
 const AVM_ID: &str = "aggregator_validator_mock";
 const FLAGS_ID: &str = "flags";
+const CONSUMER_ID: &str = "consumer";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
     LINKTOKEN_WASM_BYTES => "target/wasm32-unknown-unknown/debug/LinkToken.wasm",
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm",
     AVM_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AggregatorVaildatorMock.wasm",
-    FLAGS_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Flags.wasm"
+    FLAGS_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Flags.wasm",
+    CONSUMER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Consumer.wasm"
 }
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
@@ -22,6 +23,7 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
 // Initialization and constructor tests
 
 pub fn init_without_macros() -> (
+    UserAccount,
     UserAccount,
     UserAccount,
     UserAccount,
@@ -176,9 +178,10 @@ pub fn init_without_macros() -> (
         .to_string()
         .into_bytes(),
         DEFAULT_GAS / 2,
-        near_sdk::env::storage_byte_cost() * 125
+        near_sdk::env::storage_byte_cost() * 125,
     )
     .assert_success();
+
 
     // Deployment function body as done on line 180-196 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180 (beforeEach)
     root.call(
@@ -246,6 +249,19 @@ pub fn init_without_macros() -> (
     //     to_yocto("1000"), // initial balance
     // );
 
+    oracle_one.call(
+        link.account_id(),
+        "storage_deposit",
+        &json!({
+            "account_id": oracle_one.account_id().to_string()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS / 2,
+        near_sdk::env::storage_byte_cost() * 125,
+    )
+    .assert_success();
+
     let eac = root.deploy(
         &EAC_WASM_BYTES,
         EAC_ID.to_string(),
@@ -299,8 +315,37 @@ pub fn init_without_macros() -> (
             FLAGS_ID.into(),
             "new",
             &json!({
-                "owner_id": root.account_id().to_string(),
-                "rac_address": "".to_string(),
+                "owner_id": oracle_three.account_id().to_string(),
+                "rac_address": oracle_three.account_id().to_string(),
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
+    oracle_three.call(
+        FLAGS_ID.into(),
+        "disable_access_check",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS / 2,
+        0, // attached deposit
+    )
+    .assert_success();
+
+    let consumer = root.deploy(
+        &CONSUMER_WASM_BYTES,
+        CONSUMER_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    consumer
+        .call(
+            CONSUMER_ID.into(),
+            "new",
+            &json!({
+                "oracle_account": oracle_one.account_id()
             })
             .to_string()
             .into_bytes(),
@@ -322,5 +367,6 @@ pub fn init_without_macros() -> (
         oracle_five,
         aggregator_validator_mock_factory,
         flags,
+        consumer,
     )
 }
