@@ -16,6 +16,7 @@ FluxAggregator = { path = "./FluxAggregator" }
 Consumer = { path = "./Consumer" }
 SimpleWriteAccessController = { path = "./SimpleWriteAccessController" }
 FlagsTestHelper = { path = "./FlagsTestHelper" }
+FluxAggregatorTestHelper = { path = "./FluxAggregatorTestHelper" }
 
 [profile.release]
 codegen-units = 1
@@ -35,5 +36,6 @@ members = [
   "Flags",
   "Consumer",
   "SimpleWriteAccessController",
-  "FlagsTestHelper"
+  "FlagsTestHelper",
+  "FluxAggregatorTestHelper"
 ]

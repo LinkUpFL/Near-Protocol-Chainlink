@@ -10,6 +10,8 @@ const FLAGS_ID: &str = "flags";
 const CONSUMER_ID: &str = "consumer";
 const FLAGSTESTHELPER_ID: &str = "flags_consumer";
 const SIMPLEWRITEACCESSCONTROLLER_ID: &str = "controller";
+const SIMPLEWRITEACCESSCONTROLLER_ID_2: &str = "controller_2";
+const FLUXAGGREGATORTESTHELPER_ID: &str = "flux_aggregator_test_helper_contract";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
@@ -19,14 +21,17 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     FLAGS_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Flags.wasm",
     CONSUMER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Consumer.wasm",
     SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/SimpleWriteAccessController.wasm",
-    FLAGSTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FlagsTestHelper.wasm"
+    FLAGSTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FlagsTestHelper.wasm",
+    FLUXAGGREGATORTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FluxAggregatorTestHelper.wasm"
 }
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
-// https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts
 // Initialization and constructor tests
 
 pub fn init_without_macros() -> (
+    UserAccount,
+    UserAccount,
     UserAccount,
     UserAccount,
     UserAccount,
@@ -248,11 +253,21 @@ pub fn init_without_macros() -> (
         to_yocto("1000"), // initial balance
     );
 
-    // *TODO* Create FluxAggregator test factory contract here
-    // let test_helper_contract = root.create_user(
-    //     "test_helper".to_string(),
-    //     to_yocto("1000"), // initial balance
-    // );
+    let flux_aggregator_test_helper_contract = root.deploy(
+        &FLUXAGGREGATORTESTHELPER_WASM_BYTES,
+        FLUXAGGREGATORTESTHELPER_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    flux_aggregator_test_helper_contract
+        .call(
+            FLUXAGGREGATORTESTHELPER_ID.into(),
+            "new",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
 
     oracle_one
         .call(
@@ -273,6 +288,7 @@ pub fn init_without_macros() -> (
         EAC_ID.to_string(),
         to_yocto("1000"), // attached deposit
     );
+
     eac.call(
         EAC_ID.into(),
         "new",
@@ -319,6 +335,26 @@ pub fn init_without_macros() -> (
     controller
         .call(
             SIMPLEWRITEACCESSCONTROLLER_ID.into(),
+            "new",
+            &json!({
+                "owner_id": oracle_three.account_id()
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
+    let controller_2 = oracle_three.deploy(
+        &SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES,
+        SIMPLEWRITEACCESSCONTROLLER_ID_2.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    controller_2
+        .call(
+            SIMPLEWRITEACCESSCONTROLLER_ID_2.into(),
             "new",
             &json!({
                 "owner_id": oracle_three.account_id()
@@ -417,6 +453,8 @@ pub fn init_without_macros() -> (
         flags,
         consumer,
         flags_consumer,
-        controller
+        controller,
+        controller_2,
+        flux_aggregator_test_helper_contract
     )
 }

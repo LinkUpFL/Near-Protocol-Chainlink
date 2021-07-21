@@ -150,7 +150,7 @@ impl EACAggregatorProxy {
     }
 
     // Depracated
-    // pub fn get_answer(&mut self, _round_id: U128) -> PromiseOrValue<u128> {
+    // pub fn get_answer(&mut self, _round_id: U128) -> ≈ {
     //     self.check_access();
     //     let prepaid_gas = env::prepaid_gas();
     //     let round_id_u128: u128 = _round_id.into();

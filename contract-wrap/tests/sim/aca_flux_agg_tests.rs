@@ -13677,7 +13677,8 @@ fn set_validator_and_when_called_by_a_non_owner_and_reverts() {
         _flags,
         consumer,
         flags_consumer,
-        controller
+        controller,
+        controller_2
     ) = init();
 
     let empty_address: String = root

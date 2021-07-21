@@ -85,7 +85,7 @@ impl Flags {
         } else {
             assert!(
                 env::is_valid_account_id(self.raising_access_controller.as_bytes()),
-                "Raising access controller account ID is invalid."
+                "Not allowed to raise flags"
             );
             let has_access_promise = env::promise_create(
                 self.raising_access_controller.clone(),
@@ -116,7 +116,7 @@ impl Flags {
         } else {
             assert!(
                 env::is_valid_account_id(self.raising_access_controller.as_bytes()),
-                "Raising access controller account ID is invalid."
+                "Not allowed to raise flags"
             );
             let has_access_promise = env::promise_create(
                 self.raising_access_controller.clone(),
