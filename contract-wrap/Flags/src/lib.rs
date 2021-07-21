@@ -1,10 +1,14 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
+use near_sdk::serde_json::{self, json};
 use near_sdk::wee_alloc::WeeAlloc;
 use near_sdk::{env, near_bindgen, AccountId};
-
+use near_sdk::{Promise, PromiseOrValue, PromiseResult};
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
+
+const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
+const DEFAULT_GAS: u64 = 300_000_000_000_000;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -53,35 +57,119 @@ impl Flags {
         let flag = self.flags.get(&subject);
         if flag.is_none() {
             false
-        }
-        else {
+        } else {
             flag.unwrap()
         }
     }
 
     pub fn get_flags(&self, subjects: Vec<AccountId>) -> Vec<bool> {
         self.check_access();
-        let subjects_length: usize = subjects.len();
-        let mut responses: Vec<bool> = Vec::with_capacity(subjects_length);
+        // let subjects_length: usize = subjects.len();
+        // let mut responses: Vec<bool> = Vec::with_capacity(subjects_length);
+        // let subjects_length: usize = subjects.len();
+        let mut responses: Vec<bool> = Vec::new();
         for i in 0..subjects.len() {
             let flag = self.flags.get(&subjects[i]);
             if flag.is_none() {
-                env::panic(b"The subject is invalid.");
+                responses.push(false);
+            } else {
+                responses.push(flag.unwrap());
             }
-            responses[i] = flag.unwrap();
         }
         return responses;
     }
 
     pub fn raise_flag(&mut self, subject: AccountId) {
-        assert!(self.allowed_to_raise_flags(), "Not allowed to raise flags");
-        self.try_to_raise_flag(subject);
+        if env::predecessor_account_id() == self.owner {
+            self.try_to_raise_flag(subject);
+        } else {
+            assert!(
+                env::is_valid_account_id(self.raising_access_controller.as_bytes()),
+                "Raising access controller account ID is invalid."
+            );
+            let has_access_promise = env::promise_create(
+                self.raising_access_controller.clone(),
+                b"has_access",
+                json!({ "_user": env::predecessor_account_id() })
+                    .to_string()
+                    .as_bytes(),
+                0,
+                SINGLE_CALL_GAS,
+            );
+            let has_access_promise_results = env::promise_then(
+                has_access_promise,
+                env::current_account_id(),
+                b"allowed_to_raise_flag_promise_result",
+                json!({ "subject": subject }).to_string().as_bytes(),
+                0,
+                SINGLE_CALL_GAS,
+            );
+            env::promise_return(has_access_promise_results);
+        }
     }
 
     pub fn raise_flags(&mut self, subjects: Vec<AccountId>) {
-        assert!(self.allowed_to_raise_flags(), "Not allowed to raise flags");
-        for i in 0..subjects.len() {
-            self.try_to_raise_flag(subjects[i].clone());
+        if env::predecessor_account_id() == self.owner {
+            for i in 0..subjects.len() {
+                self.try_to_raise_flag(subjects[i].clone());
+            }
+        } else {
+            assert!(
+                env::is_valid_account_id(self.raising_access_controller.as_bytes()),
+                "Raising access controller account ID is invalid."
+            );
+            let has_access_promise = env::promise_create(
+                self.raising_access_controller.clone(),
+                b"has_access",
+                json!({ "_user": env::predecessor_account_id() })
+                    .to_string()
+                    .as_bytes(),
+                0,
+                SINGLE_CALL_GAS,
+            );
+            let has_access_promise_results = env::promise_then(
+                has_access_promise,
+                env::current_account_id(),
+                b"allowed_to_raise_flags_promise_result",
+                json!({ "subjects": subjects }).to_string().as_bytes(),
+                0,
+                SINGLE_CALL_GAS,
+            );
+            env::promise_return(has_access_promise_results);
+        }
+    }
+
+    pub fn allowed_to_raise_flag_promise_result(&mut self, subject: AccountId) {
+        // assert_eq!(env::current_account_id(), env::predecessor_account_id());
+        assert_eq!(env::promise_results_count(), 1);
+        let get_allowed_to_raise_flags_promise_reult: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => _x,
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let allowed: bool =
+            serde_json::from_slice(&get_allowed_to_raise_flags_promise_reult).unwrap();
+        if !allowed {
+            env::panic(b"Not allowed to raise flags");
+        } else {
+            self.try_to_raise_flag(subject);
+        }
+    }
+
+    pub fn allowed_to_raise_flags_promise_result(&mut self, subjects: Vec<AccountId>) {
+        // assert_eq!(env::current_account_id(), env::predecessor_account_id());
+        assert_eq!(env::promise_results_count(), 1);
+        let get_allowed_to_raise_flags_promise_reult: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => _x,
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let allowed: bool =
+            serde_json::from_slice(&get_allowed_to_raise_flags_promise_reult).unwrap();
+        if !allowed {
+            env::panic(b"Not allowed to raise flags");
+        } else {
+            for i in 0..subjects.len() {
+                self.try_to_raise_flag(subjects[i].clone());
+            }
         }
     }
 
@@ -94,10 +182,10 @@ impl Flags {
             }
             if subject.unwrap() == true {
                 self.flags.insert(&subjects[i], &false);
+                env::log(format!("{}", &subjects[i]).as_bytes());
             }
         }
     }
-    
     pub fn get_raising_access_controller(&self) -> String {
         self.raising_access_controller.clone()
     }
@@ -141,7 +229,7 @@ impl Flags {
 
         let user_option = self.access_list.get(&_user);
         if user_option.is_none() {
-            env::panic(b"Did not find the oracle account to remove.");
+            env::panic(b"Did not find the user to remove.");
         }
         self.access_list.insert(&_user, &false);
     }
@@ -162,25 +250,21 @@ impl Flags {
         }
     }
 
-    // PRIVATE
-
-    fn allowed_to_raise_flags(&self) -> bool {
-        env::predecessor_account_id() == self.owner
-            || self.has_access(env::predecessor_account_id())
-    }
+    // Commented out to get code working
+    // fn allowed_to_raise_flags(&self) -> PromiseOrValue<bool> {
+    // }
 
     fn try_to_raise_flag(&mut self, subject: AccountId) {
         let flag = self.flags.get(&subject);
         if flag.is_none() {
             self.flags.insert(&subject, &true);
             env::log(format!("{}", &subject).as_bytes());
+        } else {
+            if flag.unwrap() == false {
+                self.flags.insert(&subject, &true);
+                env::log(format!("{}", &subject).as_bytes());
+            }
         }
-        else {
-        if flag.unwrap() == false {
-            self.flags.insert(&subject, &true);
-            env::log(format!("{}", &subject).as_bytes());
-        }
-    }
     }
 
     fn only_owner(&self) {

@@ -1,7 +1,7 @@
 [package]
 name = "contract-wrap"
 version = "0.1.0"
-authors = ["kwsantiago <kwsantiago@usf.edu>"]
+authors = ["nolanjacobson <nolanjacobson@protonmail.com>", "kwsantiago <kwsantiago@usf.edu>"]
 edition = "2018"
 
 [dev-dependencies]
@@ -14,6 +14,8 @@ AggregatorVaildatorMock = { path = "./AggregatorVaildatorMock" }
 Flags = { path = "./Flags" }
 FluxAggregator = { path = "./FluxAggregator" }
 Consumer = { path = "./Consumer" }
+SimpleWriteAccessController = { path = "./SimpleWriteAccessController" }
+FlagsTestHelper = { path = "./FlagsTestHelper" }
 
 [profile.release]
 codegen-units = 1
@@ -31,5 +33,7 @@ members = [
   "EACAggregatorProxy",
   "AggregatorVaildatorMock",
   "Flags",
-  "Consumer"
+  "Consumer",
+  "SimpleWriteAccessController",
+  "FlagsTestHelper"
 ]

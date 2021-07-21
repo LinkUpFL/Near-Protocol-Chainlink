@@ -1,7 +1,7 @@
 [package]
 name = "LinkToken"
 version = "0.1.0"
-authors = ["kwsantiago <kwsantiago@usf.edu>"]
+authors = ["nolanjacobson <nolanjacobson@protonmail.com>", "kwsantiago <kwsantiago@usf.edu>"]
 edition = "2018"
 
 [lib]

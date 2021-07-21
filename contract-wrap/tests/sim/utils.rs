@@ -8,6 +8,8 @@ const EAC_WITHOUT_ACCESS_CONTROLLER_ID: &str = "eac_without_access_controller";
 const AVM_ID: &str = "aggregator_validator_mock";
 const FLAGS_ID: &str = "flags";
 const CONSUMER_ID: &str = "consumer";
+const FLAGSTESTHELPER_ID: &str = "flags_consumer";
+const SIMPLEWRITEACCESSCONTROLLER_ID: &str = "controller";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
@@ -15,7 +17,9 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm",
     AVM_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AggregatorVaildatorMock.wasm",
     FLAGS_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Flags.wasm",
-    CONSUMER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Consumer.wasm"
+    CONSUMER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Consumer.wasm",
+    SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/SimpleWriteAccessController.wasm",
+    FLAGSTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FlagsTestHelper.wasm"
 }
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
@@ -23,6 +27,8 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
 // Initialization and constructor tests
 
 pub fn init_without_macros() -> (
+    UserAccount,
+    UserAccount,
     UserAccount,
     UserAccount,
     UserAccount,
@@ -182,7 +188,6 @@ pub fn init_without_macros() -> (
     )
     .assert_success();
 
-
     // Deployment function body as done on line 180-196 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180 (beforeEach)
     root.call(
         link.account_id(),
@@ -249,18 +254,19 @@ pub fn init_without_macros() -> (
     //     to_yocto("1000"), // initial balance
     // );
 
-    oracle_one.call(
-        link.account_id(),
-        "storage_deposit",
-        &json!({
-            "account_id": oracle_one.account_id().to_string()
-        })
-        .to_string()
-        .into_bytes(),
-        DEFAULT_GAS / 2,
-        near_sdk::env::storage_byte_cost() * 125,
-    )
-    .assert_success();
+    oracle_one
+        .call(
+            link.account_id(),
+            "storage_deposit",
+            &json!({
+                "account_id": oracle_one.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            near_sdk::env::storage_byte_cost() * 125,
+        )
+        .assert_success();
 
     let eac = root.deploy(
         &EAC_WASM_BYTES,
@@ -304,6 +310,26 @@ pub fn init_without_macros() -> (
         )
         .assert_success();
 
+    let controller = oracle_three.deploy(
+        &SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES,
+        SIMPLEWRITEACCESSCONTROLLER_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    controller
+        .call(
+            SIMPLEWRITEACCESSCONTROLLER_ID.into(),
+            "new",
+            &json!({
+                "owner_id": oracle_three.account_id()
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
     let flags = root.deploy(
         &FLAGS_WASM_BYTES,
         FLAGS_ID.to_string(),
@@ -316,7 +342,7 @@ pub fn init_without_macros() -> (
             "new",
             &json!({
                 "owner_id": oracle_three.account_id().to_string(),
-                "rac_address": oracle_three.account_id().to_string(),
+                "rac_address": controller.account_id().to_string(),
             })
             .to_string()
             .into_bytes(),
@@ -325,14 +351,35 @@ pub fn init_without_macros() -> (
         )
         .assert_success();
 
-    oracle_three.call(
-        FLAGS_ID.into(),
-        "disable_access_check",
-        &json!({}).to_string().into_bytes(),
-        DEFAULT_GAS / 2,
-        0, // attached deposit
-    )
-    .assert_success();
+    oracle_three
+        .call(
+            FLAGS_ID.into(),
+            "disable_access_check",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
+    let flags_consumer = oracle_three.deploy(
+        &FLAGSTESTHELPER_WASM_BYTES,
+        FLAGSTESTHELPER_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    flags_consumer
+        .call(
+            FLAGSTESTHELPER_ID.into(),
+            "new",
+            &json!({
+                "flags_contract": flags.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
 
     let consumer = root.deploy(
         &CONSUMER_WASM_BYTES,
@@ -353,6 +400,7 @@ pub fn init_without_macros() -> (
             0, // attached deposit
         )
         .assert_success();
+
     (
         root,
         aca,
@@ -368,5 +416,7 @@ pub fn init_without_macros() -> (
         aggregator_validator_mock_factory,
         flags,
         consumer,
+        flags_consumer,
+        controller
     )
 }
