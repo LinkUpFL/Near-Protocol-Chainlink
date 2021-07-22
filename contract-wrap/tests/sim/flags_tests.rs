@@ -27,7 +27,8 @@ fn raise_flag_when_called_by_the_owner_and_updates_the_warning_flag() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let expected_false_value: bool = oracle_three
@@ -101,7 +102,8 @@ fn raise_flag_when_called_by_the_owner_and_emits_an_event_log() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let tx = oracle_three.call(
@@ -144,7 +146,8 @@ fn raise_flag_when_called_by_the_owner_and_if_a_flag_has_already_been_raised_emi
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -199,7 +202,8 @@ fn raise_flag_when_called_by_an_enabled_setter_sets_the_flags() {
         flags_consumer,
         controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -270,7 +274,8 @@ fn raise_flag_when_called_by_a_non_enabled_setter_and_reverts() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let expected_not_allowed_to_raise_flags = oracle_one.call(
@@ -324,7 +329,8 @@ fn raise_flag_when_called_when_there_is_no_raising_access_controller_and_succeed
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let tx = oracle_three.call(
@@ -410,7 +416,8 @@ fn raise_flag_when_called_when_there_is_no_raising_access_controller_and_reverts
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let tx = oracle_three.call(
@@ -489,7 +496,8 @@ fn raise_flags_when_called_by_the_owner_and_updates_the_warning_flag() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let expected_false_value: bool = oracle_three
@@ -563,7 +571,8 @@ fn raise_flags_when_called_by_the_owner_and_emits_an_event_log() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let tx = oracle_three.call(
@@ -606,7 +615,8 @@ fn raise_flags_when_called_by_the_owner_and_if_a_flag_has_already_been_raised_em
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -661,7 +671,8 @@ fn raise_flags_when_called_by_an_enabled_setter_sets_the_flags() {
         flags_consumer,
         controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -732,7 +743,8 @@ fn raise_flags_when_called_by_a_non_enabled_setter_and_reverts() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let expected_not_allowed_to_raise_flags = oracle_one.call(
@@ -785,7 +797,8 @@ fn raise_flags_when_called_when_there_is_no_raising_access_controller_and_succee
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let tx = oracle_three.call(
@@ -868,7 +881,8 @@ fn raise_flags_when_called_when_there_is_no_raising_access_controller_and_revert
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     let tx = oracle_three.call(
@@ -947,7 +961,8 @@ fn lower_flags_when_called_by_the_owner_updates_the_warning_flag() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1035,7 +1050,8 @@ fn lower_flags_when_called_by_the_owner_and_emits_an_event_log() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1092,7 +1108,8 @@ fn lower_flags_when_called_by_the_owner_and_if_a_flag_has_already_been_raised_em
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1161,7 +1178,8 @@ fn lower_flags_when_called_by_a_non_owner_and_reverts() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1224,7 +1242,8 @@ fn get_flag_if_the_access_control_is_turned_on_and_reverts() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1282,7 +1301,8 @@ fn get_flag_if_the_access_control_is_turned_on_and_if_access_is_granted_to_the_a
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
     oracle_three
         .call(
@@ -1344,7 +1364,8 @@ fn get_flag_if_the_access_control_is_turned_off_and_and_does_not_revert() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1396,7 +1417,8 @@ fn get_flag_if_the_access_control_is_turned_off_and_if_access_is_granted_to_the_
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1459,7 +1481,8 @@ fn get_flags_and_respects_the_access_controls_of_get_flag() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1567,7 +1590,8 @@ fn get_flags_and_returns_the_flags_in_the_order_they_are_requested() {
         flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1632,7 +1656,8 @@ fn set_raising_access_controller_and_updates_access_control_rules() {
         flags_consumer,
         _controller,
         controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1739,7 +1764,8 @@ fn set_raising_access_controller_and_emits_a_log_announcing_the_change() {
         _flags_consumer,
         _controller,
         controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1800,7 +1826,8 @@ fn set_raising_access_controller_and_does_not_emit_a_log_when_there_is_no_change
         _flags_consumer,
         _controller,
         controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three
@@ -1873,7 +1900,8 @@ fn set_raising_access_controller_and_when_called_by_a_non_owner_and_reverts() {
         _flags_consumer,
         _controller,
         controller_2,
-        _flux_aggregator_test_helper_contract
+        _flux_aggregator_test_helper_contract,
+        _eddy
     ) = init();
 
     oracle_three

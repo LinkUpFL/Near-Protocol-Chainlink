@@ -112,7 +112,6 @@ impl EACAggregatorProxy {
         };
         serde_json::from_slice(&get_latest_answer_promise_result).unwrap()
     }
-    // Depracated
 
     pub fn latest_timestamp(&mut self) {
         self.check_access();

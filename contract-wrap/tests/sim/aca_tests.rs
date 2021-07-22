@@ -1,8 +1,10 @@
+use crate::utils::init_without_macros as init;
+use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::json;
 use near_sdk_sim::transaction::ExecutionStatus;
 use near_sdk_sim::DEFAULT_GAS;
 
-use crate::utils::init_without_macros as init;
+// *TODO*: in the has_access function, the contract needs to know if the account signing it is a contract or non-contract account.
 
 // #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
 // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L160
@@ -16,24 +18,25 @@ fn get_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
     let answer: u128 = 100;
 
     let (
-        _root,
-        _aca,
+        root,
+        aca,
         _link,
-        _oracle_one,
+        oracle_one,
         _oracle_two,
-        oracle_three,
+        _oracle_three,
         _test_helper,
         _eac,
         _eac_without_access_controller,
         _oracle_four,
         _oracle_five,
         _aggregator_validator_mock,
-        flags,
+        _flags,
         _consumer,
-        flags_consumer,
+        _flags_consumer,
         _controller,
         _controller_2,
-        _flux_aggregator_test_helper_contract,
+        flux_aggregator_test_helper_contract,
+        _eddy,
     ) = init();
 
     root.call(
@@ -56,210 +59,1184 @@ fn get_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
             0, // deposit
         )
         .assert_success();
+
+    let expected_no_access = flux_aggregator_test_helper_contract.call(
+        flux_aggregator_test_helper_contract.account_id(),
+        "read_get_answer",
+        &json!({"_aggregator": aca.account_id(), "_round_id": 0.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    println!("{:?}", expected_no_access);
+
+    if let ExecutionStatus::Failure(execution_error) = &expected_no_access
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+}
+// #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L169
+
+#[test]
+fn get_answer_when_read_by_a_contract_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": flux_aggregator_test_helper_contract.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    flux_aggregator_test_helper_contract
+        .call(
+            flux_aggregator_test_helper_contract.account_id(),
+            "read_get_answer",
+            &json!({"_aggregator": aca.account_id(), "_round_id": 0.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
 }
 
-// fn access_control_tests() {
-//     let deposit: u64 = 100;
-//     let answer: u128 = 100;
-//     let min_ans: u64 = 1;
-//     let max_ans: u64 = 1;
-//     let rr_delay: u64 = 0;
-//     let next_round: u128 = 1;
-//     let (
-//         root,
-//         aca,
-//         link,
-//         oracle_one,
-//         _oracle_two,
-//         _oracle_three,
-//         test_helper,
-//         _ea,
-//         _eac_without_access_controller,
-//     ) = init();
+// #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L178
 
-//     // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts#L144
+#[test]
+fn get_answer_when_read_by_a_regular_account_without_explicit_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
 
-//     root.call(
-//         aca.account_id(),
-//         "change_oracles",
-//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
 
-//     oracle_one
-//         .call(
-//             aca.account_id(),
-//             "submit",
-//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
 
-//     // Unauthorized Calls
-//     // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts#L158
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
 
-//     let mut get_answer_unauthorized = test_helper.call(
-//         aca.account_id(),
-//         "get_answer",
-//         &json!({"_round_id": next_round.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-//     assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+    let round: u64 = eddy
+        .call(
+            aca.account_id(),
+            "latest_round",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
 
-//     if let ExecutionStatus::Failure(execution_error) = &get_answer_unauthorized
-//         .promise_errors()
-//         .remove(0)
-//         .unwrap()
-//         .outcome()
-//         .status
-//     {
-//         assert!(execution_error.to_string().contains("No access"));
-//     } else {
-//         unreachable!();
-//     }
+    eddy.call(
+        aca.account_id(),
+        "get_answer",
+        &json!({"_round_id": round.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+}
 
-//     // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts#L196
+// #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L185
 
-//     get_answer_unauthorized = test_helper.call(
-//         aca.account_id(),
-//         "get_timestamp",
-//         &json!({"_round_id": next_round.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-//     assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+#[test]
+fn get_answer_when_read_by_a_regular_account_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
 
-//     if let ExecutionStatus::Failure(execution_error) = &get_answer_unauthorized
-//         .promise_errors()
-//         .remove(0)
-//         .unwrap()
-//         .outcome()
-//         .status
-//     {
-//         assert!(execution_error.to_string().contains("No access"));
-//     } else {
-//         unreachable!();
-//     }
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
 
-//     // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
 
-//     get_answer_unauthorized = test_helper.call(
-//         aca.account_id(),
-//         "latest_answer",
-//         &json!({"_round_id": next_round.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-//     assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
 
-//     if let ExecutionStatus::Failure(execution_error) = &get_answer_unauthorized
-//         .promise_errors()
-//         .remove(0)
-//         .unwrap()
-//         .outcome()
-//         .status
-//     {
-//         assert!(execution_error.to_string().contains("No access"));
-//     } else {
-//         unreachable!();
-//     }
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": eddy.account_id()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
 
-//     // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/AccessControlledAggregator.test.ts#L306
+    let round: u64 = eddy
+        .call(
+            aca.account_id(),
+            "latest_round",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
 
-//     get_answer_unauthorized = test_helper.call(
-//         aca.account_id(),
-//         "latest_timestamp",
-//         &json!({"_round_id": next_round.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-//     assert_eq!(get_answer_unauthorized.promise_errors().len(), 1);
+    eddy.call(
+        aca.account_id(),
+        "get_answer",
+        &json!({"_round_id": round.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+}
 
-//     if let ExecutionStatus::Failure(execution_error) = &get_answer_unauthorized
-//         .promise_errors()
-//         .remove(0)
-//         .unwrap()
-//         .outcome()
-//         .status
-//     {
-//         assert!(execution_error.to_string().contains("No access"));
-//     } else {
-//         unreachable!();
-//     }
+// #get_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L196
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L213
 
-//     // Authorized Contract Account Calls
+#[test]
+fn get_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
 
-//     root.call(
-//         aca.account_id(),
-//         "add_access",
-//         &json!({"_user": test_helper.account_id().to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
 
-//     // Authorized call from test_helper for get_answer
-//     test_helper
-//         .call(
-//             aca.account_id(),
-//             "get_answer",
-//             &json!({"_round_id": next_round.to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
-//     // Authorized call from test_helper for get_timestamp
-//     test_helper
-//         .call(
-//             aca.account_id(),
-//             "get_timestamp",
-//             &json!({"_round_id": next_round.to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
-//     // Authorized call from test_helper for latest_answer
-//     test_helper
-//         .call(
-//             aca.account_id(),
-//             "latest_answer",
-//             &json!({"_round_id": next_round.to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
-//     // Authorized call from test_helper for latest_timestamp
-//     test_helper
-//         .call(
-//             aca.account_id(),
-//             "latest_timestamp",
-//             &json!({"_round_id": next_round.to_string()})
-//                 .to_string()
-//                 .into_bytes(),
-//             DEFAULT_GAS,
-//             0, // deposit
-//         )
-//         .assert_success();
-// }
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_no_access = flux_aggregator_test_helper_contract.call(
+        flux_aggregator_test_helper_contract.account_id(),
+        "read_get_timestamp",
+        &json!({"_aggregator": aca.account_id(), "_round_id": 0.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    println!("{:?}", expected_no_access);
+
+    if let ExecutionStatus::Failure(execution_error) = &expected_no_access
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+}
+
+// #get_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L196
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L222
+
+#[test]
+fn get_timestamp_when_read_by_a_contract_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": flux_aggregator_test_helper_contract.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    flux_aggregator_test_helper_contract
+        .call(
+            flux_aggregator_test_helper_contract.account_id(),
+            "read_get_timestamp",
+            &json!({"_aggregator": aca.account_id(), "_round_id": 0.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+}
+
+// #get_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L196
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L231
+
+#[test]
+fn get_timestamp_when_read_by_a_regular_account_without_explicit_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let round: u64 = eddy
+        .call(
+            aca.account_id(),
+            "latest_round",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    let current_timestamp: u64 = eddy
+        .call(
+            aca.account_id(),
+            "get_timestamp",
+            &json!({"_round_id": round.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(current_timestamp > 0, true)
+}
+
+// #get_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L196
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L231
+
+#[test]
+fn get_timestamp_when_read_by_a_regular_account_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": eddy.account_id()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    let round: u64 = eddy
+        .call(
+            aca.account_id(),
+            "latest_round",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    let current_timestamp: u64 = eddy
+        .call(
+            aca.account_id(),
+            "get_timestamp",
+            &json!({"_round_id": round.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(current_timestamp > 0, true)
+}
+
+// #latest_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L272
+
+#[test]
+fn latest_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_no_access = flux_aggregator_test_helper_contract.call(
+        flux_aggregator_test_helper_contract.account_id(),
+        "read_latest_answer",
+        &json!({"_aggregator": aca.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    println!("{:?}", expected_no_access);
+
+    if let ExecutionStatus::Failure(execution_error) = &expected_no_access
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+}
+
+// #latest_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L281
+
+#[test]
+fn latest_answer_when_read_by_a_contract_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": flux_aggregator_test_helper_contract.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    flux_aggregator_test_helper_contract
+        .call(
+            flux_aggregator_test_helper_contract.account_id(),
+            "read_latest_answer",
+            &json!({"_aggregator": aca.account_id()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+}
+
+// #latest_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L290
+
+#[test]
+fn latest_answer_when_read_by_a_regular_account_without_explicit_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    eddy.call(
+        aca.account_id(),
+        "latest_answer",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+}
+
+// #latest_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L296
+
+#[test]
+fn latest_answer_when_read_by_a_regular_account_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": eddy.account_id()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    eddy.call(
+        aca.account_id(),
+        "latest_answer",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+}
+
+// #latest_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L306
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L323
+
+#[test]
+fn latest_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_no_access = flux_aggregator_test_helper_contract.call(
+        flux_aggregator_test_helper_contract.account_id(),
+        "read_latest_timestamp",
+        &json!({"_aggregator": aca.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    println!("{:?}", expected_no_access);
+
+    if let ExecutionStatus::Failure(execution_error) = &expected_no_access
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error.to_string().contains("No access"));
+    } else {
+        unreachable!();
+    }
+}
+
+// #latest_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L306
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L332
+
+#[test]
+fn latest_timestamp_when_read_by_a_contract_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        _eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": flux_aggregator_test_helper_contract.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    flux_aggregator_test_helper_contract
+        .call(
+            flux_aggregator_test_helper_contract.account_id(),
+            "read_latest_answer",
+            &json!({"_aggregator": aca.account_id()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+}
+
+// #latest_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L306
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L341
+
+#[test]
+fn latest_timestamp_when_read_by_a_regular_account_without_explicit_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let current_timestamp: u64 = eddy
+        .call(
+            aca.account_id(),
+            "latest_timestamp",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(current_timestamp > 0, true);
+}
+
+// #latest_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L306
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L350
+
+#[test]
+fn latest_timestamp_when_read_by_a_regular_account_with_access_and_succeeds() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    root.call(
+        aca.account_id(),
+        "add_access",
+        &json!({"_user": eddy.account_id()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    let current_timestamp: u64 = eddy
+        .call(
+            aca.account_id(),
+            "latest_timestamp",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(current_timestamp > 0, true);
+}

@@ -48,8 +48,10 @@ pub fn init_without_macros() -> (
     UserAccount,
     UserAccount,
     UserAccount,
+    UserAccount
 ) {
     // Use `None` for default genesis configuration; more info below
+    // Alias: Carol
     let root = init_simulator(None);
 
     let link = root.deploy(
@@ -250,6 +252,11 @@ pub fn init_without_macros() -> (
 
     let test_helper = root.create_user(
         "test_helper".to_string(),
+        to_yocto("1000"), // initial balance
+    );
+
+    let eddy = root.create_user(
+        "eddy".to_string(),
         to_yocto("1000"), // initial balance
     );
 
@@ -455,6 +462,7 @@ pub fn init_without_macros() -> (
         flags_consumer,
         controller,
         controller_2,
-        flux_aggregator_test_helper_contract
+        flux_aggregator_test_helper_contract,
+        eddy
     )
 }

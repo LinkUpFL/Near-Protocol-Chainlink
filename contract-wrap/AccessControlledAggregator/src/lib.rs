@@ -1580,6 +1580,8 @@ impl AccessControlledAggregator {
     pub fn has_access(&self, _user: AccountId) -> bool {
         if !self.check_enabled {
             !self.check_enabled
+        } else if _user == env::signer_account_id() {
+            true
         } else {
             let user_option = self.access_list.get(&_user);
             if user_option.is_none() {

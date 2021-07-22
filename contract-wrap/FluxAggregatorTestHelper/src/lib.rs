@@ -1,10 +1,9 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
 use near_sdk::serde_json::{self, json};
 use near_sdk::wee_alloc::WeeAlloc;
 use near_sdk::{env, near_bindgen, AccountId};
-use near_sdk::{Promise, PromiseOrValue, PromiseResult};
-
+use near_sdk::{PromiseResult};
+use near_sdk::json_types::{U128, U64};
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
@@ -27,7 +26,7 @@ impl FluxAggregatorTestHelper {
     #[init]
     pub fn new() -> Self {
         let result = Self {
-            requested_round_id: 0,
+            requested_round_id: 0_u64,
         };
         result
     }
@@ -36,7 +35,7 @@ impl FluxAggregatorTestHelper {
         let read_oracle_round_state_promise = env::promise_create(
             _aggregator.to_string(),
             b"oracle_round_state",
-            json!({ "_oracle": _oracle.to_string(), "_queried_round_id": 0.to_string()}).to_string().as_bytes(),
+            json!({ "_oracle": _oracle.to_string(), "_queried_round_id": U128::from(0)}).to_string().as_bytes(),
             0,
             SINGLE_CALL_GAS,
         );
@@ -62,11 +61,11 @@ impl FluxAggregatorTestHelper {
         results
     }
 
-    pub fn read_get_round_data(&self, _aggregator: AccountId, _round_id: u64) {
+    pub fn read_get_round_data(&self, _aggregator: AccountId, _round_id: U64) {
         let read_get_round_data_promise = env::promise_create(
             _aggregator.to_string(),
             b"get_round_data",
-            json!({ "_round_id": _round_id.to_string()}).to_string().as_bytes(),
+            json!({ "_round_id": _round_id}).to_string().as_bytes(),
             0,
             SINGLE_CALL_GAS,
         );
@@ -245,11 +244,11 @@ impl FluxAggregatorTestHelper {
         results
     }
 
-    pub fn read_get_answer(&self, _aggregator: AccountId, _round_id: u64) {
+    pub fn read_get_answer(&self, _aggregator: AccountId, _round_id: U128) {
         let read_get_answer_promise = env::promise_create(
             _aggregator.to_string(),
             b"get_answer",
-            json!({"_round_id": _round_id.to_string()}).to_string().as_bytes(),
+            json!({"_round_id": _round_id}).to_string().as_bytes(),
             0,
             SINGLE_CALL_GAS,
         );
@@ -275,11 +274,11 @@ impl FluxAggregatorTestHelper {
         results
     }
 
-    pub fn read_get_timestamp(&self, _aggregator: AccountId, _round_id: u64) {
+    pub fn read_get_timestamp(&self, _aggregator: AccountId, _round_id: U64) {
         let read_get_timestamp_promise = env::promise_create(
             _aggregator.to_string(),
             b"get_timestamp",
-            json!({"_round_id": _round_id.to_string()}).to_string().as_bytes(),
+            json!({"_round_id": _round_id}).to_string().as_bytes(),
             0,
             SINGLE_CALL_GAS,
         );
