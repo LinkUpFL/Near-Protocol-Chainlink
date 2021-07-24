@@ -604,7 +604,7 @@ impl EACAggregatorProxy {
             SINGLE_CALL_GAS,
         );
 
-        let promise3 = env::promise_then(
+        let get_has_access_results_promise = env::promise_then(
             get_has_access_promise,
             env::current_account_id(),
             b"call_access_controller_has_access_results",
@@ -612,7 +612,7 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         );
-        env::promise_return(promise3);
+        env::promise_return(get_has_access_results_promise);
     }
 
     fn call_access_controller_has_access_results(&self) -> bool {
@@ -636,7 +636,7 @@ impl EACAggregatorProxy {
             SINGLE_CALL_GAS,
         );
 
-        let promise3 = env::promise_then(
+        let get_has_access_results_promise = env::promise_then(
             get_has_access_promise,
             env::current_account_id(),
             b"check_access_callback",
@@ -644,7 +644,7 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         );
-        env::promise_return(promise3);
+        env::promise_return(get_has_access_results_promise);
     }
 
     fn check_access_callback(&self) {

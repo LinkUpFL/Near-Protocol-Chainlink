@@ -12,6 +12,7 @@ const FLAGSTESTHELPER_ID: &str = "flags_consumer";
 const SIMPLEWRITEACCESSCONTROLLER_ID: &str = "controller";
 const SIMPLEWRITEACCESSCONTROLLER_ID_2: &str = "controller_2";
 const FLUXAGGREGATORTESTHELPER_ID: &str = "flux_aggregator_test_helper_contract";
+const MOCKV3AGGREGATOR_ID: &str = "mock_v3_aggregator";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
@@ -22,7 +23,9 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     CONSUMER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Consumer.wasm",
     SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/SimpleWriteAccessController.wasm",
     FLAGSTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FlagsTestHelper.wasm",
-    FLUXAGGREGATORTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FluxAggregatorTestHelper.wasm"
+    FLUXAGGREGATORTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FluxAggregatorTestHelper.wasm",
+    MOCKV3AGGREGATOR_WASM_BYTES => "target/wasm32-unknown-unknown/debug/MockV3Aggregator.wasm"
+
 }
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
@@ -48,7 +51,7 @@ pub fn init_without_macros() -> (
     UserAccount,
     UserAccount,
     UserAccount,
-    UserAccount
+    UserAccount,
 ) {
     // Use `None` for default genesis configuration; more info below
     // Alias: Carol
@@ -290,27 +293,6 @@ pub fn init_without_macros() -> (
         )
         .assert_success();
 
-    let eac = root.deploy(
-        &EAC_WASM_BYTES,
-        EAC_ID.to_string(),
-        to_yocto("1000"), // attached deposit
-    );
-
-    eac.call(
-        EAC_ID.into(),
-        "new",
-        &json!({
-            "owner_id": eac.account_id(),
-            "_aggregator": aca.account_id(),
-            "_access_controller": ""
-        })
-        .to_string()
-        .into_bytes(),
-        DEFAULT_GAS / 2,
-        0, // attached deposit
-    )
-    .assert_success();
-
     let eac_without_access_controller = root.deploy(
         &EAC_WASM_BYTES,
         EAC_WITHOUT_ACCESS_CONTROLLER_ID.to_string(),
@@ -353,6 +335,26 @@ pub fn init_without_macros() -> (
         )
         .assert_success();
 
+    let eac = root.deploy(
+        &EAC_WASM_BYTES,
+        EAC_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    eac.call(
+        EAC_ID.into(),
+        "new",
+        &json!({
+            "owner_id": eac.account_id(),
+            "_aggregator": aca.account_id(),
+            "_access_controller": controller.account_id()
+        })
+        .to_string()
+        .into_bytes(),
+        DEFAULT_GAS / 2,
+        0, // attached deposit
+    )
+    .assert_success();
     let controller_2 = oracle_three.deploy(
         &SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES,
         SIMPLEWRITEACCESSCONTROLLER_ID_2.to_string(),
@@ -463,6 +465,6 @@ pub fn init_without_macros() -> (
         controller,
         controller_2,
         flux_aggregator_test_helper_contract,
-        eddy
+        eddy,
     )
 }

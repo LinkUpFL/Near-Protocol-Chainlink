@@ -4,6 +4,82 @@ use near_sdk_sim::DEFAULT_GAS;
 
 use crate::utils::init_without_macros as init;
 
+// *TODO*: in the has_access function, the contract needs to know if the account signing it is a contract or non-contract account.
+
+// #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
+// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L160
+
+#[test]
+fn get_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
+    let min_ans: u64 = 1;
+    let max_ans: u64 = 1;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+    let answer: u128 = 100;
+
+    let (
+        root,
+        aca,
+        _link,
+        oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        flux_aggregator_test_helper_contract,
+        eddy,
+    ) = init();
+
+    root.call(
+        aca.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            aca.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    // root.call(
+    //     aca.account_id(),
+    //     "add_access",
+    //     &json!({"_user": eac.account_id()}).to_string().into_bytes(),
+    //     DEFAULT_GAS,
+    //     0, // deposit
+    // )
+    // .assert_success();
+
+    let expected_ans = root.call(
+        eac.account_id(),
+        "latest_answer",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    );
+
+    println!("{:?}", expected_ans);
+}
+
 // #[test]
 // fn external_access_tests() {
 //     let (root, aca, link, oracle_one, oracle_two, oracle_three, test_helper, _eac, eac_without_access_controller) = init();

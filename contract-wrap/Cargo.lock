@@ -85,6 +85,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "MockV3Aggregator"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
+
+[[package]]
 name = "SimpleWriteAccessController"
 version = "0.1.0"
 dependencies = [
@@ -613,6 +621,7 @@ dependencies = [
  "FluxAggregator",
  "FluxAggregatorTestHelper",
  "LinkToken",
+ "MockV3Aggregator",
  "SimpleWriteAccessController",
  "near-sdk 3.0.1",
  "near-sdk-sim",

@@ -17,6 +17,7 @@ Consumer = { path = "./Consumer" }
 SimpleWriteAccessController = { path = "./SimpleWriteAccessController" }
 FlagsTestHelper = { path = "./FlagsTestHelper" }
 FluxAggregatorTestHelper = { path = "./FluxAggregatorTestHelper" }
+MockV3Aggregator = { path = "./MockV3Aggregator" }
 
 [profile.release]
 codegen-units = 1
@@ -37,5 +38,5 @@ members = [
   "Consumer",
   "SimpleWriteAccessController",
   "FlagsTestHelper",
-  "FluxAggregatorTestHelper"
+  "MockV3Aggregator"
 ]
