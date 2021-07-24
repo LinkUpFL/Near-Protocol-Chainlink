@@ -76,11 +76,9 @@ impl EACAggregatorProxy {
         self.only_owner();
         self.access_controller = _access_controller;
     }
-    // Depracated
 
     pub fn latest_answer(&mut self) {
         self.check_access();
-        let prepaid_gas = env::prepaid_gas();
         let get_latest_answer_promise = env::promise_create(
             self.current_phase.aggregator.clone(),
             b"latest_answer",
@@ -88,16 +86,15 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         );
-
-        let promise3 = env::promise_then(
+        let latest_answer_results_promise = env::promise_then(
             get_latest_answer_promise,
             env::current_account_id(),
             b"latest_answer_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            SINGLE_CALL_GAS,
         );
-        env::promise_return(promise3);
+        env::promise_return(latest_answer_results_promise);
     }
 
     pub fn latest_answer_results(&self) -> u128 {
@@ -105,7 +102,6 @@ impl EACAggregatorProxy {
         assert_eq!(env::promise_results_count(), 1);
         let get_latest_answer_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
                 _x
             }
             _x => panic!("Promise with index 0 failed"),
@@ -115,7 +111,6 @@ impl EACAggregatorProxy {
 
     pub fn latest_timestamp(&mut self) {
         self.check_access();
-        let prepaid_gas = env::prepaid_gas();
         let get_latest_timestamp_promise = env::promise_create(
             self.current_phase.aggregator.clone(),
             b"latest_timestamp",
@@ -123,16 +118,15 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         );
-
-        let promise3 = env::promise_then(
+        let latest_timestamp_results_promise = env::promise_then(
             get_latest_timestamp_promise,
             env::current_account_id(),
             b"latest_timestamp_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            SINGLE_CALL_GAS,
         );
-        env::promise_return(promise3);
+        env::promise_return(latest_timestamp_results_promise);
     }
 
     pub fn latest_timestamp_results(&self) -> u64 {
@@ -140,7 +134,6 @@ impl EACAggregatorProxy {
         assert_eq!(env::promise_results_count(), 1);
         let get_latest_timestamp_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
                 _x
             }
             _x => panic!("Promise with index 0 failed"),
@@ -232,15 +225,15 @@ impl EACAggregatorProxy {
             SINGLE_CALL_GAS,
         );
 
-        let promise3 = env::promise_then(
+        let latest_round_results_promise = env::promise_then(
             get_latest_round_promise,
             env::current_account_id(),
             b"latest_round_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            SINGLE_CALL_GAS,
         );
-        env::promise_return(promise3);
+        env::promise_return(latest_round_results_promise);
     }
 
     pub fn latest_round_results(&self) -> u128 {
@@ -248,7 +241,6 @@ impl EACAggregatorProxy {
         assert_eq!(env::promise_results_count(), 1);
         let get_latest_round_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
                 _x
             }
             _x => panic!("Promise with index 0 failed"),
@@ -260,7 +252,6 @@ impl EACAggregatorProxy {
 
     pub fn get_round_data(&mut self, _round_id: U128) {
         self.check_access();
-        let prepaid_gas = env::prepaid_gas();
         let round_id_u128: u128 = _round_id.into();
         let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
         let phase_aggregator_option = self.phase_aggregators.get(&phase_id);
@@ -277,20 +268,19 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         );
-        let promise3 = env::promise_then(
+        let get_round_data_results_promise = env::promise_then(
             get_round_data_promise,
             env::current_account_id(),
             b"get_round_data_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            SINGLE_CALL_GAS,
         );
-        env::promise_return(promise3);
+        env::promise_return(get_round_data_results_promise);
     }
     pub fn get_round_data_results(&self) -> (u128, u128, u128, u128, u128) {
         let get_round_data_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
                 _x
             }
             _x => panic!("Promise with index 0 failed"),
@@ -310,7 +300,6 @@ impl EACAggregatorProxy {
     pub fn latest_round_data(&mut self) {
         // let current = &self.current_phase; // cache storage reads
         self.check_access();
-        let prepaid_gas = env::prepaid_gas();
         let get_latest_round_data_promise = env::promise_create(
             self.current_phase.aggregator.clone(),
             b"latest_round_data",
@@ -318,15 +307,15 @@ impl EACAggregatorProxy {
             0,
             SINGLE_CALL_GAS,
         );
-        let promise3 = env::promise_then(
+        let get_latest_data_results_promise = env::promise_then(
             get_latest_round_data_promise,
             env::current_account_id(),
             b"latest_round_data_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            SINGLE_CALL_GAS
         );
-        env::promise_return(promise3);
+        env::promise_return(get_latest_data_results_promise);
     }
 
     pub fn latest_round_data_results(&self) -> (u128, u128, u128, u128, u128) {
@@ -346,34 +335,89 @@ impl EACAggregatorProxy {
         )
     }
 
-    pub fn proposed_get_round_data(&mut self, _round_id: U128) -> Promise {
+    pub fn proposed_get_round_data(&mut self, _round_id: U128) {
         self.check_access();
         self.has_proposal();
         let round_id_u128: u128 = _round_id.into();
-        Promise::new(self.proposed_aggregator.clone())
-            .function_call(
-                b"get_round_data".to_vec(),
-                json!({ "_round_id": round_id_u128 })
-                    .to_string()
-                    .as_bytes()
-                    .to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+        let get_proposed_round_data_promise = env::promise_create(
+            self.proposed_aggregator.clone(),
+            b"get_round_data",
+            json!({ "_round_id": round_id_u128 })
+                .to_string()
+                .as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_proposed_round_data_results_promise = env::promise_then(
+            get_proposed_round_data_promise,
+            env::current_account_id(),
+            b"proposed_round_data_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(get_proposed_round_data_results_promise);
+    }
+    pub fn proposed_round_data_results(&self) -> (u128, u128, u128, u128, u128) {
+        let get_round_data_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let get_round_data_promise_result_json: (u128, u128, u128, u128, u64) =
+            serde_json::from_slice(&get_round_data_promise_result).unwrap();
+        self.add_phase_ids(
+            get_round_data_promise_result_json.0,
+            get_round_data_promise_result_json.0,
+            get_round_data_promise_result_json.1,
+            get_round_data_promise_result_json.2,
+            get_round_data_promise_result_json.3,
+            get_round_data_promise_result_json.4,
+        )
     }
 
-    pub fn proposed_latest_round_data(&mut self) -> Promise {
+    pub fn proposed_latest_round_data(&mut self, _round_id: U128) {
         self.check_access();
         self.has_proposal();
-        Promise::new(self.proposed_aggregator.clone())
-            .function_call(
-                b"latest_round_data".to_vec(),
-                json!({}).to_string().as_bytes().to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+        let round_id_u128: u128 = _round_id.into();
+        let get_proposed_latest_round_data_promise = env::promise_create(
+            self.proposed_aggregator.clone(),
+            b"get_round_data",
+            json!({ "_round_id": round_id_u128 })
+                .to_string()
+                .as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_proposed_latest_round_data_results_promise = env::promise_then(
+            get_proposed_latest_round_data_promise,
+            env::current_account_id(),
+            b"proposed_latest_round_data_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(get_proposed_latest_round_data_results_promise);
+    }
+
+    pub fn proposed_latest_round_data_results(&self) -> (u128, u128, u128, u128, u128) {
+        let get_round_data_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let get_round_data_promise_result_json: (u128, u128, u128, u128, u64) =
+            serde_json::from_slice(&get_round_data_promise_result).unwrap();
+        self.add_phase_ids(
+            get_round_data_promise_result_json.0,
+            get_round_data_promise_result_json.0,
+            get_round_data_promise_result_json.1,
+            get_round_data_promise_result_json.2,
+            get_round_data_promise_result_json.3,
+            get_round_data_promise_result_json.4,
+        )
     }
 
     pub fn aggregator(&self) -> String {
@@ -384,37 +428,97 @@ impl EACAggregatorProxy {
         self.current_phase.id
     }
 
-    pub fn decimals(&self) -> Promise {
-        Promise::new(self.current_phase.aggregator.clone())
-            .function_call(
-                b"get_decimals".to_vec(),
-                json!({}).to_string().as_bytes().to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+    pub fn get_decimals(&self) {
+        let get_decimals_promise = env::promise_create(
+            self.current_phase.aggregator.clone(),
+            b"get_decimals",
+            json!({})
+                .to_string()
+                .as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_decimals_results_promise = env::promise_then(
+            get_decimals_promise,
+            env::current_account_id(),
+            b"get_decimals_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(get_decimals_results_promise);
     }
 
-    pub fn version(&self) -> Promise {
-        Promise::new(self.current_phase.aggregator.clone())
-            .function_call(
-                b"get_version".to_vec(),
-                json!({}).to_string().as_bytes().to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+    pub fn get_decimals_results(&self) -> u64 {
+        let get_decimals_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        serde_json::from_slice(&get_decimals_promise_result).unwrap()
     }
 
-    pub fn description(&self) -> Promise {
-        Promise::new(self.current_phase.aggregator.clone())
-            .function_call(
-                b"get_description".to_vec(),
-                json!({}).to_string().as_bytes().to_vec(),
-                0,
-                SINGLE_CALL_GAS,
-            )
-            .as_return()
+    pub fn get_version(&self) {
+        let get_version_promise = env::promise_create(
+            self.current_phase.aggregator.clone(),
+            b"get_version",
+            json!({})
+                .to_string()
+                .as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_version_results_promise = env::promise_then(
+            get_version_promise,
+            env::current_account_id(),
+            b"get_version_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(get_version_results_promise);
+    }
+
+    pub fn get_version_results(&self) -> u128 {
+        let get_version_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        serde_json::from_slice(&get_version_promise_result).unwrap()
+    }
+
+    pub fn get_description(&self) {
+        let get_description_promise = env::promise_create(
+            self.current_phase.aggregator.clone(),
+            b"get_description",
+            json!({})
+                .to_string()
+                .as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_description_results_promise = env::promise_then(
+            get_description_promise,
+            env::current_account_id(),
+            b"get_description_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(get_description_results_promise);
+    }
+
+    pub fn get_description_results(&self) -> u128 {
+        let get_description_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        serde_json::from_slice(&get_description_promise_result).unwrap()
     }
 
     pub fn propose_aggregator(&mut self, _aggregator: AccountId) {
@@ -431,8 +535,6 @@ impl EACAggregatorProxy {
         self.proposed_aggregator.clear();
         self.set_aggregator(_aggregator);
     }
-
-    // Internal
 
     fn set_aggregator(&mut self, _aggregator: AccountId) {
         let id: u64 = self.current_phase.id.saturating_add(1);
@@ -494,7 +596,6 @@ impl EACAggregatorProxy {
     }
 
     fn call_access_controller_has_access(&mut self, _user: AccountId) {
-        let prepaid_gas = env::prepaid_gas();
         let get_has_access_promise = env::promise_create(
             self.access_controller.clone(),
             b"has_access",
@@ -509,7 +610,7 @@ impl EACAggregatorProxy {
             b"call_access_controller_has_access_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            SINGLE_CALL_GAS,
         );
         env::promise_return(promise3);
     }
@@ -519,15 +620,41 @@ impl EACAggregatorProxy {
         assert_eq!(env::promise_results_count(), 1);
         let get_has_access_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
                 _x
             }
             _x => panic!("Promise with index 0 failed"),
         };
         serde_json::from_slice(&get_has_access_promise_result).unwrap()
     }
-    fn check_access(&self) {
-        //  || self.call_access_controller_has_access(env::predecessor_account_id()
-        assert!(self.access_controller == "null", "No access");
+
+    fn check_access(&mut self) {
+        let get_has_access_promise = env::promise_create(
+            env::current_account_id(),
+            b"call_access_controller_has_access",
+            json!({ "_user": env::predecessor_account_id() }).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+
+        let promise3 = env::promise_then(
+            get_has_access_promise,
+            env::current_account_id(),
+            b"check_access_callback",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(promise3);
+    }
+
+    fn check_access_callback(&self) {
+        let get_has_access_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let prom_re: bool = serde_json::from_slice(&get_has_access_promise_result).unwrap();
+        assert!(self.access_controller == "" || prom_re, "No access");
     }
 }

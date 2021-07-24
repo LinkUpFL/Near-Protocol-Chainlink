@@ -36,7 +36,7 @@ fn get_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy
     ) = init();
 
     root.call(
@@ -60,7 +60,7 @@ fn get_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
         )
         .assert_success();
 
-    let expected_no_access = flux_aggregator_test_helper_contract.call(
+    let expected_no_access = eddy.call(
         flux_aggregator_test_helper_contract.account_id(),
         "read_get_answer",
         &json!({"_aggregator": aca.account_id(), "_round_id": 0.to_string()})
@@ -70,7 +70,7 @@ fn get_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
         0, // deposit
     );
 
-    println!("{:?}", expected_no_access);
+   
 
     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
         .promise_errors()
@@ -114,7 +114,7 @@ fn get_answer_when_read_by_a_contract_with_access_and_succeeds() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy
     ) = init();
 
     root.call(
@@ -149,7 +149,7 @@ fn get_answer_when_read_by_a_contract_with_access_and_succeeds() {
     )
     .assert_success();
 
-    flux_aggregator_test_helper_contract
+    eddy
         .call(
             flux_aggregator_test_helper_contract.account_id(),
             "read_get_answer",
@@ -353,7 +353,7 @@ fn get_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy
     ) = init();
 
     root.call(
@@ -377,7 +377,7 @@ fn get_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts() {
         )
         .assert_success();
 
-    let expected_no_access = flux_aggregator_test_helper_contract.call(
+    let expected_no_access = eddy.call(
         flux_aggregator_test_helper_contract.account_id(),
         "read_get_timestamp",
         &json!({"_aggregator": aca.account_id(), "_round_id": 0.to_string()})
@@ -387,7 +387,7 @@ fn get_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts() {
         0, // deposit
     );
 
-    println!("{:?}", expected_no_access);
+   
 
     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
         .promise_errors()
@@ -432,7 +432,7 @@ fn get_timestamp_when_read_by_a_contract_with_access_and_succeeds() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy
     ) = init();
 
     root.call(
@@ -467,7 +467,7 @@ fn get_timestamp_when_read_by_a_contract_with_access_and_succeeds() {
     )
     .assert_success();
 
-    flux_aggregator_test_helper_contract
+    eddy
         .call(
             flux_aggregator_test_helper_contract.account_id(),
             "read_get_timestamp",
@@ -677,7 +677,7 @@ fn latest_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy,
     ) = init();
 
     root.call(
@@ -701,7 +701,7 @@ fn latest_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
         )
         .assert_success();
 
-    let expected_no_access = flux_aggregator_test_helper_contract.call(
+    let expected_no_access = eddy.call(
         flux_aggregator_test_helper_contract.account_id(),
         "read_latest_answer",
         &json!({"_aggregator": aca.account_id()})
@@ -711,7 +711,7 @@ fn latest_answer_when_read_by_a_contract_without_explicit_access_and_reverts() {
         0, // deposit
     );
 
-    println!("{:?}", expected_no_access);
+   
 
     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
         .promise_errors()
@@ -756,7 +756,7 @@ fn latest_answer_when_read_by_a_contract_with_access_and_succeeds() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy,
     ) = init();
 
     root.call(
@@ -791,7 +791,7 @@ fn latest_answer_when_read_by_a_contract_with_access_and_succeeds() {
     )
     .assert_success();
 
-    flux_aggregator_test_helper_contract
+    eddy
         .call(
             flux_aggregator_test_helper_contract.account_id(),
             "read_latest_answer",
@@ -868,8 +868,8 @@ fn latest_answer_when_read_by_a_regular_account_without_explicit_access_and_succ
     .assert_success();
 }
 
-// #latest_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
-// https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L296
+// // #latest_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L255
+// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L296
 
 #[test]
 fn latest_answer_when_read_by_a_regular_account_with_access_and_succeeds() {
@@ -971,7 +971,7 @@ fn latest_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts(
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy,
     ) = init();
 
     root.call(
@@ -995,7 +995,7 @@ fn latest_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts(
         )
         .assert_success();
 
-    let expected_no_access = flux_aggregator_test_helper_contract.call(
+    let expected_no_access = eddy.call(
         flux_aggregator_test_helper_contract.account_id(),
         "read_latest_timestamp",
         &json!({"_aggregator": aca.account_id()})
@@ -1005,7 +1005,7 @@ fn latest_timestamp_when_read_by_a_contract_without_explicit_access_and_reverts(
         0, // deposit
     );
 
-    println!("{:?}", expected_no_access);
+    println!("{:?}", expected_no_access.promise_results());
 
     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
         .promise_errors()
@@ -1050,7 +1050,7 @@ fn latest_timestamp_when_read_by_a_contract_with_access_and_succeeds() {
         _controller,
         _controller_2,
         flux_aggregator_test_helper_contract,
-        _eddy,
+        eddy,
     ) = init();
 
     root.call(
@@ -1085,17 +1085,16 @@ fn latest_timestamp_when_read_by_a_contract_with_access_and_succeeds() {
     )
     .assert_success();
 
-    flux_aggregator_test_helper_contract
-        .call(
-            flux_aggregator_test_helper_contract.account_id(),
-            "read_latest_answer",
-            &json!({"_aggregator": aca.account_id()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
+    eddy.call(
+        flux_aggregator_test_helper_contract.account_id(),
+        "read_latest_timestamp",
+        &json!({"_aggregator": aca.account_id()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+
 }
 
 // #latest_timestamp https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L306

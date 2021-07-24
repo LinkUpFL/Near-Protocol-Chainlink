@@ -178,7 +178,6 @@ impl AccessControlledAggregator {
                 allocated: 0_u128,
             },
         };
-        result.check_enabled = true;
         let updated_at_insert: u64 = env::block_timestamp().saturating_sub(timeout_u64);
         let new_round: Round = Round {
             answer: 0_u128,
@@ -1577,18 +1576,24 @@ impl AccessControlledAggregator {
     pub fn get_check_enabled(&self) -> bool {
         self.check_enabled
     }
+
+    // Allow any non-contract account to read the answers.
+    // If a contract account is requesting the data, make sure they are in the access list or the check is disabled.
+    
     pub fn has_access(&self, _user: AccountId) -> bool {
-        if !self.check_enabled {
-            !self.check_enabled
-        } else if _user == env::signer_account_id() {
-            true
-        } else {
-            let user_option = self.access_list.get(&_user);
-            if user_option.is_none() {
-                return false;
+        if env::signer_account_id() != env::predecessor_account_id() {
+            if !self.check_enabled {
+                !self.check_enabled
+            } else {
+                let user_option = self.access_list.get(&_user);
+                if user_option.is_none() {
+                    return false;
+                }
+                let user = user_option.unwrap();
+                user
             }
-            let user = user_option.unwrap();
-            user
+        } else {
+           true
         }
     }
 
@@ -1635,6 +1640,6 @@ impl AccessControlledAggregator {
     }
 
     fn check_access(&self) {
-        assert!(self.has_access(env::predecessor_account_id()), "No access")
+        assert!(self.has_access(env::predecessor_account_id()), "No access");
     }
 }
