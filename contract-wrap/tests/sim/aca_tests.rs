@@ -4,8 +4,6 @@ use near_sdk::serde_json::json;
 use near_sdk_sim::transaction::ExecutionStatus;
 use near_sdk_sim::DEFAULT_GAS;
 
-// *TODO*: in the has_access function, the contract needs to know if the account signing it is a contract or non-contract account.
-
 // #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
 // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L160
 
