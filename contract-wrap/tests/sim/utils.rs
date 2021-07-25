@@ -11,8 +11,10 @@ const CONSUMER_ID: &str = "consumer";
 const FLAGSTESTHELPER_ID: &str = "flags_consumer";
 const SIMPLEWRITEACCESSCONTROLLER_ID: &str = "controller";
 const SIMPLEWRITEACCESSCONTROLLER_ID_2: &str = "controller_2";
+const SIMPLEREADACCESSCONTROLLER_ID: &str = "read_controller";
 const FLUXAGGREGATORTESTHELPER_ID: &str = "flux_aggregator_test_helper_contract";
 const MOCKV3AGGREGATOR_ID: &str = "mock_v3_aggregator";
+const MOCKV3AGGREGATOR_ID_2: &str = "mock_v3_aggregator_2";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
@@ -22,17 +24,33 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     FLAGS_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Flags.wasm",
     CONSUMER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/Consumer.wasm",
     SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/SimpleWriteAccessController.wasm",
+    SIMPLEREADACCESSCONTROLLER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/SimpleReadAccessController.wasm",
     FLAGSTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FlagsTestHelper.wasm",
     FLUXAGGREGATORTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FluxAggregatorTestHelper.wasm",
     MOCKV3AGGREGATOR_WASM_BYTES => "target/wasm32-unknown-unknown/debug/MockV3Aggregator.wasm"
 
 }
 
+/**
+ * TODO -> MATCH THESE
+  Default: Signer;
+  Carol: Signer;
+  Eddy: Signer;
+  Nancy: Signer;
+  Ned: Signer;
+  Neil: Signer;
+  Nelly: Signer;
+  Norbert: Signer;
+ */
+
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
 // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts
 // Initialization and constructor tests
 
 pub fn init_without_macros() -> (
+    UserAccount,
+    UserAccount,
+    UserAccount,
     UserAccount,
     UserAccount,
     UserAccount,
@@ -335,6 +353,52 @@ pub fn init_without_macros() -> (
         )
         .assert_success();
 
+    let mock_v3_aggregator = root.deploy(
+        &MOCKV3AGGREGATOR_WASM_BYTES,
+        MOCKV3AGGREGATOR_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    mock_v3_aggregator
+        .call(
+            MOCKV3AGGREGATOR_ID.into(),
+            "new",
+            &json!({
+                "_decimals": 18.to_string(),
+                "_initial_answer": 0.to_string(),
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
+    let mock_v3_aggregator_second = root.deploy(
+        &MOCKV3AGGREGATOR_WASM_BYTES,
+        MOCKV3AGGREGATOR_ID_2.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
+    // *TODO* Look into overflow issue with 54321
+
+    mock_v3_aggregator
+        .call(
+            MOCKV3AGGREGATOR_ID.into(),
+            "update_round_data",
+            &json!({
+                "_round_id": 17.to_string(),
+                "_answer": 54320.to_string(),
+                "_timestamp": 678.to_string(),
+                "_started_at": 677.to_string()
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
+        )
+        .assert_success();
+
     let eac = root.deploy(
         &EAC_WASM_BYTES,
         EAC_ID.to_string(),
@@ -346,7 +410,7 @@ pub fn init_without_macros() -> (
         "new",
         &json!({
             "owner_id": eac.account_id(),
-            "_aggregator": aca.account_id(),
+            "_aggregator": mock_v3_aggregator.account_id(),
             "_access_controller": controller.account_id()
         })
         .to_string()
@@ -355,6 +419,7 @@ pub fn init_without_macros() -> (
         0, // attached deposit
     )
     .assert_success();
+
     let controller_2 = oracle_three.deploy(
         &SIMPLEWRITEACCESSCONTROLLER_WASM_BYTES,
         SIMPLEWRITEACCESSCONTROLLER_ID_2.to_string(),
@@ -374,6 +439,12 @@ pub fn init_without_macros() -> (
             0, // attached deposit
         )
         .assert_success();
+
+    let read_controller = root.deploy(
+        &SIMPLEREADACCESSCONTROLLER_WASM_BYTES,
+        SIMPLEREADACCESSCONTROLLER_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
 
     let flags = root.deploy(
         &FLAGS_WASM_BYTES,
@@ -466,5 +537,8 @@ pub fn init_without_macros() -> (
         controller_2,
         flux_aggregator_test_helper_contract,
         eddy,
+        mock_v3_aggregator,
+        mock_v3_aggregator_second,
+        read_controller
     )
 }

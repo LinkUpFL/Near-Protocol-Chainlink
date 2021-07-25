@@ -39,17 +39,20 @@ impl SimpleReadAccessController {
         result
     }
 
-
     pub fn has_access(&self, _user: AccountId) -> bool {
-        if !self.check_enabled {
-            !self.check_enabled
-        } else {
-            let user_option = self.access_list.get(&_user);
-            if user_option.is_none() {
-                return false;
+        if env::signer_account_id() != env::predecessor_account_id() {
+            if !self.check_enabled {
+                !self.check_enabled
+            } else {
+                let user_option = self.access_list.get(&_user);
+                if user_option.is_none() {
+                    return false;
+                }
+                let user = user_option.unwrap();
+                user
             }
-            let user = user_option.unwrap();
-            user
+        } else {
+            true
         }
     }
 

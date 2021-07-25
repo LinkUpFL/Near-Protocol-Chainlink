@@ -3,20 +3,13 @@ use near_sdk::collections::LookupMap;
 use near_sdk::json_types::{U128, U64};
 use near_sdk::wee_alloc::WeeAlloc;
 use near_sdk::{env, near_bindgen};
-use std::str;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
-const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
-
 pub type Base64String = String;
 
 const VERSION: u128 = 0;
-const RESERVE_ROUNDS: u128 = 2;
-const MAX_ORACLE_COUNT: u128 = 77;
-const ROUND_MAX: u128 = 4294967295; // 2**32-1
-const V3_NO_DATA_ERROR: &str = "No data present";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -63,39 +56,37 @@ impl MockV3Aggregator {
     pub fn update_answer(&mut self, _answer: U128) {
         let new_round: u128 = self.latest_round + 1;
         let current_timestamp: u64 = env::block_timestamp();
-        self.latest_answer = _answer.into();
+        let transformed_answer: u128 = _answer.into();
+        self.latest_answer = transformed_answer;
         self.latest_timestamp = u128::from(current_timestamp);
         self.latest_round = new_round;
 
         let get_answer = self.get_answer.get(&new_round);
         if get_answer.is_none() {
-            self.get_answer.insert(&new_round, _answer);
+            self.get_answer.insert(&new_round, &transformed_answer);
         } else {
-            let mut get_answer_update = get_answer.unwrap();
             self.get_answer.remove(&new_round);
-            self.get_answer.insert(&new_round, _answer);
+            self.get_answer.insert(&new_round, &transformed_answer);
         }
 
         let get_timestamp = self.get_timestamp.get(&new_round);
         if get_timestamp.is_none() {
             self.get_timestamp
-                .insert(&new_round, env::block_timestamp());
+                .insert(&new_round, &u128::from(current_timestamp));
         } else {
-            let mut get_timestamp_update = get_timestamp.unwrap();
             self.get_timestamp.remove(&new_round);
             self.get_timestamp
-                .insert(&new_round, env::block_timestamp());
+                .insert(&new_round, &u128::from(current_timestamp));
         }
 
         let get_started_at = self.get_started_at.get(&new_round);
         if get_started_at.is_none() {
             self.get_started_at
-                .insert(&new_round, env::block_timestamp());
+                .insert(&new_round, &u128::from(current_timestamp));
         } else {
-            let mut get_started_at_update = get_started_at.unwrap();
             self.get_started_at.remove(&new_round);
             self.get_started_at
-                .insert(&new_round, env::block_timestamp());
+                .insert(&new_round, &u128::from(current_timestamp));
         }
     }
 
@@ -106,89 +97,138 @@ impl MockV3Aggregator {
         _timestamp: U128,
         _started_at: U128,
     ) {
-        self.latest_answer = _answer;
-        self.latest_timestamp = env::block_timestamp();
-        self.latest_round = _round_id;
+        let transformed_round: u128 = _round_id.into();
+        let transformed_timestamp: u128 = u128::from(env::block_timestamp());
+        let transformed_answer: u128 = _answer.into();
+        let transformed_started_at: u128 = _started_at.into();
 
-        let get_answer = self.get_answer.get(&self.latest_round);
+        self.latest_answer = transformed_answer;
+        self.latest_timestamp = transformed_timestamp;
+        self.latest_round = transformed_round;
+
+        let get_answer = self.get_answer.get(&transformed_round);
         if get_answer.is_none() {
-            env::panic(b"Answer doesn't exist");
+            self.get_answer.insert(&transformed_round, &transformed_answer);
         } else {
-            let mut get_answer_update = get_answer.unwrap();
-            self.get_answer.remove(&self.latest_round);
-            self.get_answer.insert(&self.latest_round, _answer);
+            self.get_answer.remove(&transformed_round);
+            self.get_answer
+                .insert(&transformed_round, &transformed_answer);
         }
 
-        let get_timestamp = self.get_timestamp.get(&self.latest_round);
+        let get_timestamp = self.get_timestamp.get(&transformed_round);
         if get_timestamp.is_none() {
-            env::panic(b"timestget_timestamp doesn't exist");
+            self.get_timestamp.insert(&transformed_round, &transformed_timestamp);
         } else {
-            let mut get_timestamp_update = get_timestamp.unwrap();
-            self.get_timestamp.remove(&self.latest_round);
+            self.get_timestamp.remove(&transformed_round);
             self.get_timestamp
-                .insert(&self.latest_round, _timestget_timestamp);
+                .insert(&transformed_round, &transformed_timestamp);
         }
 
-        let get_started_at = self.get_started_at.get(&self.latest_round);
+        let get_started_at = self.get_started_at.get(&transformed_round);
         if get_started_at.is_none() {
-            env::panic(b"timestget_started_at doesn't exist");
+            self.get_started_at.insert(&transformed_round, &transformed_started_at);
         } else {
-            let mut get_started_at_update = get_started_at.unwrap();
-            self.get_started_at.remove(&self.latest_round);
+            self.get_started_at.remove(&transformed_round);
             self.get_started_at
-                .insert(&self.latest_round, _timestget_started_at);
+                .insert(&transformed_round, &transformed_started_at);
         }
     }
 
-    pub fn get_round_data(&self, _round_id: U64) -> (u64, u128, u128, u128, u128) {
-        let round_id_u64: u64 = _round_id.into();
-        let answer = self.get_answers.get(&round_id_u64);
+    pub fn get_round_data(&self, _round_id: U128) -> (u128, u128, u128, u128, u128) {
+        let round_id: u128 = u128::from(_round_id);
+
+        let answer = self.get_answer.get(&round_id);
         if answer.is_none() {
             env::panic(b"Answer not available");
         }
-        let started_at = self.get_started_at.get(&round_id_u64);
-        if timestamp.is_none() {
+
+        let started_at = self.get_started_at.get(&round_id);
+        if started_at.is_none() {
             env::panic(b"Timestamp not available");
         }
-        let timestamp = self.get_timestamp.get(&round_id_u64);
+
+        let timestamp = self.get_timestamp.get(&round_id);
         if timestamp.is_none() {
             env::panic(b"Timestamp not available");
         }
 
         return (
-            round_id_u64,
+            round_id,
             answer.unwrap(),
             started_at.unwrap(),
             timestamp.unwrap(),
-            round_id_u64,
+            round_id
         );
     }
 
-    pub fn latest_round_data(&self) -> (u64, u128, u128, u128, u128) {
-        let round_id_u64: u64 = self.latest_round.into();
-        let answer = self.get_answers.get(&self.latest_round);
+    pub fn latest_round_data(&self) -> (u128, u128, u128, u128, u128) {
+
+        let answer = self.get_answer.get(&self.latest_round);
         if answer.is_none() {
             env::panic(b"Answer not available");
         }
+
         let started_at = self.get_started_at.get(&self.latest_round);
-        if timestamp.is_none() {
+        if started_at.is_none() {
             env::panic(b"Timestamp not available");
         }
+
         let timestamp = self.get_timestamp.get(&self.latest_round);
         if timestamp.is_none() {
             env::panic(b"Timestamp not available");
         }
 
         return (
-            round_id_u64,
+            self.latest_round,
             answer.unwrap(),
             started_at.unwrap(),
             timestamp.unwrap(),
-            round_id_u64,
+            self.latest_round,
         );
     }
 
-    pub fn get_description(&self) -> String {
-        "v0.6/tests/MockV3Aggregator.sol"
+    pub fn latest_answer(&self) -> u128 {
+        self.latest_answer
     }
+
+    pub fn latest_timestamp(&self) -> u128 {
+        self.latest_timestamp
+    }
+
+    pub fn latest_round(&self) -> u128 {
+        self.latest_round
+    }
+
+    pub fn get_answer(&self,  _round_id: U128) -> u128 {
+        let round_id: u128 = u128::from(_round_id);
+
+        let answer = self.get_answer.get(&round_id);
+        if answer.is_none() {
+            env::panic(b"Answer not available");
+        }
+        answer.unwrap()
+    }
+
+    pub fn get_timestamp(&self,  _round_id: U128) -> u128 {
+        let round_id: u128 = u128::from(_round_id);
+
+        let timestamp = self.get_timestamp.get(&round_id);
+        if timestamp.is_none() {
+            env::panic(b"timestamp not available");
+        }
+        timestamp.unwrap()
+    }
+
+    pub fn get_description(&self) -> String {
+        String::from("v0.6/tests/MockV3Aggregator.sol")
+    }
+
+    pub fn get_decimals(&self) -> u128 {
+        self.decimals
+    }
+    pub fn get_version(&self) -> u128 {
+        VERSION
+    }
+
+
 }

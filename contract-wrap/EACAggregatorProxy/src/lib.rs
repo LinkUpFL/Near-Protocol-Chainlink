@@ -141,6 +141,46 @@ impl EACAggregatorProxy {
         serde_json::from_slice(&get_latest_timestamp_promise_result).unwrap()
     }
 
+    pub fn get_answer(&mut self, _round_id: U128) {
+        self.check_access();
+        let round_id_u128: u128 = _round_id.into();
+        let (phase_id, aggregator_round_id): (u64, u64) = self.parse_ids(round_id_u128);
+        let phase_aggregator_option = self.phase_aggregators.get(&phase_id);
+        if phase_aggregator_option.is_none() {
+            env::panic(b"Phase aggregator account not found");
+        }
+        let phase_aggregator_option_address = phase_aggregator_option.unwrap();
+        let get_answer_promise = env::promise_create(
+            phase_aggregator_option_address,
+            b"get_answer",
+            json!({ "_round_id": aggregator_round_id })
+                .to_string()
+                .as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        let get_answer_results_promise = env::promise_then(
+            get_answer_promise,
+            env::current_account_id(),
+            b"get_answer_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            SINGLE_CALL_GAS,
+        );
+        env::promise_return(get_answer_results_promise);
+    }
+    pub fn get_answer_results(&self) -> u128 {
+        let get_answer_promise_result: Vec<u8> = match env::promise_result(0) {
+            PromiseResult::Successful(_x) => {
+                _x
+            }
+            _x => panic!("Promise with index 0 failed"),
+        };
+        let get_answer_promise_result_json: u128 =
+            serde_json::from_slice(&get_answer_promise_result).unwrap();
+        get_answer_promise_result_json
+    }
+
     // Depracated
     // pub fn get_answer(&mut self, _round_id: U128) -> ≈ {
     //     self.check_access();

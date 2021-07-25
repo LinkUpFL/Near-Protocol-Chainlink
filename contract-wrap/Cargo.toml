@@ -14,6 +14,7 @@ AggregatorVaildatorMock = { path = "./AggregatorVaildatorMock" }
 Flags = { path = "./Flags" }
 FluxAggregator = { path = "./FluxAggregator" }
 Consumer = { path = "./Consumer" }
+SimpleReadAccessController = { path = "./SimpleReadAccessController" }
 SimpleWriteAccessController = { path = "./SimpleWriteAccessController" }
 FlagsTestHelper = { path = "./FlagsTestHelper" }
 FluxAggregatorTestHelper = { path = "./FluxAggregatorTestHelper" }
@@ -37,6 +38,7 @@ members = [
   "Flags",
   "Consumer",
   "SimpleWriteAccessController",
+  "SimpleReadAccessController",
   "FlagsTestHelper",
   "MockV3Aggregator"
 ]
