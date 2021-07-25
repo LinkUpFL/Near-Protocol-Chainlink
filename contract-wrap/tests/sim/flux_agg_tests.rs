@@ -1,827 +1,969 @@
-// use near_sdk::serde_json::json;
-// use near_sdk::AccountId;
-// use near_sdk_sim::transaction::ExecutionStatus;
-// use near_sdk_sim::DEFAULT_GAS;
-
-// use crate::utils::init_without_macros as init;
-
-// // FluxAggregator Tests Here: https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts
-
-// // #submit https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L249
-
-// #[test]
-// fn updates_the_allocated_and_available_funds_counters(
-// ) {
-//     let payment_amount: u64 = 3;
-//     let deposit: u64 = 100;
-//     let answer: u128 = 100;
-//     let rr_delay: u64 = 0;
-//     let next_round: u128 = 1;
-//     let min_max: u64 = 3;
-
-//     let (
-//         root,
-//         aca,
-//         _link,
-//         oracle_one,
-//         oracle_two,
-//         oracle_three,
-//         _test_helper,
-//         _eac,
-//         _eac_without_access_controller,
-//         _oracle_four,
-//         _oracle_five,
-//         _aggregator_validator_mock,
-//         _flags,
-//         _consumer,
-//         _flags_consumer,
-//         _controller,
-//         _controller_2,
-//         _flux_aggregator_test_helper_contract,
-//         _eddy
-//     ) = init();
-
-//     root.call(
-//         aca.account_id(),
-//         "change_oracles",
-//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
-
-//     let mut allocated_funds: u64 = root
-//         .view(
-//             aca.account_id(),
-//             "allocated_funds",
-//             &json!({}).to_string().into_bytes(),
-//         )
-//         .unwrap_json();
-
-//     assert_eq!(allocated_funds, 0);
-
-//     let tx = oracle_one.call(
-//         aca.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-
-//     let mut receipt = tx.promise_results();
-
-//     allocated_funds = root
-//         .view(
-//             aca.account_id(),
-//             "allocated_funds",
-//             &json!({}).to_string().into_bytes(),
-//         )
-//         .unwrap_json();
-
-//     let available_funds: u64 = root
-//         .view(
-//             aca.account_id(),
-//             "available_funds",
-//             &json!({}).to_string().into_bytes(),
-//         )
-//         .unwrap_json();
-
-//     assert_eq!(payment_amount, allocated_funds);
-
-//     let expected_available: u64 = deposit - payment_amount;
-
-//     assert_eq!(expected_available, available_funds);
-
-//     let logged: u64 = receipt.remove(1).unwrap().outcome().logs[1]
-//         .parse()
-//         .unwrap();
-
-//     assert_eq!(expected_available, logged);
-
-// }
-
-// // #submit https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L262
-
-// #[test]
-// fn emits_a_log_event_announcing_submission_details(
-// ) {
-//     let payment_amount: u64 = 3;
-//     let deposit: u64 = 100;
-//     let answer: u128 = 100;
-//     let rr_delay: u64 = 0;
-//     let next_round: u128 = 1;
-//     let min_max: u64 = 3;
-
-//     let (
-//         root,
-//         aca,
-//         _link,
-//         oracle_one,
-//         oracle_two,
-//         oracle_three,
-//         _test_helper,
-//         _eac,
-//         _eac_without_access_controller,
-//         _oracle_four,
-//         _oracle_five,
-//         _aggregator_validator_mock,
-//         _flags,
-//         _consumer,
-//         _flags_consumer,
-//         _controller,
-//         _controller_2,
-//         _flux_aggregator_test_helper_contract,
-//         _eddy
-//     ) = init();
-
-//     root.call(
-//         aca.account_id(),
-//         "change_oracles",
-//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
-
-//     let mut allocated_funds: u64 = root
-//         .view(
-//             aca.account_id(),
-//             "allocated_funds",
-//             &json!({}).to_string().into_bytes(),
-//         )
-//         .unwrap_json();
-
-//     assert_eq!(allocated_funds, 0);
-
-//     let mut tx = oracle_one.call(
-//         aca.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-
-//     let mut receipt = tx.promise_results();
-
-//     allocated_funds = root
-//         .view(
-//             aca.account_id(),
-//             "allocated_funds",
-//             &json!({}).to_string().into_bytes(),
-//         )
-//         .unwrap_json();
-
-//     let available_funds: u64 = root
-//         .view(
-//             aca.account_id(),
-//             "available_funds",
-//             &json!({}).to_string().into_bytes(),
-//         )
-//         .unwrap_json();
-
-//     assert_eq!(payment_amount, allocated_funds);
-
-//     let expected_available: u64 = deposit - payment_amount;
-
-//     assert_eq!(expected_available, available_funds);
-
-//     let logged: u64 = receipt.remove(1).unwrap().outcome().logs[0]
-//         .parse()
-//         .unwrap();
-
-//     assert_eq!(expected_available, logged);
-
-//     // *TODO* https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L315 -> emit event log with with submission, round, oracle address (need to add to smart contract)
-
-//     tx = oracle_three.call(
-//         aca.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     );
-
-//     println!("{:?}", tx);
-
-//     assert_eq!(tx.logs()[0], "100, 1, oracle_three");
-// }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L251
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L327, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L328
-
-// // #[test]
-// // fn when_the_minimum_oracles_have_not_reported() {
-// //     let payment_amount: u128 = 3;
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //          test_helper,
-// //          eac,
-// //          eac_without_access_controller,
-// //          oracle_four,
-// //          oracle_five,
-// //         aggregator_validator_mock,
-// //         flags,
-// //         consumer,
-// //     ) = init();
-// //     root.call(
-// //         aca.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let min_max: u64 = 3;
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let withdrawable_payment: u128 = root
-// //         .view(
-// //             aca.account_id(),
-// //             "withdrawable_payment",
-// //             &json!({
-// //                 "_oracle": oracle_one.account_id().to_string()
-// //             })
-// //             .to_string()
-// //             .into_bytes(),
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, withdrawable_payment);
-
-// //     oracle_one
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let withdrawable_payment_oracle_one: u128 = root
-// //         .view(
-// //             aca.account_id(),
-// //             "withdrawable_payment",
-// //             &json!({
-// //                 "_oracle": oracle_one.account_id().to_string()
-// //             })
-// //             .to_string()
-// //             .into_bytes(),
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(payment_amount, withdrawable_payment_oracle_one);
-
-// //     let withdrawable_payment_oracle_two: u128 = root
-// //         .view(
-// //             aca.account_id(),
-// //             "withdrawable_payment",
-// //             &json!({
-// //                 "_oracle": oracle_two.account_id().to_string()
-// //             })
-// //             .to_string()
-// //             .into_bytes(),
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, withdrawable_payment_oracle_two);
-
-// //     let withdrawable_payment_oracle_three: u128 = root
-// //         .view(
-// //             aca.account_id(),
-// //             "withdrawable_payment",
-// //             &json!({
-// //                 "_oracle": oracle_three.account_id().to_string()
-// //             })
-// //             .to_string()
-// //             .into_bytes(),
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, withdrawable_payment_oracle_three);
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L251
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L327, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L358
-
-// // #[test]
-// // fn it_does_not_update_the_answer() {
-// //     let payment_amount: u128 = 3;
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //     ) = init();
-// //     root.call(
-// //         aca.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let min_max: u64 = 3;
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let not_updated: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_answer",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, not_updated);
-
-// //     oracle_two
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let still_not_updated: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_answer",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, still_not_updated);
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L369
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L370, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L375
-// // // *TODO* Look into the issue here, the prev_round being 0 makes the code problematic. Line 981 in AccessControlledAggregator/lib.rs
-
-// // #[test]
-// // fn when_an_oracle_prematurely_bumps_the_round() {
-// //     let payment_amount: u128 = 3;
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //     ) = init();
-// //     root.call(
-// //         aca.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let min: u64 = 2;
-// //     let max: u64 = 3;
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let expected_previous_round_not_supersedable = oracle_one.call(
-// //         aca.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": (next_round + 1).to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     // Note: https://github.com/smartcontractkit/chainlink/blob/95dd250a296042c81b7aafa887d8935c87cb1190/evm-contracts/test/v0.6/FluxAggregator.test.ts#L371
-// //     // Look into the issue here, the prev_round being 0 makes the code problematic. Line 981 in AccessControlledAggregator/lib.rs
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_previous_round_not_supersedable
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         println!("{:?}", execution_error.to_string());
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("previous round not supersedable"));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L383
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L389, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L400, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L413, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L426, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L438
-// // #[test]
-// // fn updates_the_answer_with_the_median() {
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //     ) = init();
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let min: u64 = 2;
-// //     let max: u64 = 3;
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let expected_latest_answer: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_answer",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, expected_latest_answer);
-
-// //     oracle_two
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": 99.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let expected_latest_answer_first: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_answer",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(99, expected_latest_answer_first);
-
-// //     oracle_three
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": 101.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let expected_latest_answer_second: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_answer",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(100, expected_latest_answer_second);
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L383
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L389, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L400, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L413, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L426, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L438
-
-// // #[test]
-
-// // fn updates_the_updated_timestamp() {
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //     ) = init();
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let min: u64 = 2;
-// //     let max: u64 = 3;
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let original_timestamp: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_timestamp",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(original_timestamp > 0, true);
-
-// //     oracle_three
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let current_timestamp: u128 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_timestamp",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(current_timestamp > original_timestamp, true);
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L383
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L413
-// // // *TODO* Look into emitting necessary log
-// // #[test]
-
-// // fn announces_the_new_answer_with_a_log_event() {
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //     ) = init();
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let min: u64 = 2;
-// //     let max: u64 = 3;
-
-// //     root.call(
-// //         aca.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             aca.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let mut receipt = oracle_three.call(
-// //         aca.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let new_answer: u64 = receipt.promise_results().remove(1).unwrap().outcome().logs[0]
-// //         .parse()
-// //         .unwrap();
-
-// //     let latest_answer: u64 = test_helper
-// //         .call(
-// //             aca.account_id(),
-// //             "latest_answer",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(latest_answer, new_answer);
-// // }
+use near_sdk::serde_json::json;
+use near_sdk::AccountId;
+use near_sdk_sim::transaction::ExecutionStatus;
+use near_sdk_sim::DEFAULT_GAS;
+
+use crate::utils::init_without_macros as init;
+
+/**
+ * FluxAggregator tests were ported from this file https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts
+ */
+
+ /**
+  * #constructor - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L214
+  */
+
+ #[test]
+
+ fn constructor_tests() {
+    let payment_amount: u128 = 3;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+    let version: u128 = 3;
+    let validator: String = "".to_string();
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+let expected_payment_amount: u128 = root
+    .call(
+        flux_aggregator.account_id(),
+        "get_payment_amount",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .unwrap_json();
+
+assert_eq!(payment_amount, expected_payment_amount);
+
+let expected_timeout: u64 = root
+    .call(
+        flux_aggregator.account_id(),
+        "get_timeout",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .unwrap_json();
+
+assert_eq!(timeout, expected_timeout);
+
+let expected_decimals: u64 = root
+    .call(
+        flux_aggregator.account_id(),
+        "get_decimals",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .unwrap_json();
+
+assert_eq!(decimals, expected_decimals);
+
+let expected_description: String = root
+    .call(
+        flux_aggregator.account_id(),
+        "get_description",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .unwrap_json();
+
+assert_eq!(description, expected_description);
+
+let expected_version: u128 = root
+    .call(
+        flux_aggregator.account_id(),
+        "get_version",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .unwrap_json();
+
+assert_eq!(version, expected_version);
+
+let expected_validator: String = root
+    .call(
+        flux_aggregator.account_id(),
+        "get_validator",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .unwrap_json();
+
+assert_eq!(validator, expected_validator);
+ }
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L249
+ * *TODO* Fix parsing of the log
+ */
+
+#[test]
+fn updates_the_allocated_and_available_funds_counters(
+) {
+    let payment_amount: u128 = 3;
+    let deposit: u128 = 100;
+    let answer: u128 = 100;
+    let rr_delay: u128 = 0;
+    let next_round: u128 = 1;
+    let min_max: u128 = 3;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    let mut allocated_funds: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "allocated_funds",
+            &json!({}).to_string().into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(allocated_funds, 0);
+
+    let tx = oracle_one.call(
+        flux_aggregator.account_id(),
+        "submit",
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    let mut receipt = tx.promise_results();
+
+    allocated_funds = root
+        .view(
+            flux_aggregator.account_id(),
+            "allocated_funds",
+            &json!({}).to_string().into_bytes(),
+        )
+        .unwrap_json();
+
+    let available_funds: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "available_funds",
+            &json!({}).to_string().into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(payment_amount, allocated_funds);
+
+    let expected_available: u128 = deposit - payment_amount;
+
+    assert_eq!(expected_available, available_funds);
+
+    // *TODO* Fix parsing of the log
+    
+    let logged: u128 = receipt.remove(1).unwrap().outcome().logs[3]
+        .parse()
+        .unwrap();
+
+    assert_eq!(expected_available, logged);
+
+}
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L262
+ */
+
+#[test]
+fn emits_a_log_event_announcing_submission_details(
+) {
+    let payment_amount: u128 = 3;
+    let deposit: u128 = 100;
+    let answer: u128 = 100;
+    let rr_delay: u128 = 0;
+    let next_round: u128 = 1;
+    let min_max: u128 = 3;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    let mut allocated_funds: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "allocated_funds",
+            &json!({}).to_string().into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(allocated_funds, 0);
+
+    oracle_one.call(
+        flux_aggregator.account_id(),
+        "submit",
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+
+    allocated_funds = root
+        .view(
+            flux_aggregator.account_id(),
+            "allocated_funds",
+            &json!({}).to_string().into_bytes(),
+        )
+        .unwrap_json();
+
+    let available_funds: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "available_funds",
+            &json!({}).to_string().into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(payment_amount, allocated_funds);
+
+    let expected_available: u128 = deposit - payment_amount;
+
+    assert_eq!(expected_available, available_funds);
+
+    let tx = oracle_three.call(
+        flux_aggregator.account_id(),
+        "submit",
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    assert_eq!(tx.logs()[0], "100, 1, oracle_three");
+}
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L269
+ */
+
+#[test]
+fn when_the_minimum_oracles_have_not_reported_and_pays_the_oracles_that_have_reported() {
+    let payment_amount: u128 = 3;
+    let answer: u128 = 100;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    let min_max: u64 = 3;
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    let withdrawable_payment: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "withdrawable_payment",
+            &json!({
+                "_oracle": oracle_one.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(0, withdrawable_payment);
+
+    oracle_one
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let withdrawable_payment_oracle_one: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "withdrawable_payment",
+            &json!({
+                "_oracle": oracle_one.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(payment_amount, withdrawable_payment_oracle_one);
+
+    let withdrawable_payment_oracle_two: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "withdrawable_payment",
+            &json!({
+                "_oracle": oracle_two.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(0, withdrawable_payment_oracle_two);
+
+    let withdrawable_payment_oracle_three: u128 = root
+        .view(
+            flux_aggregator.account_id(),
+            "withdrawable_payment",
+            &json!({
+                "_oracle": oracle_three.account_id().to_string()
+            })
+            .to_string()
+            .into_bytes(),
+        )
+        .unwrap_json();
+
+    assert_eq!(0, withdrawable_payment_oracle_three);
+}
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L285
+ */
+
+#[test]
+fn when_the_minimum_oracles_have_not_reported_and_does_not_update_the_answer() {
+    let answer: u128 = 100;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    let min_max: u64 = 3;
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    let not_updated: u128 = root
+        .call(
+            flux_aggregator.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(0, not_updated);
+
+    oracle_two
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    oracle_three
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let still_not_updated: u128 = root
+        .call(
+            flux_aggregator.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(0, still_not_updated);
+}
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L302
+ */
+
+#[test]
+fn when_an_oracle_prematurely_bumps_the_round_and_reverts() {
+    let payment_amount: u128 = 3;
+    let answer: u128 = 100;
+    let rr_delay: u64 = 0;
+    let timeout: u64 = 1800;
+    let next_round: u128 = 1;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    let min: u64 = 2;
+    let max: u64 = 3;
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    root.call(
+        flux_aggregator.account_id(),
+        "update_future_rounds",
+        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    ).assert_success();
+
+    oracle_one
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_previous_round_not_supersedable = oracle_one.call(
+        flux_aggregator.account_id(),
+        "submit",
+        &json!({"_round_id": (next_round + 1).to_string(), "_submission": answer.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    if let ExecutionStatus::Failure(execution_error) = &expected_previous_round_not_supersedable
+        .promise_errors()
+        .remove(0)
+        .unwrap()
+        .outcome()
+        .status
+    {
+        assert!(execution_error
+            .to_string()
+            .contains("previous round not supersedable"));
+    } else {
+        unreachable!();
+    }
+}
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L310
+ */
+
+#[test]
+fn updates_the_answer_with_the_median() {
+    let answer: u128 = 100;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    let min: u64 = 2;
+    let max: u64 = 3;
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_latest_answer: u128 = test_helper
+        .call(
+            flux_aggregator.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(0, expected_latest_answer);
+
+    oracle_two
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": 99.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_latest_answer_first: u128 = test_helper
+        .call(
+            flux_aggregator.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(99, expected_latest_answer_first);
+
+    oracle_three
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": 101.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let expected_latest_answer_second: u128 = test_helper
+        .call(
+            flux_aggregator.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(100, expected_latest_answer_second);
+}
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L327
+ */
+
+#[test]
+
+fn updates_the_updated_timestamp() {
+    let answer: u128 = 100;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    let min: u64 = 2;
+    let max: u64 = 3;
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let original_timestamp: u128 = test_helper
+        .call(
+            flux_aggregator.account_id(),
+            "latest_timestamp",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(original_timestamp > 0, true);
+
+    oracle_three
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let current_timestamp: u128 = test_helper
+        .call(
+            flux_aggregator.account_id(),
+            "latest_timestamp",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(current_timestamp > original_timestamp, true);
+}
+
+ /**
+ * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+ * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L337
+ * *TODO* Look into emitting necessary log
+ */
+
+ #[test]
+
+fn announces_the_new_answer_with_a_log_event() {
+    let answer: u128 = 100;
+    let rr_delay: u64 = 0;
+    let next_round: u128 = 1;
+
+    let (
+        root,
+        _aca,
+        _link,
+        oracle_one,
+        oracle_two,
+        oracle_three,
+        test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        flux_aggregator
+    ) = init();
+
+    let min: u64 = 2;
+    let max: u64 = 3;
+
+    root.call(
+        flux_aggregator.account_id(),
+        "change_oracles",
+        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    )
+    .assert_success();
+
+    oracle_one
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    oracle_three
+        .call(
+            flux_aggregator.account_id(),
+            "submit",
+            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+                .to_string()
+                .into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .assert_success();
+
+    let mut receipt = oracle_three.call(
+        flux_aggregator.account_id(),
+        "submit",
+        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+            .to_string()
+            .into_bytes(),
+        DEFAULT_GAS,
+        0, // deposit
+    );
+
+    let new_answer: u64 = receipt.promise_results().remove(1).unwrap().outcome().logs[0]
+        .parse()
+        .unwrap();
+
+    let latest_answer: u64 = test_helper
+        .call(
+            flux_aggregator.account_id(),
+            "latest_answer",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0, // deposit
+        )
+        .unwrap_json();
+
+    assert_eq!(latest_answer, new_answer);
+}
 
 // // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L383
 // // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L426
@@ -845,7 +987,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -859,7 +1001,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -869,7 +1011,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -880,7 +1022,7 @@
 // //         .assert_success();
 
 // //     let expected_no_data_present = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "get_round_data",
 // //         &json!({"_round_id": next_round.to_string()})
 // //             .to_string()
@@ -902,7 +1044,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -914,7 +1056,7 @@
 
 // //     let latest_round_data: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round_data",
 // //             &json!({"_round_id": next_round.to_string()})
 // //                 .to_string()
@@ -950,7 +1092,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -964,7 +1106,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -974,7 +1116,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -985,7 +1127,7 @@
 // //         .assert_success();
 
 // //     let expected_no_data_present = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "latest_round_data",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1006,7 +1148,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1018,7 +1160,7 @@
 
 // //     let round_after: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_round_data",
 // //             &json!({"_round_id": next_round.to_string()})
 // //                 .to_string()
@@ -1034,7 +1176,7 @@
 
 // //     let original_timestamp: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_timestamp",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -1048,7 +1190,7 @@
 
 // //     let latest_round_data: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round_data",
 // //             &json!({"_round_id": next_round.to_string()})
 // //                 .to_string()
@@ -1086,7 +1228,7 @@
 // //         _eac_without_access_controller,
 // //     ) = init();
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1099,7 +1241,7 @@
 // //     let min_max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1109,7 +1251,7 @@
 
 // //     let withdrawable_payment: u128 = root
 // //         .view(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "withdrawable_payment",
 // //             &json!({
 // //                 "_oracle": oracle_one.account_id().to_string()
@@ -1123,7 +1265,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1134,7 +1276,7 @@
 // //         .assert_success();
 
 // //     let cannout_report_on_previous_rounds = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1181,7 +1323,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string(
@@ -1195,7 +1337,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1206,7 +1348,7 @@
 // //     // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L484 sets the min and max submissions back to 1
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1214,7 +1356,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1224,7 +1366,7 @@
 // //     ).assert_success();
 
 // //     let round_not_accepting_submissions = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1266,7 +1408,7 @@
 // //         _eac_without_access_controller,
 // //     ) = init();
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1280,7 +1422,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1290,7 +1432,7 @@
 // //     // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L498 - Look into the oracle_round_state and oracle_round_suggest_state functions to return the correct results for 0 state.
 
 // //     let starting_state = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_one.account_id(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -1305,7 +1447,7 @@
 // //     // Advance round non-refactored function, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L498
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1315,7 +1457,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1325,7 +1467,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1337,7 +1479,7 @@
 // //     // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L498 - Look into the oracle_round_state and oracle_round_suggest_state functions to return the correct results for 0 state.
 
 // //     let updated_state = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_one.account_id(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -1373,7 +1515,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1387,7 +1529,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1396,7 +1538,7 @@
 // //     .assert_success();
 
 // //     let invalid_round_to_report = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": (next_round + 1).to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1440,7 +1582,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1454,7 +1596,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1463,7 +1605,7 @@
 // //     .assert_success();
 
 // //     let not_enabled_oracle = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1508,7 +1650,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1519,7 +1661,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": deposit.to_string()})
 // //             .to_string()
@@ -1544,7 +1686,7 @@
 // //     // })
 
 // //     let subtraction_overflow_math_error = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1587,7 +1729,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1598,7 +1740,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id() ], "_min_submissions": 3.to_string(), "_max_submissions": 4.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1607,7 +1749,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1619,7 +1761,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1631,7 +1773,7 @@
 
 // //     oracle_four
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1648,7 +1790,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1661,7 +1803,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1696,7 +1838,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1707,7 +1849,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id() ], "_min_submissions": 3.to_string(), "_max_submissions": 4.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1716,7 +1858,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1728,7 +1870,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1740,7 +1882,7 @@
 
 // //     oracle_four
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1756,7 +1898,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1769,7 +1911,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1781,7 +1923,7 @@
 
 // //     oracle_four
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1794,7 +1936,7 @@
 // //     // does not allow reports for the previous round
 
 // //     let invalid_round_to_report = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1843,7 +1985,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1854,7 +1996,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id() ], "_min_submissions": 3.to_string(), "_max_submissions": 4.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1863,7 +2005,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1875,7 +2017,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1887,7 +2029,7 @@
 
 // //     oracle_four
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1901,7 +2043,7 @@
 
 // //     oracle_five
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -1914,7 +2056,7 @@
 // //     // does not allow reports for the previous round
 
 // //     let round_not_accepting_submissions = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -1971,7 +2113,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -1985,7 +2127,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -1996,7 +2138,7 @@
 // //     // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L484 sets the min and max submissions back to 1
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2005,7 +2147,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2042,7 +2184,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2056,7 +2198,7 @@
 // //     let max: u64 = 3;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": max.to_string(), "_max_submissions": max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2067,7 +2209,7 @@
 // //     // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L484 sets the min and max submissions back to 1
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2076,7 +2218,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2089,7 +2231,7 @@
 // //     next_round = next_round + 1;
 
 // //     let expected_previous_round_not_supersedable = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -2140,7 +2282,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2151,7 +2293,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2159,7 +2301,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2168,7 +2310,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2180,7 +2322,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2192,7 +2334,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2211,7 +2353,7 @@
 // //     // })
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2222,7 +2364,7 @@
 // //     // it does not revert
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2259,7 +2401,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2270,7 +2412,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2278,7 +2420,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2287,7 +2429,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2299,7 +2441,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2311,7 +2453,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2330,7 +2472,7 @@
 // //     // })
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2340,7 +2482,7 @@
 // //     // when called by an oracle who has answered recently
 // //     // it does not revert
 // //     let expected_round_not_accepting_submissions = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -2365,7 +2507,7 @@
 // //     }
 
 // //     let expected_round_not_accepting_submissions_two = oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -2416,7 +2558,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2427,7 +2569,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2435,7 +2577,7 @@
 // //     );
 // //     root.call(
 
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2444,7 +2586,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2456,7 +2598,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2468,7 +2610,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2480,7 +2622,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2492,7 +2634,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2506,7 +2648,7 @@
 // //     // *TODO* Look into why the contract panics on oracle_three starting a new round. Error: previous round not supersedable.
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2542,7 +2684,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2553,7 +2695,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2561,7 +2703,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2570,7 +2712,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2582,7 +2724,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2594,7 +2736,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2606,7 +2748,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2618,7 +2760,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2631,7 +2773,7 @@
 // //     // sets the info for the previous round
 // //     let mut expected_updated_timestamp: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_timestamp",
 // //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -2643,7 +2785,7 @@
 
 // //     let mut expected_answer: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_answer",
 // //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -2654,7 +2796,7 @@
 // //     assert_eq!(0, expected_answer);
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -2667,7 +2809,7 @@
 
 // //     // expected_updated_timestamp = test_helper
 // //     //     .call(
-// //     //         aca.account_id(),
+// //     //         flux_aggregator.account_id(),
 // //     //         "get_timestamp",
 // //     //         &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //     //         DEFAULT_GAS,
@@ -2678,7 +2820,7 @@
 
 // //     expected_answer = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_answer",
 // //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -2690,7 +2832,7 @@
 
 // //     let expected_round: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_round_data",
 // //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -2729,7 +2871,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2740,7 +2882,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2748,7 +2890,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2757,7 +2899,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2769,7 +2911,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2781,7 +2923,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2793,7 +2935,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2805,7 +2947,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2818,7 +2960,7 @@
 // //     // sets the previous round as timed out
 // //     // *TODO* Look into why the panic error contains No data present and not previous round not supersedable
 // //     let expected_no_data_present = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "get_round_data",
 // //         &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2835,7 +2977,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2847,7 +2989,7 @@
 
 // //     let expected_round: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_round_data",
 // //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -2884,7 +3026,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -2895,7 +3037,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2903,7 +3045,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -2912,7 +3054,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2924,7 +3066,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2936,7 +3078,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2948,7 +3090,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2960,7 +3102,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -2971,7 +3113,7 @@
 // //         .assert_success();
 
 // //     let expected_revert = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -3021,7 +3163,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3032,7 +3174,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3040,7 +3182,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3049,7 +3191,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -3061,7 +3203,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -3073,7 +3215,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -3085,7 +3227,7 @@
 
 // //     oracle_two
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -3097,7 +3239,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -3108,7 +3250,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": (timeout+100000).to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3117,7 +3259,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -3155,7 +3297,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3166,7 +3308,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3174,7 +3316,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3182,7 +3324,7 @@
 // //     ).assert_success();
 
 // //     let expected_value_below_min_submission_value = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value-1).to_string()})
 // //             .to_string()
@@ -3234,7 +3376,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3245,7 +3387,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3253,7 +3395,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3261,7 +3403,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value).to_string()})
 // //             .to_string()
@@ -3297,7 +3439,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3308,7 +3450,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3316,7 +3458,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3324,7 +3466,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": (max_submission_value).to_string()})
 // //             .to_string()
@@ -3360,7 +3502,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3371,7 +3513,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3379,7 +3521,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3387,7 +3529,7 @@
 // //     ).assert_success();
 
 // //     let expected_value_above_max_submission_value = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": (max_submission_value+ 1).to_string()})
 // //             .to_string()
@@ -3463,7 +3605,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3474,7 +3616,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3487,7 +3629,7 @@
 
 // //     while n < answers.len() {
 // //         oracle_one.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answers[n].to_string()})
 // //                 .to_string()
@@ -3502,7 +3644,7 @@
 // //     while y < next_round {
 // //         let answer: u128 = test_helper
 // //             .call(
-// //                 aca.account_id(),
+// //                 flux_aggregator.account_id(),
 // //                 "get_answer",
 // //                 &json!({"_round_id": y.to_string()}).to_string().into_bytes(),
 // //                 DEFAULT_GAS,
@@ -3549,7 +3691,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3560,7 +3702,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3571,7 +3713,7 @@
 
 // //     while n < answers.len() {
 // //         oracle_one.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answers[n].to_string()})
 // //                 .to_string()
@@ -3616,7 +3758,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3627,7 +3769,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3640,7 +3782,7 @@
 
 // //     while i < 10 {
 // //         oracle_one.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": (i + 1).to_string()})
 // //                 .to_string()
@@ -3655,7 +3797,7 @@
 // //     while z < next_round {
 // //         let current_timestamp: u128 = test_helper
 // //             .call(
-// //                 aca.account_id(),
+// //                 flux_aggregator.account_id(),
 // //                 "get_timestamp",
 // //                 &json!({"_round_id": z.to_string()}).to_string().into_bytes(),
 // //                 DEFAULT_GAS,
@@ -3693,7 +3835,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3704,7 +3846,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3717,7 +3859,7 @@
 
 // //     while i < 10 {
 // //         oracle_one.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": (i + 1).to_string()})
 // //                 .to_string()
@@ -3732,7 +3874,7 @@
 // //     while z < next_round {
 // //         let current_timestamp: u128 = test_helper
 // //             .call(
-// //                 aca.account_id(),
+// //                 flux_aggregator.account_id(),
 // //                 "get_timestamp",
 // //                 &json!({"_round_id": z.to_string()}).to_string().into_bytes(),
 // //                 DEFAULT_GAS,
@@ -3775,7 +3917,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3787,7 +3929,7 @@
 
 // //     let past_count: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -3796,7 +3938,7 @@
 // //         .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3805,7 +3947,7 @@
 
 // //     let current_count: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -3840,7 +3982,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3851,7 +3993,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3860,7 +4002,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -3891,7 +4033,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3901,7 +4043,7 @@
 // //     )
 // //     .assert_success();
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -3910,7 +4052,7 @@
 
 // //     let min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -3920,7 +4062,7 @@
 
 // //     let max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -3930,7 +4072,7 @@
 
 // //     let restart_delay: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "restart_delay",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -3963,7 +4105,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -3974,7 +4116,7 @@
 // //     .assert_success();
 
 // //     let oracle_added_event = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4024,7 +4166,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4035,7 +4177,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4043,7 +4185,7 @@
 // //     ).assert_success();
 
 // //     let expected_oracle_already_enabled = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4090,7 +4232,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4101,7 +4243,7 @@
 // //     .assert_success();
 
 // //     let expected_only_callable_by_owner = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4148,7 +4290,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4159,7 +4301,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4167,7 +4309,7 @@
 // //     );
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4177,7 +4319,7 @@
 // //     );
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4185,7 +4327,7 @@
 // //         );
 
 // //     let expected_not_yet_enabled_oracle = oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": "1", "_submission": answer.to_string()})
 // //             .to_string()
@@ -4232,7 +4374,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4243,7 +4385,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4251,7 +4393,7 @@
 // //     );
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4261,7 +4403,7 @@
 // //     );
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4269,7 +4411,7 @@
 // //         );
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4282,7 +4424,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -4316,7 +4458,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4327,7 +4469,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4335,7 +4477,7 @@
 // //     );
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4345,7 +4487,7 @@
 // //     );
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4357,7 +4499,7 @@
 // //     next_round = next_round + 1;
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4366,7 +4508,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -4379,7 +4521,7 @@
 // //     next_round = next_round + 1;
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4388,7 +4530,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -4423,7 +4565,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4434,7 +4576,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4442,7 +4584,7 @@
 // //     );
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4452,7 +4594,7 @@
 // //     );
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4464,7 +4606,7 @@
 // //     next_round = next_round + 1;
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4473,7 +4615,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -4486,7 +4628,7 @@
 // //     next_round = next_round + 1;
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4497,7 +4639,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -4533,7 +4675,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4544,7 +4686,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4552,7 +4694,7 @@
 // //     );
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -4562,7 +4704,7 @@
 // //     );
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "change_oracles",
 // //             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4570,7 +4712,7 @@
 // //         ).assert_success();
 
 // //     let expected_owner_cannot_override_admin = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [root.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4639,7 +4781,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4650,7 +4792,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4659,7 +4801,7 @@
 
 // //     let past_count: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4668,7 +4810,7 @@
 // //         .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4677,7 +4819,7 @@
 
 // //     let current_count: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4709,7 +4851,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4720,7 +4862,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4728,7 +4870,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4737,7 +4879,7 @@
 
 // //     let min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4747,7 +4889,7 @@
 
 // //     let max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4757,7 +4899,7 @@
 
 // //     let restart_delay: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "restart_delay",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4791,7 +4933,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4802,7 +4944,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4810,7 +4952,7 @@
 // //     );
 
 // //     let oracle_removed_event = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4853,7 +4995,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4864,7 +5006,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4872,7 +5014,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4881,7 +5023,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -4917,7 +5059,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4928,7 +5070,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4936,7 +5078,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4944,7 +5086,7 @@
 // //     ).assert_success();
 
 // //     let expected_oracle_not_enabled = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -4984,7 +5126,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -4995,7 +5137,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5003,7 +5145,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5011,7 +5153,7 @@
 // //     ).assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5040,7 +5182,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5051,7 +5193,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5059,7 +5201,7 @@
 // //     );
 
 // //     let expected_only_callable_by_owner = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5105,7 +5247,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5116,7 +5258,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5124,7 +5266,7 @@
 // //     );
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5133,7 +5275,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -5147,7 +5289,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -5159,7 +5301,7 @@
 
 // //     let expected_no_longer_allowed_oracle = oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -5211,7 +5353,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5222,7 +5364,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5231,7 +5373,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -5242,7 +5384,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5251,7 +5393,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -5265,7 +5407,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -5278,7 +5420,7 @@
 // //     next_round = next_round + 1;
 
 // //     let expected_no_longer_allowed_oracle = oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -5327,7 +5469,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5338,7 +5480,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5346,7 +5488,7 @@
 // //     );
 
 // //     let expected_min_must_be_greater_than_0 = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5389,7 +5531,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5400,7 +5542,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5409,7 +5551,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5434,7 +5576,7 @@
 // //     n = 0;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_two.account_id()], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5443,7 +5585,7 @@
 
 // //     let oracles_second: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5486,7 +5628,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5497,7 +5639,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5506,7 +5648,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5528,7 +5670,7 @@
 // //     n = 0;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_two.account_id()], "_added": [oracle_two.account_id()], "_added_admins": [oracle_two.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5537,7 +5679,7 @@
 
 // //     let oracles_second: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5576,7 +5718,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5587,7 +5729,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5596,7 +5738,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5607,7 +5749,7 @@
 // //     assert_eq!(oracles[0], oracle_one.account_id());
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_two.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5618,7 +5760,7 @@
 
 // //     let oracles_second: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5637,7 +5779,7 @@
 // //     }
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5648,7 +5790,7 @@
 
 // //     let oracles_third: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5692,7 +5834,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5703,7 +5845,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5712,7 +5854,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5725,7 +5867,7 @@
 // //     assert_eq!(oracles[2], oracle_three.account_id());
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5734,7 +5876,7 @@
 
 // //     let oracles_second: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5767,7 +5909,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5778,7 +5920,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5787,7 +5929,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5800,7 +5942,7 @@
 // //     assert_eq!(oracles[2], oracle_three.account_id());
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_two.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5809,7 +5951,7 @@
 
 // //     let oracles_second: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5842,7 +5984,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5853,7 +5995,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5862,7 +6004,7 @@
 
 // //     let oracles: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5875,7 +6017,7 @@
 // //     assert_eq!(oracles[2], oracle_three.account_id());
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -5884,7 +6026,7 @@
 
 // //     let oracles_second: Vec<String> = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_oracles",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5920,7 +6062,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -5931,7 +6073,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": deposit.to_string()})
 // //             .to_string()
@@ -5943,7 +6085,7 @@
 
 // //     let available_funds: u128 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -5991,7 +6133,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6002,7 +6144,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": deposit.to_string()})
 // //             .to_string()
@@ -6013,7 +6155,7 @@
 // //     .assert_success();
 
 // //     let expected_insufficient_reserve_funds = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": deposit.to_string()})
 // //             .to_string()
@@ -6062,7 +6204,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6073,7 +6215,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6081,7 +6223,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -6091,7 +6233,7 @@
 // //     );
 
 // //     let expected_insufficient_reserve_funds = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": deposit.to_string()})
 // //             .to_string()
@@ -6116,7 +6258,7 @@
 
 // //     let available_funds: u128 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6148,7 +6290,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6159,7 +6301,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6168,7 +6310,7 @@
 
 // //     let available_funds: u128 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6179,7 +6321,7 @@
 // //     assert_eq!(100, available_funds);
 
 // //     let expected_insufficient_reserve_funds = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": (allowed + 1).to_string()})
 // //             .to_string()
@@ -6203,7 +6345,7 @@
 // //     }
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": allowed.to_string()})
 // //             .to_string()
@@ -6234,7 +6376,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6245,7 +6387,7 @@
 // //     .assert_success();
 
 // //     let expected_only_callable_by_owner = oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_funds",
 // //         &json!({"_recipient": test_helper.account_id().to_string(), "_amount": 100.to_string()})
 // //             .to_string()
@@ -6270,7 +6412,7 @@
 
 // //     let available_funds: u128 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6311,7 +6453,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6322,7 +6464,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6331,7 +6473,7 @@
 
 // //     let mut expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6341,7 +6483,7 @@
 
 // //     let mut expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6351,7 +6493,7 @@
 
 // //     let mut expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6364,7 +6506,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": new_payment_amount.to_string(), "_min_submissions": new_min.to_string(), "_max_submissions": new_max.to_string(), "_restart_delay": new_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6373,7 +6515,7 @@
 
 // //     let expected_restart_delay: u64 = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "restart_delay",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6383,7 +6525,7 @@
 
 // //     expected_payment_amount = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6393,7 +6535,7 @@
 
 // //     expected_min_submission_count = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6403,7 +6545,7 @@
 
 // //     expected_max_submission_count = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6449,7 +6591,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6460,7 +6602,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6469,7 +6611,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6479,7 +6621,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6489,7 +6631,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6502,7 +6644,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     let receipt = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": new_payment_amount.to_string(), "_min_submissions": new_min.to_string(), "_max_submissions": new_max.to_string(), "_restart_delay": new_delay.to_string(), "_timeout": (timeout + 1).to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6562,7 +6704,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6573,7 +6715,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6582,7 +6724,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6592,7 +6734,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6602,7 +6744,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6615,7 +6757,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     let expected_max_cannot_exceed_total = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min_submission_count.to_string(), "_max_submissions": 4.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6666,7 +6808,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6677,7 +6819,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6686,7 +6828,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6696,7 +6838,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6706,7 +6848,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6719,7 +6861,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     let expected_max_must_equal_exceed_min = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6770,7 +6912,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6781,7 +6923,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6790,7 +6932,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6800,7 +6942,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6810,7 +6952,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6823,7 +6965,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     let expected_revert_delay_cannot_exceed_total = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": 3.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6871,7 +7013,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6882,7 +7024,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6891,7 +7033,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6901,7 +7043,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6911,7 +7053,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -6925,7 +7067,7 @@
 // //     // *TODO* Look into why you cannot pass a decimal number into the update_future_rounds payment_amount (17.67)
 
 // //     let expected_insufficient_funds_for_payment = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": "18", "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6977,7 +7119,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -6988,7 +7130,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -6997,7 +7139,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -7007,7 +7149,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -7017,7 +7159,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -7030,7 +7172,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     let expected_min_must_be_greater_than_0 = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7082,7 +7224,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7093,7 +7235,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7102,7 +7244,7 @@
 
 // //     let expected_payment_amount: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_payment_amount",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -7112,7 +7254,7 @@
 
 // //     let expected_min_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "min_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -7122,7 +7264,7 @@
 
 // //     let expected_max_submission_count: u64 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "max_submission_count",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -7135,7 +7277,7 @@
 // //     assert_eq!(expected_max_submission_count, max_submission_count);
 
 // //     let expected_only_callable_by_owner = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": min_submission_count.to_string(), "_max_submissions": max_submission_count.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7179,7 +7321,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7191,14 +7333,14 @@
 
 // //     let original_balance: u64 = root
 // //     .view(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "available_funds",
 // //         &json!({}).to_string().into_bytes(),
 // //     )
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_available_funds",
 // //         &json!({})
 // //             .to_string()
@@ -7210,7 +7352,7 @@
 
 // //     let original_balance_updated: u64 = root
 // //     .view(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "available_funds",
 // //         &json!({}).to_string().into_bytes(),
 // //     )
@@ -7223,7 +7365,7 @@
 // //         "transfer_from",
 // //         &json!({
 // //             "owner_id": root.account_id().to_string(),
-// //             "new_owner_id": aca.account_id().to_string(),
+// //             "new_owner_id": flux_aggregator.account_id().to_string(),
 // //             "amount": deposit.to_string()
 // //         })
 // //         .to_string()
@@ -7233,7 +7375,7 @@
 // //     )
 // //     .assert_success();
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_available_funds",
 // //         &json!({})
 // //             .to_string()
@@ -7245,7 +7387,7 @@
 
 // //     let new_balance: u64 = root
 // //     .view(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "available_funds",
 // //         &json!({}).to_string().into_bytes(),
 // //     )
@@ -7275,7 +7417,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7287,14 +7429,14 @@
 
 // //     let original_balance: u64 = root
 // //         .view(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //         )
 // //         .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7303,7 +7445,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
 // //                 .to_string()
@@ -7318,7 +7460,7 @@
 // //         "transfer_from",
 // //         &json!({
 // //             "owner_id": root.account_id().to_string(),
-// //             "new_owner_id": aca.account_id().to_string(),
+// //             "new_owner_id": flux_aggregator.account_id().to_string(),
 // //             "amount": deposit.to_string()
 // //         })
 // //         .to_string()
@@ -7329,7 +7471,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_available_funds",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7340,7 +7482,7 @@
 // //     let expected: u64 = (original_balance + deposit) - 3;
 // //     let new_balance: u64 = root
 // //         .view(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //         )
@@ -7371,7 +7513,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7386,7 +7528,7 @@
 // //         "transfer_from",
 // //         &json!({
 // //             "owner_id": root.account_id().to_string(),
-// //             "new_owner_id": aca.account_id().to_string(),
+// //             "new_owner_id": flux_aggregator.account_id().to_string(),
 // //             "amount": deposit.to_string()
 // //         })
 // //         .to_string()
@@ -7397,7 +7539,7 @@
 // //     .assert_success();
 
 // //     let receipt = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_available_funds",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7410,7 +7552,7 @@
 
 // //     let new_balance: u64 = root
 // //         .view(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "available_funds",
 // //             &json!({}).to_string().into_bytes(),
 // //         )
@@ -7439,7 +7581,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7450,7 +7592,7 @@
 // //     .assert_success();
 
 // //     let receipt = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_available_funds",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7489,7 +7631,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7500,7 +7642,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7509,7 +7651,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
 // //                 .to_string()
@@ -7523,7 +7665,7 @@
 // //     .call(
 // //         link.account_id(),
 // //         "ft_balance_of",
-// //         &json!({"account_id": aca.account_id().to_string()})
+// //         &json!({"account_id": flux_aggregator.account_id().to_string()})
 // //             .to_string()
 // //             .into_bytes(),
 // //         DEFAULT_GAS,
@@ -7547,7 +7689,7 @@
 
 // //     oracle_one
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_payment",
 // //         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": payment_amount.to_string()})
 // //             .to_string()
@@ -7561,7 +7703,7 @@
 // //     //     .call(
 // //     //         link.account_id(),
 // //     //         "ft_balance_of",
-// //     //         &json!({"account_id": aca.account_id().to_string()})
+// //     //         &json!({"account_id": flux_aggregator.account_id().to_string()})
 // //     //             .to_string()
 // //     //             .into_bytes(),
 // //     //         DEFAULT_GAS,
@@ -7608,7 +7750,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7619,7 +7761,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7628,7 +7770,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
 // //                 .to_string()
@@ -7640,7 +7782,7 @@
 
 // //     let original_allocation: u128 = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "allocated_funds",
 // //             &json!({})
 // //                 .to_string()
@@ -7652,7 +7794,7 @@
 
 // //     oracle_one
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_payment",
 // //         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": payment_amount.to_string()})
 // //             .to_string()
@@ -7664,7 +7806,7 @@
 
 // //     let updated_allocation: u128 = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "allocated_funds",
 // //         &json!({})
 // //             .to_string()
@@ -7699,7 +7841,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7710,7 +7852,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7719,7 +7861,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
 // //                 .to_string()
@@ -7731,7 +7873,7 @@
 
 // //     let expected_revert_insufficient_withdrawable_funds = oracle_one
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_payment",
 // //         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_one.account_id().to_string(), "_amount": (payment_amount + 1).to_string()})
 // //             .to_string()
@@ -7776,7 +7918,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7787,7 +7929,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7796,7 +7938,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": 1.to_string(), "_submission": 100.to_string()})
 // //                 .to_string()
@@ -7808,7 +7950,7 @@
 
 // //     let expected_only_callable_by_admin = oracle_three
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "withdraw_payment",
 // //         &json!({"_oracle": oracle_one.account_id().to_string(), "_recipient": oracle_three.account_id().to_string(), "_amount": 1.to_string()})
 // //             .to_string()
@@ -7853,7 +7995,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7864,7 +8006,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7873,7 +8015,7 @@
 
 // //     let receipt = oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "transfer_admin",
 // //             &json!({"_oracle": oracle_two.account_id().to_string(), "_new_admin": oracle_three.account_id().to_string()})
 // //                 .to_string()
@@ -7888,7 +8030,7 @@
 // //     );
 // //     let get_admin: String = oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_admin",
 // //             &json!({"_oracle": oracle_two.account_id().to_string()})
 // //                 .to_string()
@@ -7926,7 +8068,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -7937,7 +8079,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -7945,7 +8087,7 @@
 // //     ).assert_success();
 
 // //     let expected_only_callable_by_admin = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "transfer_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string(), "_new_admin": oracle_three.account_id().to_string()})
 // //             .to_string()
@@ -7994,7 +8136,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8005,7 +8147,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8013,7 +8155,7 @@
 // //     ).assert_success();
 
 // //     let expected_only_callable_by_admin = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "transfer_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string(), "_new_admin": oracle_three.account_id().to_string()})
 // //             .to_string()
@@ -8059,7 +8201,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8070,7 +8212,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8078,7 +8220,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "transfer_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string(), "_new_admin": oracle_three.account_id().to_string()})
 // //             .to_string()
@@ -8088,7 +8230,7 @@
 // //     ).assert_success();
 
 // //     let receipt = oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "accept_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string()})
 // //             .to_string()
@@ -8104,7 +8246,7 @@
 
 // //     let get_admin: String = oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_admin",
 // //             &json!({"_oracle": oracle_two.account_id().to_string()})
 // //                 .to_string()
@@ -8140,7 +8282,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8151,7 +8293,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8159,7 +8301,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "transfer_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string(), "_new_admin": oracle_three.account_id().to_string()})
 // //             .to_string()
@@ -8169,7 +8311,7 @@
 // //     ).assert_success();
 
 // //     let expected_only_callable_by_pending_admin = oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "accept_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string()})
 // //             .to_string()
@@ -8193,7 +8335,7 @@
 // //     }
 
 // //     let expected_only_callable_by_pending_admin_second = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "accept_admin",
 // //         &json!({"_oracle": oracle_two.account_id().to_string()})
 // //             .to_string()
@@ -8249,7 +8391,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8260,7 +8402,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8269,7 +8411,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8280,7 +8422,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": root.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //             .to_string()
@@ -8291,7 +8433,7 @@
 // //     .assert_success();
 
 // //     let receipt = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8330,7 +8472,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8341,7 +8483,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8350,7 +8492,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8361,7 +8503,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": root.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //             .to_string()
@@ -8372,7 +8514,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": test_helper.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //             .to_string()
@@ -8408,7 +8550,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8419,7 +8561,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8428,7 +8570,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8439,7 +8581,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": root.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //             .to_string()
@@ -8450,7 +8592,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8459,7 +8601,7 @@
 // //     .assert_success();
 
 // //     let expected_previous_round_must_be_supersedable = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8506,7 +8648,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8517,7 +8659,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8526,7 +8668,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8537,7 +8679,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": root.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //             .to_string()
@@ -8548,7 +8690,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8557,7 +8699,7 @@
 // //     .assert_success();
 
 // //     let expected_previous_round_must_be_supersedable = root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8591,7 +8733,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8602,7 +8744,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8611,7 +8753,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8624,7 +8766,7 @@
 // //     next_round = next_round + 1;
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": root.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //             .to_string()
@@ -8635,7 +8777,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_requester_permissions",
 // //         &json!({"_requester": oracle_four.account_id().to_string(), "_authorized": true, "_delay": 1.to_string()})
 // //             .to_string()
@@ -8647,7 +8789,7 @@
 
 // //     oracle_four
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "request_new_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -8656,7 +8798,7 @@
 // //         .assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -8669,7 +8811,7 @@
 
 // //     // Eddy can't start because of the delay
 // //     let expected_must_delay_requests = oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8690,7 +8832,7 @@
 
 // //     // Carol starts a new round instead
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8700,7 +8842,7 @@
 
 // //     // round completes
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -8713,7 +8855,7 @@
 
 // //     oracle_four
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "request_new_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -8748,7 +8890,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8759,7 +8901,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8767,7 +8909,7 @@
 // //     ).assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [], "_added_admins": [], "_min_submissions": 0.to_string(), "_max_submissions": 0.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8784,7 +8926,7 @@
 // //     //   }
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8793,7 +8935,7 @@
 
 // //     // round completes
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -8827,7 +8969,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8838,7 +8980,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8847,7 +8989,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8858,7 +9000,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -8870,7 +9012,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "request_new_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -8903,7 +9045,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8914,7 +9056,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8923,7 +9065,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -8934,7 +9076,7 @@
 // //         .assert_success();
 
 // //     let receipt = root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -8974,7 +9116,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -8985,7 +9127,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -8994,7 +9136,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -9005,7 +9147,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9015,7 +9157,7 @@
 // //         ).assert_success();
 
 // //     let receipt = root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9052,7 +9194,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9063,7 +9205,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9072,7 +9214,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -9083,7 +9225,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9093,7 +9235,7 @@
 // //         ).assert_success();
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": false, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9103,7 +9245,7 @@
 // //         ).assert_success();
 
 // //     let expected_not_authorized_requester = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9149,7 +9291,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9160,7 +9302,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9169,7 +9311,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -9180,7 +9322,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9190,7 +9332,7 @@
 // //         ).assert_success();
 
 // //     let receipt = root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": false, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9230,7 +9372,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9241,7 +9383,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9250,7 +9392,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -9261,7 +9403,7 @@
 // //         .assert_success();
 
 // //     root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9271,7 +9413,7 @@
 // //         ).assert_success();
 
 // //     let receipt = root.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_two.account_id().to_string(), "_authorized": false, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9310,7 +9452,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9321,7 +9463,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9330,7 +9472,7 @@
 
 // //     oracle_one
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -9341,7 +9483,7 @@
 // //         .assert_success();
 
 // //     let expected_only_callable_by_owner = oracle_one.call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "set_requester_permissions",
 // //             &json!({"_requester": oracle_one.account_id().to_string(), "_authorized": true, "_delay": 0.to_string()})
 // //                 .to_string()
@@ -9365,7 +9507,7 @@
 // //     }
 
 // //     let expected_not_authorized_requester = oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "request_new_round",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9415,7 +9557,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9426,7 +9568,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9436,7 +9578,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9446,7 +9588,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9456,7 +9598,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9466,7 +9608,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9479,7 +9621,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -9491,7 +9633,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -9556,7 +9698,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9567,7 +9709,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9577,7 +9719,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9587,7 +9729,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9597,7 +9739,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9607,7 +9749,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9620,7 +9762,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -9631,7 +9773,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": 0.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9639,7 +9781,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9650,7 +9792,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -9704,7 +9846,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9715,7 +9857,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9725,7 +9867,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9735,7 +9877,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9745,7 +9887,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9755,7 +9897,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9768,7 +9910,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -9779,7 +9921,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": 0.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9788,7 +9930,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -9800,7 +9942,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -9862,7 +10004,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -9873,7 +10015,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9883,7 +10025,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9893,7 +10035,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9903,7 +10045,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9913,7 +10055,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9926,7 +10068,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -9937,7 +10079,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": 0.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -9946,7 +10088,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9956,7 +10098,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9966,7 +10108,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -9977,7 +10119,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -10031,7 +10173,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -10042,7 +10184,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10052,7 +10194,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10062,7 +10204,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10072,7 +10214,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10082,7 +10224,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10095,7 +10237,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -10106,7 +10248,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": 0.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10115,7 +10257,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10125,7 +10267,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10135,7 +10277,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10146,7 +10288,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -10208,7 +10350,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -10219,7 +10361,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10229,7 +10371,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10239,7 +10381,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10249,7 +10391,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10259,7 +10401,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10272,7 +10414,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -10283,7 +10425,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": 0.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10292,7 +10434,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10302,7 +10444,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10312,7 +10454,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10322,7 +10464,7 @@
 // //     ).assert_success();
 
 // //     oracle_five.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10333,7 +10475,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -10385,7 +10527,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -10396,7 +10538,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10406,7 +10548,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10416,7 +10558,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10426,7 +10568,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10436,7 +10578,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10449,7 +10591,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -10460,7 +10602,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": 0.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10469,7 +10611,7 @@
 // //     // advanceRound
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10479,7 +10621,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10489,7 +10631,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10499,7 +10641,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10510,7 +10652,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -10566,7 +10708,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -10577,7 +10719,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10587,7 +10729,7 @@
 // //     // advanceRound
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10597,7 +10739,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10607,7 +10749,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10617,7 +10759,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10630,7 +10772,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -10641,7 +10783,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": (max_answers - 1).to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10649,7 +10791,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10659,7 +10801,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10670,7 +10812,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -10724,7 +10866,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -10735,7 +10877,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10745,7 +10887,7 @@
 // //     // advanceRound
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10755,7 +10897,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10765,7 +10907,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10775,7 +10917,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10788,7 +10930,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -10799,7 +10941,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": (max_answers - 1).to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10807,7 +10949,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10817,7 +10959,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10828,7 +10970,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -10890,7 +11032,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -10901,7 +11043,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10911,7 +11053,7 @@
 // //     // advanceRound
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10921,7 +11063,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10931,7 +11073,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10941,7 +11083,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -10954,7 +11096,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -10965,7 +11107,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": (max_answers - 1).to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -10973,7 +11115,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10983,7 +11125,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -10993,7 +11135,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11004,7 +11146,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -11059,7 +11201,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -11070,7 +11212,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11080,7 +11222,7 @@
 // //     // advanceRound
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11090,7 +11232,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11100,7 +11242,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11110,7 +11252,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11123,7 +11265,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -11134,7 +11276,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": (max_answers - 1).to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11142,7 +11284,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11152,7 +11294,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11162,7 +11304,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11173,7 +11315,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -11236,7 +11378,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -11247,7 +11389,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11257,7 +11399,7 @@
 // //     // advanceRound
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11267,7 +11409,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11277,7 +11419,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11287,7 +11429,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11300,7 +11442,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -11311,7 +11453,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": (max_answers - 1).to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11319,7 +11461,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11329,7 +11471,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11339,7 +11481,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11349,7 +11491,7 @@
 // //     ).assert_success();
 
 // //     oracle_five.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11360,7 +11502,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -11414,7 +11556,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -11425,7 +11567,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id(), oracle_four.account_id(), oracle_five.account_id()], "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11435,7 +11577,7 @@
 // //     // advanceRound
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11445,7 +11587,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11455,7 +11597,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11465,7 +11607,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": previous_submission.to_string()})
 // //             .to_string()
@@ -11478,7 +11620,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -11489,7 +11631,7 @@
 // //     .unwrap_json();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "update_future_rounds",
 // //         &json!({"_payment_amount": 3.to_string(), "_min_submissions": min_answers.to_string(), "_max_submissions": max_answers.to_string(), "_restart_delay": (max_answers - 1).to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11497,7 +11639,7 @@
 // //     ).assert_success();
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11507,7 +11649,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11517,7 +11659,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11527,7 +11669,7 @@
 // //     ).assert_success();
 
 // //     oracle_four.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //             .to_string()
@@ -11538,7 +11680,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //                 .to_string()
@@ -11590,7 +11732,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -11601,7 +11743,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11610,7 +11752,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -11623,7 +11765,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -11633,7 +11775,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -11643,7 +11785,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -11657,7 +11799,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -11667,7 +11809,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -11681,7 +11823,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -11691,7 +11833,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -11701,7 +11843,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -11715,7 +11857,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -11726,7 +11868,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 1.to_string()})
 // //                 .to_string()
@@ -11778,7 +11920,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -11789,7 +11931,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11798,7 +11940,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -11811,7 +11953,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -11821,7 +11963,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -11831,7 +11973,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -11845,7 +11987,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -11855,7 +11997,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -11869,7 +12011,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -11879,7 +12021,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -11889,7 +12031,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -11903,7 +12045,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -11914,7 +12056,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 2.to_string()})
 // //                 .to_string()
@@ -11966,7 +12108,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -11977,7 +12119,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -11986,7 +12128,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -11999,7 +12141,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12009,7 +12151,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12019,7 +12161,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12033,7 +12175,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12043,7 +12185,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12057,7 +12199,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12067,7 +12209,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12077,7 +12219,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12091,7 +12233,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12102,7 +12244,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 4.to_string()})
 // //                 .to_string()
@@ -12154,7 +12296,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -12165,7 +12307,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -12174,7 +12316,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -12187,7 +12329,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12197,7 +12339,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12207,7 +12349,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12221,7 +12363,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12231,7 +12373,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12245,7 +12387,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12255,7 +12397,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12265,7 +12407,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12279,7 +12421,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12290,7 +12432,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 5.to_string()})
 // //                 .to_string()
@@ -12342,7 +12484,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -12353,7 +12495,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -12362,7 +12504,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -12375,7 +12517,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12385,7 +12527,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12395,7 +12537,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12409,7 +12551,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12419,7 +12561,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12433,7 +12575,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12443,7 +12585,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12453,7 +12595,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12467,7 +12609,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12477,7 +12619,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12488,7 +12630,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 4.to_string()})
 // //                 .to_string()
@@ -12540,7 +12682,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -12551,7 +12693,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -12560,7 +12702,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -12573,7 +12715,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12583,7 +12725,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12593,7 +12735,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12607,7 +12749,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12617,7 +12759,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12631,7 +12773,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12641,7 +12783,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12651,7 +12793,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12665,7 +12807,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12675,7 +12817,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12686,7 +12828,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 5.to_string()})
 // //                 .to_string()
@@ -12738,7 +12880,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -12749,7 +12891,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -12758,7 +12900,7 @@
 
 // //     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //     .call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "oracle_round_state",
 // //         &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 0.to_string()})
 // //             .to_string()
@@ -12771,7 +12913,7 @@
 // //     // advanceRound * 4 (1)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12781,7 +12923,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12791,7 +12933,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[1].to_string()})
 // //             .to_string()
@@ -12805,7 +12947,7 @@
 // //     // advanceRound * 4 (2)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12815,7 +12957,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[2].to_string()})
 // //             .to_string()
@@ -12829,7 +12971,7 @@
 // //     // advanceRound * 4 (3)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12839,7 +12981,7 @@
 // //     ).assert_success();
 
 // //     oracle_two.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12849,7 +12991,7 @@
 // //     ).assert_success();
 
 // //     oracle_three.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[3].to_string()})
 // //             .to_string()
@@ -12863,7 +13005,7 @@
 // //     // advanceRound * 4 (4)
 
 // //     oracle_one.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "submit",
 // //         &json!({"_round_id": next_round.to_string(), "_submission": answers[4].to_string()})
 // //             .to_string()
@@ -12874,7 +13016,7 @@
 
 // //     let state: (bool, u64, u128, u64, u64, u128, u64, u128) = root
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "oracle_round_state",
 // //             &json!({"_oracle": oracle_three.account_id().to_string(), "_queried_round_id": 6.to_string()})
 // //                 .to_string()
@@ -12927,7 +13069,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -12938,7 +13080,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -12947,7 +13089,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -12959,7 +13101,7 @@
 
 // //     let latest_round_id: u64 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -12969,7 +13111,7 @@
 
 // //     let round: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_round_data",
 // //             &json!({"_round_id": latest_round_id.to_string()})
 // //                 .to_string()
@@ -13018,7 +13160,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13029,7 +13171,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13038,7 +13180,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -13050,7 +13192,7 @@
 
 // //     let latest_round_id: u64 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -13059,7 +13201,7 @@
 // //         .unwrap_json();
 
 // //     let expected_no_data_present = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "get_round_data",
 // //         &json!({"_round_id": (latest_round_id + 1).to_string()})
 // //             .to_string()
@@ -13112,7 +13254,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13123,7 +13265,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13132,7 +13274,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -13144,7 +13286,7 @@
 
 // //     let latest_round_id: u64 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -13155,7 +13297,7 @@
 // //     // // *TODO* Calculate math for overflowed u64 integer
 
 // //     let expected_no_data_present = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "get_round_data",
 // //         &json!({"_round_id": 100.to_string()})
 // //             .to_string()
@@ -13208,7 +13350,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13219,7 +13361,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13228,7 +13370,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -13240,7 +13382,7 @@
 
 // //     let round: (u64, u128, u64, u64, u64) = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round_data",
 // //             &json!({})
 // //                 .to_string()
@@ -13252,7 +13394,7 @@
 
 // //     let latest_round_id: u64 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_round",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -13299,7 +13441,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13310,7 +13452,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13318,7 +13460,7 @@
 // //     ).assert_success();
 
 // //     let expected_no_data_present = test_helper.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "latest_round_data",
 // //         &json!({}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13368,7 +13510,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13379,7 +13521,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13388,7 +13530,7 @@
 
 // //     oracle_three
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "submit",
 // //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
 // //                 .to_string()
@@ -13400,7 +13542,7 @@
 
 // //     let latest_answer: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_answer",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -13439,7 +13581,7 @@
 // //     ) = init();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13450,7 +13592,7 @@
 // //     .assert_success();
 
 // //     root.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "change_oracles",
 // //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
 // //         DEFAULT_GAS,
@@ -13459,7 +13601,7 @@
 
 // //     let latest_answer: u128 = test_helper
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "latest_answer",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -13499,7 +13641,7 @@
 // //     ) = init();
 
 // //     aca.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "add_access",
 // //         &json!({"_user": test_helper.account_id().to_string()})
 // //             .to_string()
@@ -13511,7 +13653,7 @@
 
 // //     let empty_address: String = aca
 // //         .call(
-// //             aca.account_id(),
+// //             flux_aggregator.account_id(),
 // //             "get_validator",
 // //             &json!({}).to_string().into_bytes(),
 // //             DEFAULT_GAS,
@@ -13522,7 +13664,7 @@
 // //     assert_eq!("", empty_address);
 
 // //     let receipt = aca.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_validator",
 // //         &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
 // //             .to_string()
@@ -13537,7 +13679,7 @@
 // //     );
 
 // //     let receipt_two = aca.call(
-// //         aca.account_id(),
+// //         flux_aggregator.account_id(),
 // //         "set_validator",
 // //         &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
 // //             .to_string()
@@ -13577,7 +13719,7 @@
 
 //     let empty_address: String = root
 //         .call(
-//             aca.account_id(),
+//             flux_aggregator.account_id(),
 //             "get_validator",
 //             &json!({}).to_string().into_bytes(),
 //             DEFAULT_GAS,
@@ -13588,7 +13730,7 @@
 //     assert_eq!("", empty_address);
 
 //     let expected_only_callable_by_owner = oracle_one.call(
-//         aca.account_id(),
+//         flux_aggregator.account_id(),
 //         "set_validator",
 //         &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
 //             .to_string()

@@ -2,6 +2,7 @@ use near_sdk::serde_json::json;
 use near_sdk_sim::{init_simulator, to_yocto, UserAccount, DEFAULT_GAS};
 
 const ACA_ID: &str = "aca";
+const FLUXAGGREGATOR_ID: &str = "flux_aggregator";
 const LINKTOKEN_ID: &str = "link";
 const EAC_ID: &str = "eac";
 const EAC_WITHOUT_ACCESS_CONTROLLER_ID: &str = "eac_without_access_controller";
@@ -18,6 +19,7 @@ const MOCKV3AGGREGATOR_ID_2: &str = "mock_v3_aggregator_2";
 
 near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     ACA_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AccessControlledAggregator.wasm",
+    FLUXAGGREGATOR_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FluxAggregator.wasm",
     LINKTOKEN_WASM_BYTES => "target/wasm32-unknown-unknown/debug/LinkToken.wasm",
     EAC_WASM_BYTES => "target/wasm32-unknown-unknown/debug/EACAggregatorProxy.wasm",
     AVM_WASM_BYTES => "target/wasm32-unknown-unknown/debug/AggregatorVaildatorMock.wasm",
@@ -28,26 +30,41 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     FLAGSTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FlagsTestHelper.wasm",
     FLUXAGGREGATORTESTHELPER_WASM_BYTES => "target/wasm32-unknown-unknown/debug/FluxAggregatorTestHelper.wasm",
     MOCKV3AGGREGATOR_WASM_BYTES => "target/wasm32-unknown-unknown/debug/MockV3Aggregator.wasm"
-
 }
 
+// Register the given `user` with FT contract
+pub fn register_user(user: &near_sdk_sim::UserAccount) {
+    user.call(
+        LINKTOKEN_ID.to_string(),
+        "storage_deposit",
+        &json!({
+            "account_id": user.valid_account_id()
+        })
+        .to_string()
+        .into_bytes(),
+        near_sdk_sim::DEFAULT_GAS / 2,
+        near_sdk::env::storage_byte_cost() * 125, // attached deposit
+    )
+    .assert_success();
+}
 /**
- * TODO -> MATCH THESE
-  Default: Signer;
-  Carol: Signer;
-  Eddy: Signer;
-  Nancy: Signer;
-  Ned: Signer;
-  Neil: Signer;
-  Nelly: Signer;
-  Norbert: Signer;
- */
+* TODO -> MATCH THESE
+ Default: Signer;
+ Carol: Signer;
+ Eddy: Signer;
+ Nancy: Signer;
+ Ned: Signer;
+ Neil: Signer;
+ Nelly: Signer;
+ Norbert: Signer;
+*/
 
 // https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L251
 // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts
 // Initialization and constructor tests
 
 pub fn init_without_macros() -> (
+    UserAccount,
     UserAccount,
     UserAccount,
     UserAccount,
@@ -100,6 +117,12 @@ pub fn init_without_macros() -> (
         to_yocto("1000"), // attached deposit
     );
 
+    let flux_aggregator = root.deploy(
+        &FLUXAGGREGATOR_WASM_BYTES,
+        FLUXAGGREGATOR_ID.to_string(),
+        to_yocto("1000"), // attached deposit
+    );
+
     let payment_amount: u128 = 3;
     let timeout: u64 = 1800;
     let decimals: u64 = 24;
@@ -114,8 +137,8 @@ pub fn init_without_macros() -> (
         ACA_ID.into(),
         "new",
         &json!({
-            "link_id": link.account_id(),
             "owner_id": root.account_id(),
+            "link_id": link.account_id(),
             "_payment_amount": payment_amount.to_string(),
             "_timeout": timeout.to_string(),
             "_validator": validator,
@@ -131,90 +154,30 @@ pub fn init_without_macros() -> (
     )
     .assert_success();
 
-    let expected_payment_amount: u128 = root
+    flux_aggregator
         .call(
-            aca.account_id(),
-            "get_payment_amount",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0,
+            FLUXAGGREGATOR_ID.into(),
+            "new",
+            &json!({
+                "owner_id": root.account_id(),
+                "link_id": link.account_id(),
+                "_payment_amount": payment_amount.to_string(),
+                "_timeout": timeout.to_string(),
+                "_validator": validator,
+                "_min_submission_value": min_submission_value.to_string(),
+                "_max_submission_value": max_submission_value.to_string(),
+                "_decimals": decimals.to_string(),
+                "_description": description,
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS / 2,
+            0, // attached deposit
         )
-        .unwrap_json();
+        .assert_success();
 
-    assert_eq!(payment_amount, expected_payment_amount);
-
-    let expected_timeout: u64 = root
-        .call(
-            aca.account_id(),
-            "get_timeout",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0,
-        )
-        .unwrap_json();
-
-    assert_eq!(timeout, expected_timeout);
-
-    let expected_decimals: u64 = root
-        .call(
-            aca.account_id(),
-            "get_decimals",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0,
-        )
-        .unwrap_json();
-
-    assert_eq!(decimals, expected_decimals);
-
-    let expected_description: String = root
-        .call(
-            aca.account_id(),
-            "get_description",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0,
-        )
-        .unwrap_json();
-
-    assert_eq!(description, expected_description);
-
-    let expected_version: u128 = root
-        .call(
-            aca.account_id(),
-            "get_version",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0,
-        )
-        .unwrap_json();
-
-    assert_eq!(version, expected_version);
-
-    let expected_validator: String = root
-        .call(
-            aca.account_id(),
-            "get_validator",
-            &json!({}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0,
-        )
-        .unwrap_json();
-
-    assert_eq!(validator, expected_validator);
-
-    aca.call(
-        link.account_id(),
-        "storage_deposit",
-        &json!({
-            "account_id": aca.account_id().to_string()
-        })
-        .to_string()
-        .into_bytes(),
-        DEFAULT_GAS / 2,
-        near_sdk::env::storage_byte_cost() * 125,
-    )
-    .assert_success();
+    register_user(&aca);
+    register_user(&flux_aggregator);
 
     // Deployment function body as done on line 180-196 -> https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/test/v0.6/FluxAggregator.test.ts#L180 (beforeEach)
     root.call(
@@ -232,6 +195,28 @@ pub fn init_without_macros() -> (
 
     root.call(
         aca.account_id(),
+        "update_available_funds",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS,
+        0,
+    )
+    .assert_success();
+
+    root.call(
+            link.account_id(),
+            "ft_transfer",
+            &json!({
+                "receiver_id": flux_aggregator.account_id().to_string(), "amount": deposit.to_string(), "memo": "None"
+            })
+            .to_string()
+            .into_bytes(),
+            DEFAULT_GAS,
+            1
+        )
+        .assert_success();
+
+    root.call(
+        flux_aggregator.account_id(),
         "update_available_funds",
         &json!({}).to_string().into_bytes(),
         DEFAULT_GAS,
@@ -271,6 +256,12 @@ pub fn init_without_macros() -> (
         to_yocto("1000000"), // initial balance
     );
 
+    register_user(&oracle_one);
+    register_user(&oracle_two);
+    register_user(&oracle_three);
+    register_user(&oracle_four);
+    register_user(&oracle_five);
+
     let test_helper = root.create_user(
         "test_helper".to_string(),
         to_yocto("1000"), // initial balance
@@ -294,20 +285,6 @@ pub fn init_without_macros() -> (
             &json!({}).to_string().into_bytes(),
             DEFAULT_GAS / 2,
             0, // attached deposit
-        )
-        .assert_success();
-
-    oracle_one
-        .call(
-            link.account_id(),
-            "storage_deposit",
-            &json!({
-                "account_id": oracle_one.account_id().to_string()
-            })
-            .to_string()
-            .into_bytes(),
-            DEFAULT_GAS / 2,
-            near_sdk::env::storage_byte_cost() * 125,
         )
         .assert_success();
 
@@ -539,6 +516,7 @@ pub fn init_without_macros() -> (
         eddy,
         mock_v3_aggregator,
         mock_v3_aggregator_second,
-        read_controller
+        read_controller,
+        flux_aggregator,
     )
 }

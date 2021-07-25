@@ -1,9 +1,98 @@
-// use crate::utils::init_without_macros as init;
-// use near_sdk::json_types::{U128, U64};
-// use near_sdk::serde_json::json;
-// use near_sdk_sim::transaction::ExecutionStatus;
-// use near_sdk_sim::DEFAULT_GAS;
+use crate::utils::init_without_macros as init;
+use near_sdk::json_types::{U128, U64};
+use near_sdk::serde_json::json;
+use near_sdk_sim::transaction::ExecutionStatus;
+use near_sdk_sim::DEFAULT_GAS;
 
+/**
+ * #constructor - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L122
+ */
+
+#[test]
+
+fn constructor_tests() {
+    let payment_amount: u128 = 3;
+    let timeout: u64 = 1800;
+    let decimals: u64 = 24;
+    let description: String = "LINK/USD".to_string();
+
+    let (
+        root,
+        aca,
+        _link,
+        _oracle_one,
+        _oracle_two,
+        _oracle_three,
+        _test_helper,
+        _eac,
+        _eac_without_access_controller,
+        _oracle_four,
+        _oracle_five,
+        _aggregator_validator_mock,
+        _flags,
+        _consumer,
+        _flags_consumer,
+        _controller,
+        _controller_2,
+        _flux_aggregator_test_helper_contract,
+        _eddy,
+        _mock_v3_aggregator,
+        _mock_v3_aggregator_second,
+        _read_controller,
+        _flux_aggregator,
+    ) = init();
+
+    let expected_payment_amount: u128 = root
+        .call(
+            aca.account_id(),
+            "get_payment_amount",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0,
+        )
+        .unwrap_json();
+
+    assert_eq!(payment_amount, expected_payment_amount);
+
+    let expected_timeout: u64 = root
+        .call(
+            aca.account_id(),
+            "get_timeout",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0,
+        )
+        .unwrap_json();
+
+    assert_eq!(timeout, expected_timeout);
+
+    let expected_decimals: u64 = root
+        .call(
+            aca.account_id(),
+            "get_decimals",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0,
+        )
+        .unwrap_json();
+
+    assert_eq!(decimals, expected_decimals);
+
+    let expected_description: String = root
+        .call(
+            aca.account_id(),
+            "get_description",
+            &json!({}).to_string().into_bytes(),
+            DEFAULT_GAS,
+            0,
+        )
+        .unwrap_json();
+
+    assert_eq!(description, expected_description);
+
+
+
+}
 // // #get_answer https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L143
 // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/AccessControlledAggregator.test.ts#L160
 
@@ -67,8 +156,6 @@
 //         DEFAULT_GAS,
 //         0, // deposit
 //     );
-
-   
 
 //     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
 //         .promise_errors()
@@ -384,8 +471,6 @@
 //         DEFAULT_GAS,
 //         0, // deposit
 //     );
-
-   
 
 //     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
 //         .promise_errors()
@@ -708,8 +793,6 @@
 //         DEFAULT_GAS,
 //         0, // deposit
 //     );
-
-   
 
 //     if let ExecutionStatus::Failure(execution_error) = &expected_no_access
 //         .promise_errors()

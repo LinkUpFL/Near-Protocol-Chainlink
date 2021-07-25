@@ -123,8 +123,8 @@ impl AccessControlledAggregator {
      */
     #[init]
     pub fn new(
-        link_id: AccountId,
         owner_id: AccountId,
+        link_id: AccountId,
         _payment_amount: U128,
         _timeout: U64,
         _validator: AccountId,

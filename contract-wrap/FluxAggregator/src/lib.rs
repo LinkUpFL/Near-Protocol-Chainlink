@@ -12,6 +12,7 @@ use std::str;
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
+pub const DEFAULT_GAS: u64 = 300_000_000_000_000;
 
 pub type Base64String = String;
 
@@ -91,7 +92,6 @@ pub struct FluxAggregator {
     pub description: Base64String,
     pub min_submission_value: u128,
     pub max_submission_value: u128,
-    access_list: LookupMap<AccountId, bool>,
     reporting_round_id: u64,
     latest_round_id: u64,
     oracles: LookupMap<AccountId, OracleStatus>,
@@ -127,8 +127,8 @@ impl FluxAggregator {
      */
     #[init]
     pub fn new(
-        link_id: AccountId,
         owner_id: AccountId,
+        link_id: AccountId,
         _payment_amount: U128,
         _timeout: U64,
         _validator: AccountId,
@@ -168,7 +168,6 @@ impl FluxAggregator {
             description: _description,
             min_submission_value: min_submission_value_u128,
             max_submission_value: max_submission_value_u128,
-            access_list: LookupMap::new(b"access_list".to_vec()),
             reporting_round_id: 0_u64,
             latest_round_id: 0_u64,
             oracles: LookupMap::new(b"oracles".to_vec()),
@@ -186,7 +185,7 @@ impl FluxAggregator {
             answer: 0_u128,
             started_at: 0_u64,
             updated_at: updated_at_insert,
-            answered_in_round: 0_u64
+            answered_in_round: 0_u64,
         };
         result.rounds.insert(&0, &new_round);
         result.update_future_rounds(
@@ -200,7 +199,7 @@ impl FluxAggregator {
         result
     }
 
-    /**
+        /**
      * @notice called by oracles when they have witnessed a need to update
      * @param _roundId is the ID of the round this submission pertains to
      * @param _submission is the updated data that the oracle is submitting
@@ -386,10 +385,30 @@ impl FluxAggregator {
     pub fn update_available_funds(&self) {
         let prepaid_gas = env::prepaid_gas();
 
+        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
+        // let get_balance_promise = env::promise_create(
+        //     self.link_token.clone(),
+        //     b"get_balance",
+        //     json!({ "owner_id": env::current_account_id() })
+        //         .to_string()
+        //         .as_bytes(),
+        //     0,
+        //     SINGLE_CALL_GAS,
+        // );
+
+        // env::promise_then(
+        //     get_balance_promise,
+        //     env::current_account_id(),
+        //     b"get_balance_promise_results",
+        //     json!({}).to_string().as_bytes(),
+        //     0,
+        //     prepaid_gas / 4,
+        // );
+
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
-            b"get_balance",
-            json!({ "owner_id": env::current_account_id() })
+            b"ft_balance_of",
+            json!({ "account_id": "flux_aggregator" })
                 .to_string()
                 .as_bytes(),
             0,
@@ -488,6 +507,7 @@ impl FluxAggregator {
     pub fn latest_timestamp(&self) -> u64 {
         let round_option = self.rounds.get(&self.latest_round_id);
         if round_option.is_none() {
+            // env::panic(b"Did not find this oracle account. {latest_timestamp}");
             return 0;
         }
         let round = round_option.unwrap();
@@ -627,7 +647,7 @@ impl FluxAggregator {
     pub fn withdrawable_payment(&self, _oracle: AccountId) -> u128 {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {withdrawable_payment}");
+            env::panic(b"Did not find this oracle account.");
         }
         let oracle = oracle_option.unwrap();
         oracle.withdrawable
@@ -646,7 +666,7 @@ impl FluxAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {withdraw_payment}");
+            env::panic(b"Did not find this oracle.");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(
@@ -665,15 +685,24 @@ impl FluxAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        // How do we assert this promise? Requires testing
+        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
+        // env::promise_create(
+        //     self.link_token.clone(),
+        //     b"transfer",
+        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
+        //         .to_string()
+        //         .as_bytes(),
+        //     36500000000000000000000,
+        //     prepaid_gas / 4,
+        // );
         env::promise_create(
             self.link_token.clone(),
-            b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
+            b"ft_transfer",
+            json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            36500000000000000000000,
-            prepaid_gas / 4,
+            DEFAULT_GAS.into(),
+            1,
         );
     }
 
@@ -685,7 +714,6 @@ impl FluxAggregator {
     #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
         self.only_owner();
-        let prepaid_gas = env::prepaid_gas();
 
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
@@ -693,15 +721,24 @@ impl FluxAggregator {
             (available - self.required_reserve(self.payment_amount)) >= amount_u128,
             "insufficient reserve funds"
         );
-        // How do we assert this promise? Requires testing
+        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
+        // env::promise_create(
+        //     self.link_token.clone(),
+        //     b"transfer",
+        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount})
+        //         .to_string()
+        //         .as_bytes(),
+        //     36500000000000000000000,
+        //     prepaid_gas / 4,
+        // );
         env::promise_create(
             self.link_token.clone(),
-            b"transfer",
-            json!({"new_owner_id": _recipient.clone(), "amount": _amount})
+            b"ft_transfer",
+            json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            36500000000000000000000,
-            prepaid_gas / 4,
+            DEFAULT_GAS.into(),
+            1,
         );
         self.update_available_funds();
     }
@@ -713,7 +750,7 @@ impl FluxAggregator {
     pub fn get_admin(&self, _oracle: AccountId) -> AccountId {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {get_admin}");
+            env::panic(b"Did not find this oracle.");
         }
         let oracle = oracle_option.unwrap();
         oracle.admin
@@ -727,7 +764,7 @@ impl FluxAggregator {
     pub fn transfer_admin(&mut self, _oracle: AccountId, _new_admin: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {transfer_admin}");
+            env::panic(b"Did not find this oracle.");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(
@@ -754,7 +791,7 @@ impl FluxAggregator {
     pub fn accept_admin(&mut self, _oracle: AccountId) {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {accept_admin}");
+            env::panic(b"Did not find this oracle account.");
         }
         let mut oracle = oracle_option.unwrap();
         assert!(
@@ -781,7 +818,7 @@ impl FluxAggregator {
         let current: u64 = self.reporting_round_id;
         let round_option = self.rounds.get(&current);
         if round_option.is_none() {
-            env::panic(b"Did not find this round. {request_new_round}");
+            env::panic(b"Did not find this round.");
         }
         let round = round_option.unwrap();
         assert!(
@@ -926,14 +963,7 @@ impl FluxAggregator {
         let init_new: AccountId = _new_validator.clone();
         if previous != _new_validator {
             self.validator = _new_validator;
-            env::log(
-                format!(
-                    "{}, {}",
-                    previous,
-                    init_new
-                )
-                .as_bytes(),
-            );
+            env::log(format!("{}, {}", previous, init_new).as_bytes());
         }
     }
 
@@ -1005,7 +1035,7 @@ impl FluxAggregator {
         }
         let requester_option = self.requesters.get(&env::predecessor_account_id());
         if requester_option.is_none() {
-            env::panic(b"Did not find this round. {requester_initialize_new_round}");
+            env::panic(b"Did not find this requester.");
         }
         let mut requester = requester_option.unwrap();
 
@@ -1036,7 +1066,9 @@ impl FluxAggregator {
 
         let prev_option = self.rounds.get(&prev_id);
         if prev_option.is_none() {
-            env::panic(format!("{} Did not find this prev round.", prev_id.to_string()).as_bytes());
+            env::panic(
+                format!("{} Did not find this previous round.", prev_id.to_string()).as_bytes(),
+            );
             // return;
         }
         let prev = prev_option.unwrap();
@@ -1060,8 +1092,7 @@ impl FluxAggregator {
                 updated_at: 0,
                 answered_in_round: 0,
             };
-        }
-        else {
+        } else {
             round = round_option.unwrap();
         }
         if round.started_at > 0 {
@@ -1178,7 +1209,7 @@ impl FluxAggregator {
     fn update_round_answer(&mut self, _round_id: u64) -> (bool, u128) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account. {update_round_answer}");
+            env::panic(b"Did not find details for this Round ID.");
         }
         let detail = detail_option.unwrap();
         let submissions_length = detail.submissions.len() as u64;
@@ -1189,7 +1220,7 @@ impl FluxAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this round. {update_round_answer}");
+            env::panic(b"Did not find this round.");
         }
         let mut round = round_option.unwrap();
 
@@ -1215,7 +1246,7 @@ impl FluxAggregator {
 
         let round_option = self.rounds.get(&_round_id);
         if round_option.is_none() {
-            env::panic(b"Did not find this round. {validate_answer}");
+            env::panic(b"Did not find this round.");
         }
         let round = round_option.unwrap();
 
@@ -1224,22 +1255,22 @@ impl FluxAggregator {
         // TRY CATCH
     }
 
-
     fn pay_oracle(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account. {pay_oracle}");
+            env::panic(b"Did not find details for this Round ID.");
         }
         let detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {pay_oracle}");
+            env::panic(b"Did not find this oracle account.");
         }
         let mut oracle = oracle_option.unwrap();
 
         let payment: u128 = detail.payment_amount;
         let mut funds: Funds = self.recorded_funds.clone();
+
         env::log(format!("{}", funds.available.saturating_sub(payment)).as_bytes());
         env::log(format!("{}", funds.allocated.saturating_add(payment)).as_bytes());
 
@@ -1259,13 +1290,13 @@ impl FluxAggregator {
 
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this oracle account. {record_submission}");
+            env::panic(b"Did not find details for this Round ID.");
         }
         let mut detail = detail_option.unwrap();
 
         let oracle_option = self.oracles.get(&env::predecessor_account_id());
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {record_submission}");
+            env::panic(b"Did not find this oracle account.");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -1276,12 +1307,13 @@ impl FluxAggregator {
         oracle.latest_submission = _submission;
 
         self.oracles.insert(&env::predecessor_account_id(), &oracle);
+        env::log(format!("{}, {}, {}", _submission, _round_id, env::predecessor_account_id()).as_bytes());
     }
 
     fn delete_round_details(&mut self, _round_id: u64) {
         let detail_option = self.details.get(&(_round_id as u128));
         if detail_option.is_none() {
-            env::panic(b"Did not find this rounds details.");
+            env::panic(b"Did not find details for this Round ID.");
         }
         let detail = detail_option.unwrap();
 
@@ -1387,7 +1419,7 @@ impl FluxAggregator {
 
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {remove_oracle}");
+            env::panic(b"Did not find this oracle account.");
         }
         let mut oracle = oracle_option.unwrap();
 
@@ -1397,7 +1429,7 @@ impl FluxAggregator {
 
         let oracle_tail_option = self.oracles.get(&tail);
         if oracle_tail_option.is_none() {
-            env::panic(b"Did not find this oracle account. {remove_oracle}");
+            env::panic(b"Did not find this oracle account.");
         }
         let mut oracle_tail = oracle_tail_option.unwrap();
 
@@ -1477,7 +1509,7 @@ impl FluxAggregator {
     fn delayed(&self, _oracle: AccountId, _round_id: u64) -> bool {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            env::panic(b"Did not find this oracle account. {delayed}");
+            env::panic(b"Did not find this oracle account.");
         }
         let oracle = oracle_option.unwrap();
         let last_started: u64 = oracle.last_started_round;
@@ -1536,6 +1568,4 @@ impl FluxAggregator {
         self.pending_owner = _to;
         env::log(format!("{}, {}", self.owner, init_to).as_bytes());
     }
-
-
 }
