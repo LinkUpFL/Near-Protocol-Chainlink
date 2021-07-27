@@ -414,7 +414,6 @@ impl FluxAggregator {
             }
             _x => panic!("Promise with index 0 failed"),
         };
-        let link_balance_str: String = serde_json::from_slice(&get_balance_promise_result).unwrap();
         let link_balance: U128 = serde_json::from_slice(&get_balance_promise_result).unwrap();
         let now_available: u128 = u128::from(link_balance) - funds.allocated;
         if funds.available != now_available {
