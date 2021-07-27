@@ -14,7 +14,7 @@
 - Port the rest of SimpleWriteAccessController tests (IN PROGRESS)
 - Port the rest of AggregatorProxy tests (IN PROGRESS)
 - Fix bugs in suite of tests (IN PROGRESS)
-- Implement transfer_and_call functionality into Fungible token standard, fix breaking changes. (IN PROGRESS)
+- Implement transfer_and_call functionality into Fungible token standard, fix breaking changes. (DONE)
 - Create a https://github.com/smartcontractkit/chainlink/blob/develop/evm-contracts/src/v0.6/tests/FluxAggregatorTestHelper.sol contract account for tests (DONE)
 - Brainstorm and implement a better way of handling is_none cases, such as 0 states (DONE)
 - Uncomment test with *TODO* comments to debug

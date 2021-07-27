@@ -199,7 +199,7 @@ impl FluxAggregator {
         result
     }
 
-        /**
+    /**
      * @notice called by oracles when they have witnessed a need to update
      * @param _roundId is the ID of the round this submission pertains to
      * @param _submission is the updated data that the oracle is submitting
@@ -384,35 +384,14 @@ impl FluxAggregator {
 
     pub fn update_available_funds(&self) {
         let prepaid_gas = env::prepaid_gas();
-
-        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
-        // let get_balance_promise = env::promise_create(
-        //     self.link_token.clone(),
-        //     b"get_balance",
-        //     json!({ "owner_id": env::current_account_id() })
-        //         .to_string()
-        //         .as_bytes(),
-        //     0,
-        //     SINGLE_CALL_GAS,
-        // );
-
-        // env::promise_then(
-        //     get_balance_promise,
-        //     env::current_account_id(),
-        //     b"get_balance_promise_results",
-        //     json!({}).to_string().as_bytes(),
-        //     0,
-        //     prepaid_gas / 4,
-        // );
-
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
             b"ft_balance_of",
-            json!({ "account_id": "flux_aggregator" })
+            json!({ "account_id": env::current_account_id() })
                 .to_string()
                 .as_bytes(),
             0,
-            SINGLE_CALL_GAS,
+            (prepaid_gas / 6).into(),
         );
 
         env::promise_then(
@@ -421,7 +400,7 @@ impl FluxAggregator {
             b"get_balance_promise_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            (prepaid_gas / 6).into(),
         );
     }
 
@@ -431,15 +410,13 @@ impl FluxAggregator {
         assert_eq!(env::promise_results_count(), 1);
         let get_balance_promise_result: Vec<u8> = match env::promise_result(0) {
             PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
                 _x
             }
             _x => panic!("Promise with index 0 failed"),
         };
         let link_balance_str: String = serde_json::from_slice(&get_balance_promise_result).unwrap();
-        let link_balance: u128 = link_balance_str.parse().unwrap();
-
-        let now_available: u128 = link_balance - funds.allocated;
+        let link_balance: U128 = serde_json::from_slice(&get_balance_promise_result).unwrap();
+        let now_available: u128 = u128::from(link_balance) - funds.allocated;
         if funds.available != now_available {
             self.recorded_funds.available = now_available;
             env::log(format!("{}", now_available).as_bytes());
@@ -660,7 +637,6 @@ impl FluxAggregator {
      * @param _recipient is the address to send the LINK to
      * @param _amount is the amount of LINK to send
      */
-    #[payable]
     pub fn withdraw_payment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
         let prepaid_gas = env::prepaid_gas();
 
@@ -685,24 +661,25 @@ impl FluxAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
-        // env::promise_create(
-        //     self.link_token.clone(),
-        //     b"transfer",
-        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
-        //         .to_string()
-        //         .as_bytes(),
-        //     36500000000000000000000,
-        //     prepaid_gas / 4,
-        // );
-        env::promise_create(
+        let ft_transfer = env::promise_create(
             self.link_token.clone(),
             b"ft_transfer",
             json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            DEFAULT_GAS.into(),
             1,
+            (prepaid_gas / 6).into(),
+        );
+        
+        env::promise_then(
+            ft_transfer,
+            env::current_account_id(),
+            b"update_available_funds_promise_resolution",
+            json!({"receiver_id": _recipient.clone(), "amount": _amount})
+                .to_string()
+                .as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
         );
     }
 
@@ -714,33 +691,59 @@ impl FluxAggregator {
     #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
         self.only_owner();
-
+        let prepaid_gas = env::prepaid_gas();
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
         assert!(
             (available - self.required_reserve(self.payment_amount)) >= amount_u128,
             "insufficient reserve funds"
         );
-        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
-        // env::promise_create(
-        //     self.link_token.clone(),
-        //     b"transfer",
-        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount})
-        //         .to_string()
-        //         .as_bytes(),
-        //     36500000000000000000000,
-        //     prepaid_gas / 4,
-        // );
-        env::promise_create(
+        let ft_transfer = env::promise_create(
             self.link_token.clone(),
             b"ft_transfer",
             json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            DEFAULT_GAS.into(),
             1,
+            (prepaid_gas / 6).into(),
         );
-        self.update_available_funds();
+        let ft_transfer_resolve = env::promise_then(
+            ft_transfer,
+            env::current_account_id(),
+            b"update_available_funds_promise_resolution",
+            json!({"receiver_id": _recipient.clone(), "amount": _amount})
+                .to_string()
+                .as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
+        );
+        env::promise_return(ft_transfer_resolve);
+    }
+
+    /**
+     * @notice recalculate the amount of LINK available for payouts
+     */
+
+    pub fn update_available_funds_promise_resolution(&self, receiver_id: AccountId, amount: U128) {
+        let prepaid_gas = env::prepaid_gas();
+        let get_balance_promise = env::promise_create(
+            self.link_token.clone(),
+            b"ft_balance_of",
+            json!({ "account_id": env::current_account_id() })
+                .to_string()
+                .as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
+        );
+        let get_balance_promise_resolve = env::promise_then(
+            get_balance_promise,
+            env::current_account_id(),
+            b"get_balance_promise_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
+        );
+        env::promise_return(get_balance_promise_resolve);
     }
 
     /**
@@ -1307,7 +1310,15 @@ impl FluxAggregator {
         oracle.latest_submission = _submission;
 
         self.oracles.insert(&env::predecessor_account_id(), &oracle);
-        env::log(format!("{}, {}, {}", _submission, _round_id, env::predecessor_account_id()).as_bytes());
+        env::log(
+            format!(
+                "{}, {}, {}",
+                _submission,
+                _round_id,
+                env::predecessor_account_id()
+            )
+            .as_bytes(),
+        );
     }
 
     fn delete_round_details(&mut self, _round_id: u64) {
