@@ -231,6 +231,16 @@ pub fn init_without_macros() -> (
         to_yocto("1000"), // attached deposit
     );
 
+    aggregator_validator_mock_factory
+    .call(
+        AVM_ID.to_string(),
+        "new",
+        &json!({}).to_string().into_bytes(),
+        DEFAULT_GAS / 2,
+        0, // attached deposit
+    )
+    .assert_success();
+
     // Alias: Neil
     let oracle_one = root.create_user(
         "oracle_one".to_string(),

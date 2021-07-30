@@ -14,7 +14,7 @@ pub struct AggregatorValidatorMock {
     pub previous_round_id: u128,
     pub previous_answer: u128,
     pub current_round_id: u128,
-    pub current_answer: i128,
+    pub current_answer: u128,
 }
 
 impl Default for AggregatorValidatorMock {
@@ -26,20 +26,31 @@ impl Default for AggregatorValidatorMock {
 #[near_bindgen]
 impl AggregatorValidatorMock {
 
-    fn validate(
+    #[init]
+    pub fn new() -> Self {
+        let result = Self {
+            previous_round_id: 0,
+            previous_answer: 0,
+            current_round_id: 0,
+            current_answer: 0,
+        };
+        result
+    }
+
+    pub fn validate(
         &self,
-        previous_round_id: u128,
-        previous_answer: u128,
-        current_round_id: u128,
-        current_answer: i128,
+        previous_round_id: U128,
+        previous_answer: U128,
+        current_round_id: U128,
+        current_answer: U128,
     ) -> bool {
         env::log(
             format!(
                 "{}, {}, {}, {}",
-                previous_round_id,
-                previous_answer,
-                current_round_id,
-                current_answer
+                u128::from(previous_round_id),
+                u128::from(previous_answer),
+                u128::from(current_round_id),
+                u128::from(current_answer)
             )
             .as_bytes(),
         );

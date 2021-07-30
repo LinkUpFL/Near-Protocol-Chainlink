@@ -8,14 +8,12 @@ use crate::utils::init_without_macros as init;
 // /**
 //  * FluxAggregator tests were ported from this file https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts
 //  */
+// /**
+//  * #constructor - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L214
+//  */
+// #[test]
 
-//  /**
-//   * #constructor - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L214
-//   */
-
-//  #[test]
-
-//  fn constructor_tests() {
+// fn constructor_tests() {
 //     let payment_amount: u128 = 3;
 //     let timeout: u64 = 1800;
 //     let decimals: u64 = 24;
@@ -46,91 +44,89 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
-// let expected_payment_amount: u128 = root
-//     .call(
-//         flux_aggregator.account_id(),
-//         "get_payment_amount",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0,
-//     )
-//     .unwrap_json();
+//     let expected_payment_amount: u128 = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_payment_amount",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
 
-// assert_eq!(payment_amount, expected_payment_amount);
+//     assert_eq!(payment_amount, expected_payment_amount);
 
-// let expected_timeout: u64 = root
-//     .call(
-//         flux_aggregator.account_id(),
-//         "get_timeout",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0,
-//     )
-//     .unwrap_json();
+//     let expected_timeout: u64 = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_timeout",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
 
-// assert_eq!(timeout, expected_timeout);
+//     assert_eq!(timeout, expected_timeout);
 
-// let expected_decimals: u64 = root
-//     .call(
-//         flux_aggregator.account_id(),
-//         "get_decimals",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0,
-//     )
-//     .unwrap_json();
+//     let expected_decimals: u64 = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_decimals",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
 
-// assert_eq!(decimals, expected_decimals);
+//     assert_eq!(decimals, expected_decimals);
 
-// let expected_description: String = root
-//     .call(
-//         flux_aggregator.account_id(),
-//         "get_description",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0,
-//     )
-//     .unwrap_json();
+//     let expected_description: String = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_description",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
 
-// assert_eq!(description, expected_description);
+//     assert_eq!(description, expected_description);
 
-// let expected_version: u128 = root
-//     .call(
-//         flux_aggregator.account_id(),
-//         "get_version",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0,
-//     )
-//     .unwrap_json();
+//     let expected_version: u128 = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_version",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
 
-// assert_eq!(version, expected_version);
+//     assert_eq!(version, expected_version);
 
-// let expected_validator: String = root
-//     .call(
-//         flux_aggregator.account_id(),
-//         "get_validator",
-//         &json!({}).to_string().into_bytes(),
-//         DEFAULT_GAS,
-//         0,
-//     )
-//     .unwrap_json();
+//     let expected_validator: String = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_validator",
+//             &json!({}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
 
-// assert_eq!(validator, expected_validator);
-//  }
+//     assert_eq!(validator, expected_validator);
+// }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L249
 //  * *TODO* Fix parsing of the log
 //  */
-
 // #[test]
-// fn updates_the_allocated_and_available_funds_counters(
-// ) {
+// fn updates_the_allocated_and_available_funds_counters() {
 //     let payment_amount: u128 = 3;
 //     let deposit: u128 = 100;
 //     let answer: u128 = 100;
@@ -161,7 +157,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     root.call(
@@ -218,23 +214,19 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(expected_available, available_funds);
 
 //     // *TODO* Fix parsing of the log
-    
 //     let logged: u128 = receipt.remove(1).unwrap().outcome().logs[3]
 //         .parse()
 //         .unwrap();
 
 //     assert_eq!(expected_available, logged);
-
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L262
 //  */
-
 // #[test]
-// fn emits_a_log_event_announcing_submission_details(
-// ) {
+// fn emits_a_log_event_announcing_submission_details() {
 //     let payment_amount: u128 = 3;
 //     let deposit: u128 = 100;
 //     let answer: u128 = 100;
@@ -265,7 +257,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     root.call(
@@ -287,15 +279,17 @@ use crate::utils::init_without_macros as init;
 
 //     assert_eq!(allocated_funds, 0);
 
-//     oracle_one.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     allocated_funds = root
 //         .view(
@@ -332,11 +326,10 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(tx.logs()[0], "100, 1, oracle_three");
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L269
 //  */
-
 // #[test]
 // fn when_the_minimum_oracles_have_not_reported_and_pays_the_oracles_that_have_reported() {
 //     let payment_amount: u128 = 3;
@@ -367,7 +360,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min_max: u64 = 3;
@@ -450,11 +443,10 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(0, withdrawable_payment_oracle_three);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L285
 //  */
-
 // #[test]
 // fn when_the_minimum_oracles_have_not_reported_and_does_not_update_the_answer() {
 //     let answer: u128 = 100;
@@ -484,7 +476,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min_max: u64 = 3;
@@ -546,11 +538,10 @@ use crate::utils::init_without_macros as init;
 
 //     assert_eq!(0, still_not_updated);
 // }
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L302
 //  */
-
 // #[test]
 // fn when_an_oracle_prematurely_bumps_the_round_and_reverts() {
 //     let payment_amount: u128 = 3;
@@ -582,7 +573,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -642,11 +633,10 @@ use crate::utils::init_without_macros as init;
 //     }
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L310
 //  */
-
 // #[test]
 // fn updates_the_answer_with_the_median() {
 //     let answer: u128 = 100;
@@ -676,7 +666,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -764,11 +754,10 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(100, expected_latest_answer_second);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L327
 //  */
-
 // #[test]
 
 // fn updates_the_updated_timestamp() {
@@ -799,7 +788,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -863,13 +852,12 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(current_timestamp > original_timestamp, true);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L337
 //  * *TODO* Look into emitting necessary log
 //  */
-
-//  #[test]
+// #[test]
 
 // fn announces_the_new_answer_with_a_log_event() {
 //     let answer: u128 = 100;
@@ -899,7 +887,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -965,7 +953,7 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(latest_answer, new_answer);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L346
 //  */
@@ -999,7 +987,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1075,11 +1063,10 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(next_round, latest_round_data.4);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L355
 //  */
-
 // #[test]
 
 // fn updates_the_round_details() {
@@ -1110,7 +1097,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1219,11 +1206,10 @@ use crate::utils::init_without_macros as init;
 //     assert_eq!(true, round_after.4 == latest_round_data.4);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L380
 //  */
-
 // #[test]
 
 // fn when_an_oracle_submits_for_a_round_twice_and_reverts() {
@@ -1254,7 +1240,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min_max: u64 = 3;
@@ -1319,11 +1305,10 @@ use crate::utils::init_without_macros as init;
 //     }
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L396
 //  */
-
 // #[test]
 
 // fn when_updated_after_the_max_answers_submitted_and_reverts() {
@@ -1332,7 +1317,6 @@ use crate::utils::init_without_macros as init;
 //     let rr_delay: u64 = 0;
 //     let timeout: u64 = 1800;
 //     let next_round: u128 = 1;
-    
 //     let (
 //         root,
 //         _aca,
@@ -1356,7 +1340,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1381,15 +1365,17 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     ).assert_success();
 
-//     oracle_one.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     let round_not_accepting_submissions = oracle_two.call(
 //         flux_aggregator.account_id(),
@@ -1401,8 +1387,12 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     );
 
-//     if let ExecutionStatus::Failure(execution_error) =
-//         &round_not_accepting_submissions.promise_errors().remove(0).unwrap().outcome().status
+//     if let ExecutionStatus::Failure(execution_error) = &round_not_accepting_submissions
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
 //     {
 //         // No data present should be error
 //         assert!(execution_error
@@ -1413,12 +1403,11 @@ use crate::utils::init_without_macros as init;
 //     }
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L402
 //  * **TODO** Look into why oracle_round_state_suggest_round is returning the wrong data.
 //  */
-
 // #[test]
 // fn when_a_new_highest_round_number_is_passed_in_and_increments_the_answer_round() {
 //     let rr_delay: u64 = 0;
@@ -1448,7 +1437,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1463,49 +1452,57 @@ use crate::utils::init_without_macros as init;
 //     )
 //     .assert_success();
 
-//     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = test_helper.call(
-//         flux_aggregator.account_id(),
-//         "oracle_round_state",
-//         &json!({"_oracle": oracle_one.account_id(), "_queried_round_id": 0.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).unwrap_json();
+//     let starting_state: (bool, u64, u128, u64, u64, u128, u64, u128) = test_helper
+//         .call(
+//             flux_aggregator.account_id(),
+//             "oracle_round_state",
+//             &json!({"_oracle": oracle_one.account_id(), "_queried_round_id": 0.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
 
 //     assert_eq!(1, starting_state.1);
 
 //     // Advance round non-refactored function, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L498
 
-//     oracle_one.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
-//     oracle_two.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
-//     oracle_three.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L498 - Look into the oracle_round_state and oracle_round_suggest_state functions to return the correct results for 0 state.
 
@@ -1521,17 +1518,16 @@ use crate::utils::init_without_macros as init;
 
 //     println!("{:?} SEC", starting_state);
 //     assert_eq!(2, starting_state.1);
-
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L412
 //  * **TODO** Look into grabbing the block timestamp from tx.
 //  */
-
 // #[test]
-// fn when_a_new_highest_round_number_is_passed_in_and_sets_the_started_at_time_for_the_reporting_round() {
+// fn when_a_new_highest_round_number_is_passed_in_and_sets_the_started_at_time_for_the_reporting_round(
+// ) {
 //     let rr_delay: u64 = 0;
 //     let answer: u64 = 100;
 //     let next_round: u64 = 1;
@@ -1559,7 +1555,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1584,12 +1580,14 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     );
 
-//     if let ExecutionStatus::Failure(execution_error) =
-//         &expected_no_data_present.promise_errors().remove(0).unwrap().outcome().status
+//     if let ExecutionStatus::Failure(execution_error) = &expected_no_data_present
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
 //     {
-//         assert!(execution_error
-//             .to_string()
-//             .contains("No data present"));
+//         assert!(execution_error.to_string().contains("No data present"));
 //     } else {
 //         unreachable!();
 //     }
@@ -1606,47 +1604,52 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     );
 
-//     oracle_two.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
-//     oracle_three.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
-//     let updated_state: (u64, u128, u64, u64, u64) = root.call(
-//         flux_aggregator.account_id(),
-//         "get_round_data",
-//         &json!({"_round_id": next_round.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).unwrap_json();
+//     let updated_state: (u64, u128, u64, u64, u64) = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_round_data",
+//             &json!({"_round_id": next_round.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
 
 //     // *TODO* Look into grabbing the block timestamp from tx.
 
 //     // assert_eq!(2, updated_state.2);
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L425
 //  *
 //  */
-
 // #[test]
 // fn when_a_new_highest_round_number_is_passed_in_and_announces_a_new_round_by_emitting_a_log() {
 //     let rr_delay: u64 = 0;
@@ -1676,7 +1679,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1701,12 +1704,14 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     );
 
-//     if let ExecutionStatus::Failure(execution_error) =
-//         &expected_no_data_present.promise_errors().remove(0).unwrap().outcome().status
+//     if let ExecutionStatus::Failure(execution_error) = &expected_no_data_present
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
 //     {
-//         assert!(execution_error
-//             .to_string()
-//             .contains("No data present"));
+//         assert!(execution_error.to_string().contains("No data present"));
 //     } else {
 //         unreachable!();
 //     }
@@ -1722,15 +1727,13 @@ use crate::utils::init_without_macros as init;
 //     );
 
 //     assert_eq!(tx.logs()[0].contains("1, oracle_one"), true);
-
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L439
 //  * **TODO** Look into why oracle_round_state_suggest_round is returning the wrong data.
 //  */
-
 // #[test]
 
 // fn when_a_round_is_passed_in_higher_than_expected_and_reverts() {
@@ -1761,7 +1764,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1786,8 +1789,12 @@ use crate::utils::init_without_macros as init;
 //         0, // deposit
 //     );
 
-//     if let ExecutionStatus::Failure(execution_error) =
-//         &invalid_round_to_report.promise_errors().remove(0).unwrap().outcome().status
+//     if let ExecutionStatus::Failure(execution_error) = &invalid_round_to_report
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
 //     {
 //         assert!(execution_error
 //             .to_string()
@@ -1795,15 +1802,13 @@ use crate::utils::init_without_macros as init;
 //     } else {
 //         unreachable!();
 //     }
-
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L445
 //  * **TODO** Look into why oracle_round_state_suggest_round is returning the wrong data.
 //  */
-
 // #[test]
 
 // fn when_called_by_a_non_oracle_and_reverts() {
@@ -1834,7 +1839,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let min: u64 = 2;
@@ -1860,23 +1865,25 @@ use crate::utils::init_without_macros as init;
 //         DEFAULT_GAS,
 //         0, // deposit
 //     );
-//     if let ExecutionStatus::Failure(execution_error) =
-//         &not_enabled_oracle.promise_errors().remove(0).unwrap().outcome().status
+//     if let ExecutionStatus::Failure(execution_error) = &not_enabled_oracle
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
 //     {
 //         // No data present should be error
 //         assert!(execution_error.to_string().contains("not enabled oracle"));
 //     } else {
 //         unreachable!();
 //     }
-
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L450
 //  * **TODO** Look into subtraction overflow errors
 //  */
-
 // #[test]
 
 // fn when_there_are_not_sufficient_available_funds() {
@@ -1907,7 +1914,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     let max: u64 = 3;
@@ -1923,7 +1930,7 @@ use crate::utils::init_without_macros as init;
 
 //     // Carol
 
-//    root.call(
+//     root.call(
 //         flux_aggregator.account_id(),
 //         "withdraw_funds",
 //         &json!({"_recipient": root.account_id().to_string(), "_amount": 82.to_string()})
@@ -1931,74 +1938,86 @@ use crate::utils::init_without_macros as init;
 //             .into_bytes(),
 //         DEFAULT_GAS,
 //         1, // deposit
-//     ).assert_success();
+//     )
+//     .assert_success();
 
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
-//         oracle_one.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
-//     oracle_two.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
-
-//     oracle_three.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
-
-//     next_round = next_round + 1;
-
-//         oracle_one.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
-
-//     oracle_two.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
-
-//     oracle_three.call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     ).assert_success();
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     next_round = next_round + 1;
 
-//     let subtraction_overflow_math_error =  oracle_one.call(
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     let subtraction_overflow_math_error = oracle_one.call(
 //         flux_aggregator.account_id(),
 //         "submit",
 //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
@@ -2010,26 +2029,31 @@ use crate::utils::init_without_macros as init;
 
 //     println!("{:?}", subtraction_overflow_math_error.promise_results());
 
-//     if let ExecutionStatus::Failure(execution_error) =
-//         &subtraction_overflow_math_error.promise_errors().remove(0).unwrap().outcome().status
+//     if let ExecutionStatus::Failure(execution_error) = &subtraction_overflow_math_error
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
 //     {
 //         // SafeMath: subtraction overflow
-//         assert!(execution_error.to_string().contains("SafeMath: subtraction overflow"));
+//         assert!(execution_error
+//             .to_string()
+//             .contains("SafeMath: subtraction overflow"));
 //     } else {
 //         unreachable!();
 //     }
-
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L479
 //  *
 //  */
-
 // #[test]
 
-// fn when_a_new_round_opens_before_the_previous_rounds_closes_and_still_allows_the_previous_round_to_be_answered() {
+// fn when_a_new_round_opens_before_the_previous_rounds_closes_and_still_allows_the_previous_round_to_be_answered(
+// ) {
 //     let answer: u128 = 100;
 //     let rr_delay: u64 = 0;
 //     let mut next_round: u128 = 1;
@@ -2058,7 +2082,7 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
 
 //     root.call(
@@ -2078,16 +2102,16 @@ use crate::utils::init_without_macros as init;
 //     );
 
 //     oracle_three
-//     .call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     oracle_one
 //         .call(
@@ -2142,12 +2166,11 @@ use crate::utils::init_without_macros as init;
 //         .assert_success();
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L491
 //  *
 //  */
-
 // #[test]
 
 // fn once_the_current_round_is_answered_does_not_allow_reports_for_the_previous_round() {
@@ -2179,9 +2202,8 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
-
 
 //     root.call(
 //         flux_aggregator.account_id(),
@@ -2200,16 +2222,16 @@ use crate::utils::init_without_macros as init;
 //     );
 
 //     oracle_three
-//     .call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     oracle_one
 //         .call(
@@ -2249,9 +2271,9 @@ use crate::utils::init_without_macros as init;
 //         )
 //         .assert_success();
 
-//         // once the current round is answered
+//     // once the current round is answered
 
-//         oracle_one
+//     oracle_one
 //         .call(
 //             flux_aggregator.account_id(),
 //             "submit",
@@ -2302,12 +2324,11 @@ use crate::utils::init_without_macros as init;
 //     }
 // }
 
-//  /**
+// /**
 //  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
 //  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L501
 //  *
 //  */
-
 // #[test]
 
 // fn when_the_previous_round_has_finished_and_does_not_allow_reports_for_the_previous_round() {
@@ -2339,9 +2360,8 @@ use crate::utils::init_without_macros as init;
 //         _mock_v3_aggregator,
 //         _mock_v3_aggregator_second,
 //         _read_controller,
-//         flux_aggregator
+//         flux_aggregator,
 //     ) = init();
-
 
 //     root.call(
 //         flux_aggregator.account_id(),
@@ -2360,16 +2380,16 @@ use crate::utils::init_without_macros as init;
 //     );
 
 //     oracle_three
-//     .call(
-//         flux_aggregator.account_id(),
-//         "submit",
-//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-//             .to_string()
-//             .into_bytes(),
-//         DEFAULT_GAS,
-//         0, // deposit
-//     )
-//     .assert_success();
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
 
 //     oracle_one
 //         .call(
@@ -2450,2932 +2470,2908 @@ use crate::utils::init_without_macros as init;
 //     }
 // }
 
- /**
- * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
- * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L513
- *
- */
-#[test]
-
-fn when_price_is_updated_mid_round_and_pays_the_same_amount_to_all_oracles_per_round() {
-    let new_amount: u128 = 50;
-    let answer: u128 = 100;
-    let rr_delay: u64 = 0;
-    let next_round: u128 = 1;
-    let min_max: u128 = 3;
-    let timeout: u64 = 1800;
-
-    let (
-        root,
-        _aca,
-        link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        _test_helper,
-        _eac,
-        _eac_without_access_controller,
-        _oracle_four,
-        _oracle_five,
-        _aggregator_validator_mock,
-        _flags,
-        _consumer,
-        _flags_consumer,
-        _controller,
-        _controller_2,
-        _flux_aggregator_test_helper_contract,
-        _eddy,
-        _mock_v3_aggregator,
-        _mock_v3_aggregator_second,
-        _read_controller,
-        flux_aggregator
-    ) = init();
-
-        root.call(
-        flux_aggregator.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id() ], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-
-    root.call(
-        link.account_id(),
-        "ft_transfer",
-        &json!({
-            "receiver_id": flux_aggregator.account_id().to_string(), "amount": 300.to_string(), "memo": "None"
-        })
-        .to_string()
-        .into_bytes(),
-        DEFAULT_GAS,
-        1
-    )
-    .assert_success();
-
-root.call(
-    flux_aggregator.account_id(),
-    "update_available_funds",
-    &json!({}).to_string().into_bytes(),
-    DEFAULT_GAS,
-    0,
-)
-.assert_success();
-
-    let mut withdrawable_payment_oracle_one: u128 = root
-        .view(
-            flux_aggregator.account_id(),
-            "withdrawable_payment",
-            &json!({
-                "_oracle": oracle_one.account_id().to_string()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
-
-    assert_eq!(0, withdrawable_payment_oracle_one);
-
-
-    let mut withdrawable_payment_oracle_three: u128 = root
-        .view(
-            flux_aggregator.account_id(),
-            "withdrawable_payment",
-            &json!({
-                "_oracle": oracle_three.account_id().to_string()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
-
-    assert_eq!(0, withdrawable_payment_oracle_three);
-
-    oracle_one
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-            root.call(
-        flux_aggregator.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": new_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    oracle_three
-    .call(
-        flux_aggregator.account_id(),
-        "submit",
-        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    )
-    .assert_success();
-
-
-    withdrawable_payment_oracle_one = root
-        .view(
-            flux_aggregator.account_id(),
-            "withdrawable_payment",
-            &json!({
-                "_oracle": oracle_one.account_id().to_string()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
-
-    assert_eq!(3, withdrawable_payment_oracle_one);
-
-
-    withdrawable_payment_oracle_three = root
-        .view(
-            flux_aggregator.account_id(),
-            "withdrawable_payment",
-            &json!({
-                "_oracle": oracle_three.account_id().to_string()
-            })
-            .to_string()
-            .into_bytes(),
-        )
-        .unwrap_json();
-
-    assert_eq!(3, withdrawable_payment_oracle_three);
-}
-
- /**
- * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
- * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L549
- *
- */
-#[test]
-
-fn when_delay_is_on_does_not_revert_on_the_oracles_first_round() {
-    let payment_amount: u128 = 3;
-    let answer: u128 = 100;
-    let rr_delay: u64 = 1;
-    let timeout: u64 = 1800;
-    let next_round: u128 = 1;
-    let min_max: u128 = 3;
-
-    let (
-        root,
-        _aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        _test_helper,
-        _eac,
-        _eac_without_access_controller,
-        _oracle_four,
-        _oracle_five,
-        _aggregator_validator_mock,
-        _flags,
-        _consumer,
-        _flags_consumer,
-        _controller,
-        _controller_2,
-        _flux_aggregator_test_helper_contract,
-        _eddy,
-        _mock_v3_aggregator,
-        _mock_v3_aggregator_second,
-        _read_controller,
-        flux_aggregator
-    ) = init();
-
-    root.call(
-        flux_aggregator.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id() ], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-        root.call(
-            flux_aggregator.account_id(),
-            "update_future_rounds",
-            &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        ).assert_success();
-
-
-    oracle_one
-    .call(
-        flux_aggregator.account_id(),
-        "submit",
-        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    )
-    .assert_success();
-
-}
-
- /**
- * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
- * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L557
- *
- */
-#[test]
-
-fn when_delay_is_on_and_does_revert_before_the_delay() {
-    let payment_amount: u128 = 3;
-    let answer: u128 = 100;
-    let rr_delay: u64 = 1;
-    let timeout: u64 = 1800;
-    let mut next_round: u128 = 1;
-    let min_max: u128 = 3;
-
-    let (
-        root,
-        _aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        _test_helper,
-        _eac,
-        _eac_without_access_controller,
-        _oracle_four,
-        _oracle_five,
-        _aggregator_validator_mock,
-        _flags,
-        _consumer,
-        _flags_consumer,
-        _controller,
-        _controller_2,
-        _flux_aggregator_test_helper_contract,
-        _eddy,
-        _mock_v3_aggregator,
-        _mock_v3_aggregator_second,
-        _read_controller,
-        flux_aggregator
-    ) = init();
-
-    root.call(
-        flux_aggregator.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id() ], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-        root.call(
-            flux_aggregator.account_id(),
-            "update_future_rounds",
-            &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        ).assert_success();
-
-
-    oracle_one
-    .call(
-        flux_aggregator.account_id(),
-        "submit",
-        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    )
-    .assert_success();
-
-    next_round = next_round + 1;
-
-    let expected_previous_round_not_supersedable = oracle_two.call(
-        flux_aggregator.account_id(),
-        "submit",
-        &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-    if let ExecutionStatus::Failure(execution_error) = &expected_previous_round_not_supersedable
-        .promise_errors()
-        .remove(0)
-        .unwrap()
-        .outcome()
-        .status
-    {
-        // No data present should be error
-        assert!(execution_error
-            .to_string()
-            .contains("previous round not supersedable"));
-    } else {
-        unreachable!();
-    }
-}
-
- /**
- * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
- * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L590
- *
- */
-#[test]
-
-fn when_called_by_an_oracle_who_has_not_answered_recently_and_does_not_revert() {
-    let payment_amount: u128 = 3;
-    let answer: u128 = 100;
-    let rr_delay: u64 = 0;
-    let timeout: u64 = 1800;
-    let min_max: u128 = 3;
-
-    let (
-        root,
-        _aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        _test_helper,
-        _eac,
-        _eac_without_access_controller,
-        _oracle_four,
-        _oracle_five,
-        _aggregator_validator_mock,
-        _flags,
-        _consumer,
-        _flags_consumer,
-        _controller,
-        _controller_2,
-        _flux_aggregator_test_helper_contract,
-        _eddy,
-        _mock_v3_aggregator,
-        _mock_v3_aggregator_second,
-        _read_controller,
-        flux_aggregator
-    ) = init();
-
-
-    root.call(
-        flux_aggregator.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-    root.call(
-        flux_aggregator.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    oracle_one
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_two
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_three
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    // Since Ned and Nelly have answered recently, and we set the delay
-    // to 2, only Nelly can answer as she is the only oracle that hasn't
-    // started the last two rounds.
-    // await updateFutureRounds(aggregator, {
-    //   maxAnswers: oracles.length,
-    //   restartDelay: newDelay,
-    // })
-
-    root.call(
-        flux_aggregator.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    // when called by an oracle who has not answered recently
-    // it does not revert
-    oracle_one
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-}
-
- /**
- * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
- * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L596
- *
- */
-#[test]
-
-fn when_called_by_an_oracle_who_has_answered_recently_and_reverts() {
-    let payment_amount: u128 = 3;
-    let answer: u128 = 100;
-    let rr_delay: u64 = 0;
-    let timeout: u64 = 1800;
-    let min_max: u128 = 3;
-
-    let (
-        root,
-        _aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        _test_helper,
-        _eac,
-        _eac_without_access_controller,
-        _oracle_four,
-        _oracle_five,
-        _aggregator_validator_mock,
-        _flags,
-        _consumer,
-        _flags_consumer,
-        _controller,
-        _controller_2,
-        _flux_aggregator_test_helper_contract,
-        _eddy,
-        _mock_v3_aggregator,
-        _mock_v3_aggregator_second,
-        _read_controller,
-        flux_aggregator
-    ) = init();
-
-
-    root.call(
-        flux_aggregator.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-    root.call(
-        flux_aggregator.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    oracle_one
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_two
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_three
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    // Since Ned and Nelly have answered recently, and we set the delay
-    // to 2, only Nelly can answer as she is the only oracle that hasn't
-    // started the last two rounds.
-    // await updateFutureRounds(aggregator, {
-    //   maxAnswers: oracles.length,
-    //   restartDelay: newDelay,
-    // })
-
-    root.call(
-        flux_aggregator.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    // when called by an oracle who has answered recently
-    // it does not revert
-    let expected_round_not_accepting_submissions = oracle_two.call(
-        flux_aggregator.account_id(),
-        "submit",
-        &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-    if let ExecutionStatus::Failure(execution_error) = &expected_round_not_accepting_submissions
-        .promise_errors()
-        .remove(0)
-        .unwrap()
-        .outcome()
-        .status
-    {
-        // No data present should be error
-        assert!(execution_error
-            .to_string()
-            .contains("round not accepting submissions"));
-    } else {
-        unreachable!();
-    }
-
-    let expected_round_not_accepting_submissions_two = oracle_three.call(
-        flux_aggregator.account_id(),
-        "submit",
-        &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
-            .to_string()
-            .into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-
-    if let ExecutionStatus::Failure(execution_error) = &expected_round_not_accepting_submissions_two
-        .promise_errors()
-        .remove(0)
-        .unwrap()
-        .outcome()
-        .status
-    {
-        // No data present should be error
-        assert!(execution_error
-            .to_string()
-            .contains("round not accepting submissions"));
-    } else {
-        unreachable!();
-    }
-}
-
- /**
- * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
- * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L596
- * *TODO* Look into why the contract panics on oracle_three starting a new round. Error: previous round not supersedable.
- */
-#[test]
-
-fn when_the_price_is_not_updated_for_a_round_and_allows_a_new_round_to_be_started() {
-    let payment_amount: u128 = 3;
-    let answer: u128 = 100;
-    let rr_delay: u64 = 0;
-    let timeout: u64 = 1800;
-    let min_max: u128 = 3;
-    let mut next_round: u128 = 1;
-
-    let (
-        root,
-        _aca,
-        _link,
-        oracle_one,
-        oracle_two,
-        oracle_three,
-        _test_helper,
-        _eac,
-        _eac_without_access_controller,
-        _oracle_four,
-        _oracle_five,
-        _aggregator_validator_mock,
-        _flags,
-        _consumer,
-        _flags_consumer,
-        _controller,
-        _controller_2,
-        _flux_aggregator_test_helper_contract,
-        _eddy,
-        _mock_v3_aggregator,
-        _mock_v3_aggregator_second,
-        _read_controller,
-        flux_aggregator
-    ) = init();
-
-    root.call(
-        flux_aggregator.account_id(),
-        "change_oracles",
-        &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    );
-    root.call(
-
-        flux_aggregator.account_id(),
-        "update_future_rounds",
-        &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-        DEFAULT_GAS,
-        0, // deposit
-    ).assert_success();
-
-    oracle_one
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_two
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_three
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-        next_round = next_round + 1;
-
-    oracle_two
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-    oracle_three
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-
-        next_round = next_round + 1;
-
-    // allows a new round to be started
-    // *TODO* Look into why the contract panics on oracle_three starting a new round. Error: previous round not supersedable.
-    oracle_three
-        .call(
-            flux_aggregator.account_id(),
-            "submit",
-            &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-                .to_string()
-                .into_bytes(),
-            DEFAULT_GAS,
-            0, // deposit
-        )
-        .assert_success();
-}
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#756
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L780
-// // // *TODO* Look into how to acheive this with NEAR's sdk   const block = await provider.getBlock(receipt.blockHash ?? '')
-
-// // #[test]
-// // fn sets_the_info_for_the_previous_round() {
-// //     let payment_amount: u128 = 3;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     // sets the info for the previous round
-// //     let mut expected_updated_timestamp: u128 = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "get_timestamp",
-// //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, expected_updated_timestamp);
-
-// //     let mut expected_answer: u128 = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "get_answer",
-// //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(0, expected_answer);
-
-// //     oracle_three.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-// //     // *TODO*: Look into this const block = await provider.getBlock(receipt.blockHash ?? '')
-// //     //  matchers.bigNum(ethers.utils.bigNumberify(block.timestamp), updated)
-
-// //     // expected_updated_timestamp = test_helper
-// //     //     .call(
-// //     //         flux_aggregator.account_id(),
-// //     //         "get_timestamp",
-// //     //         &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //     //         DEFAULT_GAS,
-// //     //         0, // deposit
-// //     //     )
-// //     //     .unwrap_json();
-// //     // assert_eq!(0, expected_updated_timestamp);
-
-// //     expected_answer = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "get_answer",
-// //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(answer, expected_answer);
-
-// //     let expected_round: (u64, u128, u64, u64, u64) = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "get_round_data",
-// //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(2, expected_round.0);
-// //     assert_eq!(answer, expected_round.1);
-// //     assert_eq!(expected_updated_timestamp as u64, expected_round.3);
-// //     assert_eq!(1, expected_round.4);
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#756
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L806
-// // *TODO* Look into why the panic error contains No data present and not previous round not supersedable
-
-// // #[test]
-// // fn sets_the_previous_round_as_timed_out() {
-// //     let payment_amount: u128 = 3;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     // sets the previous round as timed out
-// //     // *TODO* Look into why the panic error contains No data present and not previous round not supersedable
-// //     let expected_no_data_present = test_helper.call(
-// //         flux_aggregator.account_id(),
-// //         "get_round_data",
-// //         &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-// //     if let ExecutionStatus::Failure(execution_error) =
-// //         &expected_no_data_present.promise_errors().remove(0).unwrap().outcome().status
-// //     {
-// //         // No data present should be error
-// //         assert!(execution_error.to_string().contains("No data present"));
-// //     } else {
-// //         unreachable!();
-// //     }
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let expected_round: (u64, u128, u64, u64, u64) = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "get_round_data",
-// //             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(2, expected_round.0);
-// //     assert_eq!(1, expected_round.4);
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#756
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L820
-// // *TODO* Check revert error message is correct
-
-// // #[test]
-// // fn still_respects_the_delay_restriction() {
-// //     let payment_amount: u128 = 3;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     let expected_revert = oracle_two.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_revert
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         // expected to revert because the sender started the last round
-// //         // *TODO* Check revert error message is correct
-// //         // assert!(execution_error.to_string().contains(""));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#756
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L827
-// // *TODO* Check why the contract is throwing previous round not supersedable error, when oracle_three calls on round 3, there should be no reverting
-
-// // #[test]
-// // fn uses_the_timeout_set_at_the_beginning_of_the_round(
-// // ) {
-// //     let payment_amount: u128 = 3;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_two
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": (timeout+100000).to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L836
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L837
-
-// // #[test]
-// // fn rejects_values_below_the_submission_value_range() {
-// //     let payment_amount: u128 = 3;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let min_submission_value: u64 = 1;
-// //     let next_round: u64 = 1;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     let expected_value_below_min_submission_value = oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value-1).to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_value_below_min_submission_value
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         // No data present should be error
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("value below min_submission_value"));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L836
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L846
-
-// // #[test]
-// // fn accepts_submissions_equal_to_the_min_submission_value() {
-// //     let payment_amount: u128 = 3;
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let min_submission_value: u64 = 1;
-// //     let next_round: u64 = 1;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value).to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L836
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L852
-
-// // #[test]
-// // fn accepts_submissions_equal_to_the_max_submission_value() {
-// //     let payment_amount: u128 = 3;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let next_round: u64 = 1;
-// //     let max_submission_value: u128 = 100000000000000000000;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": (max_submission_value).to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L836
-// // // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L858
-
-// // #[test]
-// // fn rejects_values_above_the_max_submission_value_range() {
-// //     let payment_amount: u128 = 3;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let next_round: u64 = 1;
-// //     let max_submission_value: u128 = 100000000000000000000;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "update_future_rounds",
-// //         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     let expected_value_above_max_submission_value = oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": (max_submission_value+ 1).to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_value_above_max_submission_value
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         // No data present should be error
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("value above max_submission_value"));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L868
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L877
-// // *TODO* Create validator mock factory
-
-// // #[test]
-// // fn calls_out_to_the_validator() {
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L892
-// // #submit tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L904
-// // *TODO* Create validator mock factory
-
-// // #[test]
-// // fn still_updates() {
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L916
-// // #get_answer tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L927
-// // #[test]
-// // fn retrieves_the_answer_recorded_for_past_rounds() {
-// //     let new_amount: u128 = 50;
-// //     let payment_amount: u128 = 3;
-// //     let deposit: u64 = 100;
-// //     let answer: u128 = 100;
-// //     let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-// //     let timeout: u64 = 1800;
-// //     let decimals: u64 = 24;
-// //     let description: String = "LINK/USD".to_string();
-// //     let reserve_rounds: u64 = 2;
-// //     let min_submission_value: u128 = 1;
-// //     let max_submission_value: u128 = 100000000000000000000;
-// //     let oracles: Vec<AccountId>;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         eac_without_access_controller,
-// //         oracle_four,
-// //         oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let mut n = 0;
-// //     let mut y = 1;
-// //     let mut x = 0;
-
-// //     while n < answers.len() {
-// //         oracle_one.call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answers[n].to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         ).assert_success();
-// //         next_round += 1;
-// //         n += 1;
-// //     }
-
-// //     while y < next_round {
-// //         let answer: u128 = test_helper
-// //             .call(
-// //                 flux_aggregator.account_id(),
-// //                 "get_answer",
-// //                 &json!({"_round_id": y.to_string()}).to_string().into_bytes(),
-// //                 DEFAULT_GAS,
-// //                 0, // deposit
-// //             )
-// //             .unwrap_json();
-// //         let expected_answer: u128 = answers[x] as u128;
-// //         x += 1;
-// //         y += 1;
-// //         assert_eq!(answer, expected_answer);
-// //     }
-
-// //     // research this
-// //     //     it("returns 0 for answers greater than uint32's max", async () => {
-// //     //   const overflowedId = h.bigNum(2).pow(32).add(1)
-// //     //   const answer = await aggregator.getAnswer(overflowedId)
-// //     //   matchers.bigNum(0, answer)
-// //     // })
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L916
-// // // #get_answer tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L934
-// // // *TODO* Research overflowedId issue for Rust uint type
-
-// // #[test]
-// // fn returns_zero_for_answers_greater_than_uint32s_max() {
-// //     let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let mut n = 0;
-
-// //     while n < answers.len() {
-// //         oracle_one.call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answers[n].to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         ).assert_success();
-// //         next_round += 1;
-// //         n += 1;
-// //     }
-
-// //     // *TODO* Research overflowedId issue for Rust uint type
-// //     //     it("returns 0 for answers greater than uint32's max", async () => {
-// //     //   const overflowedId = h.bigNum(2).pow(32).add(1)
-// //     //   const answer = await aggregator.getAnswer(overflowedId)
-// //     //   matchers.bigNum(0, answer)
-// //     // })
-
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L941
-// // #get_timestamp tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L950
-
-// // #[test]
-// // fn retrieves_the_timestamp_recorded_for_past_rounds() {
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let mut i = 0;
-// //     let mut z = 1;
-// //     let mut latest_timestamp: u128 = 0;
-
-// //     while i < 10 {
-// //         oracle_one.call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": (i + 1).to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         ).assert_success();
-// //         next_round += 1;
-// //         i += 1;
-// //     }
-
-// //     while z < next_round {
-// //         let current_timestamp: u128 = test_helper
-// //             .call(
-// //                 flux_aggregator.account_id(),
-// //                 "get_timestamp",
-// //                 &json!({"_round_id": z.to_string()}).to_string().into_bytes(),
-// //                 DEFAULT_GAS,
-// //                 0, // deposit
-// //             )
-// //             .unwrap_json();
-// //         z += 1;
-// //         assert_eq!(current_timestamp >= latest_timestamp, true);
-// //         latest_timestamp = current_timestamp;
-// //     }
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L941
-// // // #get_timestamp tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L960
-// // // *TODO* Research overflowedId issue for Rust uint type
-
-// // #[test]
-// // fn returns_zero_for_timestamps_greater_than_uint32s_max() {
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let mut i = 0;
-// //     let mut z = 1;
-// //     let mut latest_timestamp: u128 = 0;
-
-// //     while i < 10 {
-// //         oracle_one.call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": (i + 1).to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         ).assert_success();
-// //         next_round += 1;
-// //         i += 1;
-// //     }
-
-// //     while z < next_round {
-// //         let current_timestamp: u128 = test_helper
-// //             .call(
-// //                 flux_aggregator.account_id(),
-// //                 "get_timestamp",
-// //                 &json!({"_round_id": z.to_string()}).to_string().into_bytes(),
-// //                 DEFAULT_GAS,
-// //                 0, // deposit
-// //             )
-// //             .unwrap_json();
-// //         z += 1;
-// //         assert_eq!(current_timestamp >= latest_timestamp, true);
-// //         latest_timestamp = current_timestamp;
-// //     }
-
-// //     // research this
-// //     // it("returns 0 for answers greater than uint32's max", async () => {
-// //     //     const overflowedId = h.bigNum(2).pow(32).add(1)
-// //     //     const answer = await aggregator.getTimestamp(overflowedId)
-// //     //     matchers.bigNum(0, answer)
-// //     //   })
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L967
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L969
-
-// // #[test]
-// // fn increases_the_oracle_count() {
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let past_count: u128 = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "oracle_count",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             36500000000000000000000, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let current_count: u128 = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "oracle_count",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             36500000000000000000000, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(past_count + 1, current_count);
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L967
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L977
-
-// // #[test]
-// // fn adds_the_address_in_get_oracles() {
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let oracles: Vec<String> = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "get_oracles",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             36500000000000000000000, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(oracle_one.account_id().to_string(), oracles[0]);
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L967
-// // // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L982
-
-// // #[test]
-// // fn updates_the_round_details() {
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let min_submission_count: u64 = root
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "min_submission_count",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     let max_submission_count: u64 = root
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "max_submission_count",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     let restart_delay: u64 = root
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "restart_delay",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(min_submission_count, 1);
-// //     assert_eq!(max_submission_count, 3);
-// //     assert_eq!(restart_delay, 2);
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L967
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L995
-
-// // #[test]
-// // fn emits_a_log() {
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let oracle_added_event = root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).promise_results();
-
-// //     println!("{:?}", oracle_added_event);
-
-// //     let oracle_added_event_oracle: String = oracle_added_event.clone().remove(1).unwrap().outcome().logs[0]
-// //         .parse()
-// //         .unwrap();
-
-// //     let result = [oracle_two.account_id(), ", true".to_string()].join("");
-
-// //     assert_eq!(result, oracle_added_event_oracle);
-
-// //     let oracle_admin_updated_event_oracle: String = oracle_added_event.clone().remove(1).unwrap().outcome().logs[1]
-// //         .parse()
-// //         .unwrap();
-
-// //     let result_two = [oracle_one.account_id(), ", true".to_string()].join("");
-
-// //     assert_eq!(result_two, oracle_admin_updated_event_oracle);
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1016
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1021
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L513
+//  *
+//  */
+// #[test]
+
+// fn when_price_is_updated_mid_round_and_pays_the_same_amount_to_all_oracles_per_round() {
+//     let new_amount: u128 = 50;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let next_round: u128 = 1;
+//     let min_max: u128 = 3;
+//     let timeout: u64 = 1800;
+
+//     let (
+//         root,
+//         _aca,
+//         link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id() ], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         link.account_id(),
+//         "ft_transfer",
+//         &json!({
+//             "receiver_id": flux_aggregator.account_id().to_string(), "amount": 300.to_string(), "memo": "None"
+//         })
+//         .to_string()
+//         .into_bytes(),
+//         DEFAULT_GAS,
+//         1
+//     )
+//     .assert_success();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_available_funds",
+//         &json!({}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0,
+//     )
+//     .assert_success();
+
+//     let mut withdrawable_payment_oracle_one: u128 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "withdrawable_payment",
+//             &json!({
+//                 "_oracle": oracle_one.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(0, withdrawable_payment_oracle_one);
+
+//     let mut withdrawable_payment_oracle_three: u128 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "withdrawable_payment",
+//             &json!({
+//                 "_oracle": oracle_three.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(0, withdrawable_payment_oracle_three);
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": new_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     withdrawable_payment_oracle_one = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "withdrawable_payment",
+//             &json!({
+//                 "_oracle": oracle_one.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(3, withdrawable_payment_oracle_one);
+
+//     withdrawable_payment_oracle_three = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "withdrawable_payment",
+//             &json!({
+//                 "_oracle": oracle_three.account_id().to_string()
+//             })
+//             .to_string()
+//             .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(3, withdrawable_payment_oracle_three);
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L549
+//  *
+//  */
+// #[test]
+
+// fn when_delay_is_on_does_not_revert_on_the_oracles_first_round() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 1;
+//     let timeout: u64 = 1800;
+//     let next_round: u128 = 1;
+//     let min_max: u128 = 3;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id() ], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "update_future_rounds",
+//             &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L557
+//  *
+//  */
+// #[test]
+
+// fn when_delay_is_on_and_does_revert_before_the_delay() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 1;
+//     let timeout: u64 = 1800;
+//     let mut next_round: u128 = 1;
+//     let min_max: u128 = 3;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id() ], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "update_future_rounds",
+//             &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     let expected_previous_round_not_supersedable = oracle_two.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_previous_round_not_supersedable
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // No data present should be error
+//         assert!(execution_error
+//             .to_string()
+//             .contains("previous round not supersedable"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L590
+//  *
+//  */
+// #[test]
+
+// fn when_called_by_an_oracle_who_has_not_answered_recently_and_does_not_revert() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     // Since Ned and Nelly have answered recently, and we set the delay
+//     // to 2, only Nelly can answer as she is the only oracle that hasn't
+//     // started the last two rounds.
+//     // await updateFutureRounds(aggregator, {
+//     //   maxAnswers: oracles.length,
+//     //   restartDelay: newDelay,
+//     // })
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     // when called by an oracle who has not answered recently
+//     // it does not revert
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L596
+//  *
+//  */
+// #[test]
+
+// fn when_called_by_an_oracle_who_has_answered_recently_and_reverts() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 1.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 2.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": 3.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     // Since Ned and Nelly have answered recently, and we set the delay
+//     // to 2, only Nelly can answer as she is the only oracle that hasn't
+//     // started the last two rounds.
+//     // await updateFutureRounds(aggregator, {
+//     //   maxAnswers: oracles.length,
+//     //   restartDelay: newDelay,
+//     // })
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     // when called by an oracle who has answered recently
+//     // it does not revert
+//     let expected_round_not_accepting_submissions = oracle_two.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_round_not_accepting_submissions
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // No data present should be error
+//         assert!(execution_error
+//             .to_string()
+//             .contains("round not accepting submissions"));
+//     } else {
+//         unreachable!();
+//     }
+
+//     let expected_round_not_accepting_submissions_two = oracle_three.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": 4.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_round_not_accepting_submissions_two
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // No data present should be error
+//         assert!(execution_error
+//             .to_string()
+//             .contains("round not accepting submissions"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L630
+//  * *TODO* Look into why the contract panics on oracle_three starting a new round. Error: previous round not supersedable.
+//  */
+// #[test]
+
+// fn when_the_price_is_not_updated_for_a_round_and_allows_a_new_round_to_be_started() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     // allows a new round to be started
+//     // *TODO* Look into why the contract panics on oracle_three starting a new round. Error: previous round not supersedable.
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L634
+//  * *TODO* Look into how to acheive this with NEAR's sdk  const block = await provider.getBlock(receipt.blockHash ?? '')
+//  */
+// #[test]
+// fn sets_the_info_for_the_previous_round() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     // sets the info for the previous round
+//     let mut expected_updated_timestamp: u128 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "get_timestamp",
+//             &json!({"_round_id": (next_round - 1).to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(0, expected_updated_timestamp);
+
+//     let mut expected_answer: u128 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "get_answer",
+//             &json!({"_round_id": (next_round - 1).to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(0, expected_answer);
+
+//     let tx = oracle_three.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     println!("{:?}", tx);
+
+//     // *TODO*: Look into this const block = await provider.getBlock(receipt.blockHash ?? '')
+//     //  matchers.bigNum(ethers.utils.bigNumberify(block.timestamp), updated)
+
+//     expected_updated_timestamp = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "get_timestamp",
+//             &json!({"_round_id": (next_round - 1).to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//         )
+//         .unwrap_json();
+//     // assert_eq!(tx.timestamp, expected_updated_timestamp);
+
+//     expected_answer = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "get_answer",
+//             &json!({"_round_id": (next_round - 1).to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(answer, expected_answer);
+
+//     let expected_round: (u64, u128, u64, u64, u64) = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_round_data",
+//             &json!({"_round_id": (next_round - 1).to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0,
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(2, expected_round.0);
+//     assert_eq!(answer, expected_round.1);
+//     assert_eq!(expected_updated_timestamp as u64, expected_round.3);
+//     assert_eq!(1, expected_round.4);
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L658
+//  */
+// #[test]
+// fn sets_the_previous_round_as_timed_out() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     // sets the previous round as timed out
+//     // *TODO* Look into why the panic error contains previous round not supersedable and not No data present
+//     let expected_no_data_present = root.call(
+//         flux_aggregator.account_id(),
+//         "get_round_data",
+//         &json!({"_round_id": (next_round - 1).to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+//     if let ExecutionStatus::Failure(execution_error) = &expected_no_data_present
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // No data present should be error
+//         assert!(execution_error.to_string().contains("No data present"));
+//     } else {
+//         unreachable!();
+//     }
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     let expected_round: (u64, u128, u64, u64, u64) = root
+//         .call(
+//             flux_aggregator.account_id(),
+//             "get_round_data",
+//             &json!({"_round_id": 2.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(2, expected_round.0);
+//     assert_eq!(1, expected_round.4);
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L669
+//  */
+// #[test]
+
+// fn still_respects_the_delay_restriction() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     println!("{:?}", next_round);
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     let expected_revert = oracle_two.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_revert
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // expected to revert because the sender started the last round
+//         assert!(execution_error
+//             .to_string()
+//             .contains("previous round not supersedable"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L674
+//  */
+// #[test]
+
+// fn uses_the_set_timeout_at_the_beginning_of_the_round() {
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let timeout: u64 = 1800;
+//     let min_max: u128 = 3;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     println!("{:?}", next_round);
+
+//     oracle_two
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string(), "_timeout": (timeout+100000).to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L684
+//  */
+// #[test]
+// fn rejects_values_below_the_submission_value_range() {
+//     let rr_delay: u64 = 0;
+//     let min_submission_value: u64 = 1;
+//     let next_round: u64 = 1;
+//     let min_max: u128 = 3;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let expected_value_below_min_submission_value = oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value-1).to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_value_below_min_submission_value
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // No data present should be error
+//         assert!(execution_error
+//             .to_string()
+//             .contains("value below min_submission_value"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L691
+//  */
+// #[test]
+// fn accepts_submissions_equal_to_the_min_submission_value() {
+//     let rr_delay: u64 = 0;
+//     let min_submission_value: u64 = 1;
+//     let next_round: u64 = 1;
+//     let min_max: u128 = 3;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": (min_submission_value).to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L695
+//  */
+// #[test]
+// fn accepts_submissions_equal_to_the_max_submission_value() {
+//     let rr_delay: u64 = 0;
+//     let next_round: u64 = 1;
+//     let min_max: u128 = 3;
+//     let max_submission_value: u128 = 100000000000000000000;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": (max_submission_value).to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L699
+//  */
+// #[test]
+// fn rejects_values_above_the_max_submission_value() {
+//     let rr_delay: u64 = 0;
+//     let next_round: u64 = 1;
+//     let min_max: u128 = 3;
+//     let max_submission_value: u128 = 100000000000000000000;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let expected_value_above_max_submission_value = oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": (max_submission_value + 1).to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_value_above_max_submission_value
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         // No data present should be error
+//         assert!(execution_error
+//             .to_string()
+//             .contains("value above max_submission_value"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L716
+//  */
 
 // #[test]
-// // fn when_the_oracle_has_already_been_added_and_reverts() {
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     ).assert_success();
-
-// //     let expected_oracle_already_enabled = root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_oracle_already_enabled
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("oracle already enabled"));
-// //     } else {
-// //         unreachable!();
-// //     }
-
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1029
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1030
-
-// // #[test]
-
-// // fn when_called_by_anyone_but_the_owner_and_reverts() {
-// //     let min_ans: u64 = 1;
-// //     let max_ans: u64 = 1;
-// //     let rr_delay: u64 = 0;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         _oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     let expected_only_callable_by_owner = oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_only_callable_by_owner
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("Only callable by owner"));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1047
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1069
-
-// // #[test]
-
-// // fn does_not_allow_the_oracle_to_update_the_round() {
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         );
-
-// //     let expected_not_yet_enabled_oracle = oracle_three.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": "1", "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_not_yet_enabled_oracle
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("not yet enabled oracle"));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1047
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1076
-// // #[test]
-
-// // fn does_allow_the_oracle_to_update_future_rounds() {
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         );
-
-// //     oracle_two.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     next_round = next_round + 1;
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1085
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1086
-// // #[test]
-
-// // fn when_an_oracle_is_added_after_removed_for_a_round_and_allows_the_oracle_to_update() {
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_three.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     next_round = next_round + 1;
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         );
-
-// //     oracle_one
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     next_round = next_round + 1;
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         );
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1113
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1114
-// // *TODO* Investigate why the contratc panicks and throws previous round not supersedable issue, as that is not intended behavior.
-// // #[test]
-
-// // fn when_an_oracle_is_added_and_immediately_removed_mid_round_allows_the_oracle_to_update() {
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let mut next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_three.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     next_round = next_round + 1;
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         );
-
-// //     oracle_one
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-
-// //     next_round = next_round + 1;
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         );
-
-// //     // *TODO* Investigate why the contratc panicks and throws previous round not supersedable issue, as that is not intended behavior.
-
-// //     oracle_three
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "submit",
-// //             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //                 .to_string()
-// //                 .into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         )
-// //         .assert_success();
-// // }
-
-// // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1140
-// // // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1141
-// // // *TODO* Research why the contract is not panicking with owner cannot overwrite admin
-
-// // #[test]
-
-// // fn when_an_oracle_is_re_added_after_with_a_different_admin_address_and_reverts() {
-// //     let answer: u128 = 100;
-// //     let rr_delay: u64 = 0;
-// //     let next_round: u128 = 1;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     oracle_one.call(
-// //         flux_aggregator.account_id(),
-// //         "submit",
-// //         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     root.call(
-// //             flux_aggregator.account_id(),
-// //             "change_oracles",
-// //             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             0, // deposit
-// //         ).assert_success();
-
-// //     let expected_owner_cannot_override_admin = root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [root.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-// //     // *TODO* Research why the contract is not panicking with owner cannot overwrite admin
-
-// //     if let ExecutionStatus::Failure(execution_error) = &expected_owner_cannot_override_admin
-// //         .promise_errors()
-// //         .remove(0)
-// //         .unwrap()
-// //         .outcome()
-// //         .status
-// //     {
-// //         assert!(execution_error
-// //             .to_string()
-// //             .contains("owner cannot overwrite admin"));
-// //     } else {
-// //         unreachable!();
-// //     }
-// // }
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1173
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1204
-// // *TODO* Look into a simple way to implement this function
-
-// // #[test]
-
-// // fn not_use_too_much_gas() {}
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1173
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1242
-// // *TODO* Look into a simple way to implement this function
-
-// // #[test]
-
-// // fn reverts_when_another_oracle_is_added() {}
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1173
-// // #change_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1259
-// // *TODO* Look into a simple way to implement this function
-
-// // #[test]
-
-// // fn reverts_when_min_submissions_is_set_to_0() {}
-
-// // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1267
-// // #removing_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1279
-
-// // #[test]
-
-// // fn decreases_the_oracle_count() {
-// //     let rr_delay: u64 = 0;
-// //     let (
-// //         root,
-// //         aca,
-// //         _link,
-// //         oracle_one,
-// //         _oracle_two,
-// //         oracle_three,
-// //         test_helper,
-// //         _eac,
-// //         _eac_without_access_controller,
-// //         _oracle_four,
-// //         _oracle_five,
-// //     ) = init();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "add_access",
-// //         &json!({"_user": test_helper.account_id().to_string()})
-// //             .to_string()
-// //             .into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     )
-// //     .assert_success();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let past_count: u128 = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "oracle_count",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             36500000000000000000000, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     root.call(
-// //         flux_aggregator.account_id(),
-// //         "change_oracles",
-// //         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
-// //         DEFAULT_GAS,
-// //         0, // deposit
-// //     );
-
-// //     let current_count: u128 = test_helper
-// //         .call(
-// //             flux_aggregator.account_id(),
-// //             "oracle_count",
-// //             &json!({}).to_string().into_bytes(),
-// //             DEFAULT_GAS,
-// //             36500000000000000000000, // deposit
-// //         )
-// //         .unwrap_json();
-
-// //     assert_eq!(past_count - 1, current_count);
-// // }
+// fn calls_out_to_the_validator() {
+//     let rr_delay: u64 = 0;
+//     let next_round: u64 = 1;
+//     let min_max: u128 = 3;
+//     let payment_amount: u128 = 3;
+//     let answer: u128 = 100;
+//     let timeout: u64 = 1800;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": min_max.to_string(), "_max_submissions": min_max.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "update_future_rounds",
+//         &json!({"_payment_amount": payment_amount.to_string(), "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 1.to_string(), "_timeout": timeout.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     // Carol
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "set_validator",
+//         &json!({"_new_validator": aggregator_validator_mock.account_id().to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     )
+//     .assert_success();
+
+//     let tx = oracle_three.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     assert_eq!(tx.promise_results().remove(2).unwrap().outcome().logs[0], "0, 0, 1, 100")
+// }
+
+
+// /**
+//  * #submit - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L240
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L733
+//  */
+
+// #[test]
+// fn still_updates() {
+// }
+
+// /**
+//  * #get_answer - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L743
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L754
+//  */
+
+// #[test]
+// fn retrieves_the_answer_recorded_for_past_rounds() {
+//     let answers: Vec<u128> = [1, 10, 101, 1010, 10101, 101010, 1010101].to_vec();
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u128 = 1;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let mut n = 0;
+//     let mut y = 1;
+//     let mut x = 0;
+
+//     while n < answers.len() {
+//         oracle_one.call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answers[n].to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         ).assert_success();
+//         next_round += 1;
+//         n += 1;
+//     }
+
+//     while y < next_round {
+//         let answer: u128 = root
+//             .call(
+//                 flux_aggregator.account_id(),
+//                 "get_answer",
+//                 &json!({"_round_id": y.to_string()}).to_string().into_bytes(),
+//                 DEFAULT_GAS,
+//                 0, // deposit
+//             )
+//             .unwrap_json();
+//         let expected_answer: u128 = answers[x] as u128;
+//         x += 1;
+//         y += 1;
+//         assert_eq!(answer, expected_answer);
+//     }
+// }
+
+// /**
+//  * #get_answer - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L743
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L761
+//  * *TODO* Research overflowedId issue for Rust uint type
+//  */
+
+// #[test]
+// fn returns_zero_for_answers_greater_than_uint32s_max() {
+// }
+
+// /**
+//  * #get_timestamp - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L768
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L777
+//  */
+
+// #[test]
+// fn retrieves_the_timestamp_recorded_for_past_rounds() {
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let mut i = 0;
+//     let mut z = 1;
+//     let mut latest_timestamp: u128 = 0;
+
+//     while i < 10 {
+//         oracle_one.call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": (i + 1).to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         ).assert_success();
+//         next_round += 1;
+//         i += 1;
+//     }
+
+//     while z < next_round {
+//         let current_timestamp: u128 = root
+//             .call(
+//                 flux_aggregator.account_id(),
+//                 "get_timestamp",
+//                 &json!({"_round_id": z.to_string()}).to_string().into_bytes(),
+//                 DEFAULT_GAS,
+//                 0, // deposit
+//             )
+//             .unwrap_json();
+//         z += 1;
+//         assert_eq!(current_timestamp >= latest_timestamp, true);
+//         latest_timestamp = current_timestamp;
+//     }
+// }
+
+// /**
+//  * #get_timestamp - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L768
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L787
+//  */
+
+// #[test]
+// fn returns_zero_for_timestamps_greater_than_uint32s_max() {
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L796
+//  */
+
+// #[test]
+// fn increases_the_oracle_count() {
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     let past_count: u128 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "oracle_count",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let current_count: u128 = root
+//     .view(
+//         flux_aggregator.account_id(),
+//         "oracle_count",
+//         &json!({}).to_string().into_bytes(),
+//     )
+//     .unwrap_json();
+
+//     assert_eq!(past_count + 1, current_count);
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L804
+//  */
+
+// #[test]
+// fn adds_the_address_in_get_oracles() {
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let oracles: Vec<String> = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "get_oracles",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(oracle_one.account_id().to_string(), oracles[0]);
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L809
+//  */
+
+// #[test]
+// fn updates_the_round_details() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": 2.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let min_submission_count: u64 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "min_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     let max_submission_count: u64 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "max_submission_count",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     let restart_delay: u64 = root
+//         .view(
+//             flux_aggregator.account_id(),
+//             "restart_delay",
+//             &json!({}).to_string().into_bytes(),
+//         )
+//         .unwrap_json();
+
+//     assert_eq!(min_submission_count, 1);
+//     assert_eq!(max_submission_count, 3);
+//     assert_eq!(restart_delay, 2);
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L816
+//  */
+
+// #[test]
+// fn emits_a_log() {
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     let oracle_added_event = root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_two.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": 0.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).promise_results();
+
+//     let oracle_added_event_oracle: String = oracle_added_event.clone().remove(1).unwrap().outcome().logs[0]
+//         .parse()
+//         .unwrap();
+
+//     let result = [oracle_two.account_id(), ", true".to_string()].join("");
+
+//     assert_eq!(result, oracle_added_event_oracle);
+
+//     let oracle_admin_updated_event_oracle: String = oracle_added_event.clone().remove(1).unwrap().outcome().logs[1]
+//         .parse()
+//         .unwrap();
+
+//     let result_two = [oracle_one.account_id(), ", true".to_string()].join("");
+
+//     assert_eq!(result_two, oracle_admin_updated_event_oracle);
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L834
+//  */
+
+// #[test]
+
+// fn when_the_oracle_has_already_been_added_and_reverts() {
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     ).assert_success();
+
+//     let expected_oracle_already_enabled = root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_oracle_already_enabled
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("oracle already enabled"));
+//     } else {
+//         unreachable!();
+//     }
+
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L840
+//  */
+
+// #[test]
+
+// fn when_called_by_anyone_but_the_owner_and_reverts() {
+//     let min_ans: u64 = 1;
+//     let max_ans: u64 = 1;
+//     let rr_delay: u64 = 0;
+//     let (
+//         _root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         _oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     let expected_only_callable_by_owner = oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id()], "_added_admins": [oracle_one.account_id()], "_min_submissions": min_ans.to_string(), "_max_submissions": max_ans.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_only_callable_by_owner
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("Only callable by owner"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L867
+//  */
+
+// #[test]
+
+// fn does_not_allow_the_oracle_to_update_the_round() {
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         );
+
+//     let expected_not_yet_enabled_oracle = oracle_three.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_not_yet_enabled_oracle
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         assert!(execution_error
+//             .to_string()
+//             .contains("not yet enabled oracle"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L871
+//  */
+
+// #[test]
+
+// fn does_allow_the_oracle_to_update_future_rounds() {
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u128 = 1;
+
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         );
+
+//     oracle_two.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     next_round = next_round + 1;
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L881
+//  */
+
+// #[test]
+
+// fn when_an_oracle_is_added_after_removed_for_a_round_and_allows_the_oracle_to_update() {
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u128 = 1;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_three.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     next_round = next_round + 1;
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         );
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         );
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L903
+//  */
+
+//  #[test]
+
+// fn when_an_oracle_is_added_and_immediately_removed_mid_round_allows_the_oracle_to_update() {
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let mut next_round: u128 = 1;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_three.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     next_round = next_round + 1;
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         );
+
+//     oracle_one
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+
+//     next_round = next_round + 1;
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [oracle_three.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         );
+
+//     oracle_three
+//         .call(
+//             flux_aggregator.account_id(),
+//             "submit",
+//             &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//                 .to_string()
+//                 .into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         )
+//         .assert_success();
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L924
+//  * **TODO** Research why the contract is not panicking with owner cannot overwrite admin, reckoning that the issue is in remove_oracle 
+//  */
+
+// #[test]
+
+// fn when_an_oracle_is_re_added_after_with_a_different_admin_address_and_reverts() {
+//     let answer: u128 = 100;
+//     let rr_delay: u64 = 0;
+//     let next_round: u128 = 1;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_two.account_id(), oracle_three.account_id()], "_min_submissions": 3.to_string(), "_max_submissions": 3.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     oracle_one.call(
+//         flux_aggregator.account_id(),
+//         "submit",
+//         &json!({"_round_id": next_round.to_string(), "_submission": answer.to_string()})
+//             .to_string()
+//             .into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     root.call(
+//             flux_aggregator.account_id(),
+//             "change_oracles",
+//             &json!({"_removed": [oracle_three.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//             DEFAULT_GAS,
+//             0, // deposit
+//         ).assert_success();
+
+//     let expected_owner_cannot_override_admin = root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_three.account_id()], "_added_admins": [root.account_id()], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+//     // *TODO* Research why the contract is not panicking with owner cannot overwrite admin
+
+//     if let ExecutionStatus::Failure(execution_error) = &expected_owner_cannot_override_admin
+//         .promise_errors()
+//         .remove(0)
+//         .unwrap()
+//         .outcome()
+//         .status
+//     {
+//         println!("{:?}", execution_error
+//         .to_string());
+//         assert!(execution_error
+//             .to_string()
+//             .contains("owner cannot overwrite admin"));
+//     } else {
+//         unreachable!();
+//     }
+// }
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L975
+//  * **TODO** Look into a simple way to implement this function
+//  */
+
+// #[test]
+
+// fn not_use_too_much_gas() {}
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1011
+//  * **TODO** Look into a simple way to implement this function
+//  */
+
+// #[test]
+
+// fn reverts_when_another_oracle_is_added() {}
+
+// /**
+//  * #change_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1028
+//  * **TODO** Look into a simple way to implement this function
+//  */
+
+// #[test]
+
+// fn reverts_when_min_submissions_is_set_to_0() {}
+
+// /**
+//  * #removing_oracles - https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L794
+//  * https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1039
+//  */
+
+
+// #[test]
+
+// fn decreases_the_oracle_count() {
+//     let rr_delay: u64 = 0;
+//     let (
+//         root,
+//         _aca,
+//         _link,
+//         oracle_one,
+//         _oracle_two,
+//         oracle_three,
+//         _test_helper,
+//         _eac,
+//         _eac_without_access_controller,
+//         _oracle_four,
+//         _oracle_five,
+//         _aggregator_validator_mock,
+//         _flags,
+//         _consumer,
+//         _flags_consumer,
+//         _controller,
+//         _controller_2,
+//         _flux_aggregator_test_helper_contract,
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         flux_aggregator,
+//     ) = init();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [], "_added": [oracle_one.account_id(), oracle_three.account_id()], "_added_admins": [oracle_one.account_id(), oracle_three.account_id()], "_min_submissions": 2.to_string(), "_max_submissions": 2.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let past_count: u128 = root.view(
+//             flux_aggregator.account_id(),
+//             "oracle_count",
+//             &json!({}).to_string().into_bytes()
+//         )
+//         .unwrap_json();
+
+//     root.call(
+//         flux_aggregator.account_id(),
+//         "change_oracles",
+//         &json!({"_removed": [oracle_one.account_id()], "_added": [], "_added_admins": [], "_min_submissions": 1.to_string(), "_max_submissions": 1.to_string(), "_restart_delay": rr_delay.to_string()}).to_string().into_bytes(),
+//         DEFAULT_GAS,
+//         0, // deposit
+//     );
+
+//     let current_count: u128 = root.view(
+//         flux_aggregator.account_id(),
+//         "oracle_count",
+//         &json!({}).to_string().into_bytes()
+//     )
+//     .unwrap_json();
+
+//     assert_eq!(past_count - 1, current_count);
+// }
 
 // // https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1267
 // // #removing_oracles tests, https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L1296

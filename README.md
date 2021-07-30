@@ -22,3 +22,5 @@
 - Assert that contracts have limited interfaces
 - Refactor smart contracts into traits/implementations for composability, optimize read/writes from storage for gas.
 - Implement a solution for havoc caused in data types due to Solidity vs Rust different data types.
+- Check out bugs in describe block here: https://github.com/smartcontractkit/chainlink-brownie-contracts/blob/8071761a5b0e5444fc0de1751b7b398caf69ced4/contracts/test/v0.6/FluxAggregator.test.ts#L610 (increaseTimeBy evm function)
+- Revisit validate_answer function

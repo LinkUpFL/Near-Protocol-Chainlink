@@ -409,9 +409,7 @@ impl FluxAggregator {
         assert_eq!(env::current_account_id(), env::predecessor_account_id());
         assert_eq!(env::promise_results_count(), 1);
         let get_balance_promise_result: Vec<u8> = match env::promise_result(0) {
-            PromiseResult::Successful(_x) => {
-                _x
-            }
+            PromiseResult::Successful(_x) => _x,
             _x => panic!("Promise with index 0 failed"),
         };
         let link_balance: U128 = serde_json::from_slice(&get_balance_promise_result).unwrap();
@@ -669,7 +667,6 @@ impl FluxAggregator {
             1,
             (prepaid_gas / 6).into(),
         );
-        
         env::promise_then(
             ft_transfer,
             env::current_account_id(),
@@ -1243,18 +1240,49 @@ impl FluxAggregator {
         if av == "" {
             return;
         }
-
+        let _round_id_u128: u128 = _round_id as u128;
+        let prepaid_gas = env::prepaid_gas();
         let prev_round: u64 = _round_id - 1;
+        if prev_round == 0 {
+            // TRY CATCH
 
-        let round_option = self.rounds.get(&_round_id);
-        if round_option.is_none() {
-            env::panic(b"Did not find this round.");
+            env::promise_create(
+                self.validator.clone(),
+                b"validate",
+                json!({ "previous_round_id": U128::from(0),
+                    "previous_answer": U128::from(0),
+                    "current_round_id": U128::from(_round_id_u128),
+                    "current_answer": U128::from(_new_answer)})
+                .to_string()
+                .as_bytes(),
+                0,
+                (prepaid_gas / 2).into(),
+            );
+        } else {
+            let round_option = self.rounds.get(&prev_round);
+            if round_option.is_none() {
+                env::panic(b"Did not find this round.");
+            }
+            let round = round_option.unwrap();
+
+            let prev_answer_round_id: u64 = round.answered_in_round;
+            let prev_answer_round_id_u128: u128 = prev_answer_round_id as u128;
+            let prev_round_answer: u128 = round.answer;
+
+            // TRY CATCH
+            env::promise_create(
+                self.validator.clone(),
+                b"validate",
+                json!({ "previous_round_id": U128::from(prev_answer_round_id_u128),
+                "previous_answer": U128::from(prev_round_answer),
+                "current_round_id": U128::from(_round_id_u128),
+                "current_answer": U128::from(_new_answer)})
+                .to_string()
+                .as_bytes(),
+                0,
+                (prepaid_gas / 2).into(),
+            );
         }
-        let round = round_option.unwrap();
-
-        let prev_answer_round_id: u64 = round.answered_in_round;
-        let prev_round_answer: u128 = round.answer;
-        // TRY CATCH
     }
 
     fn pay_oracle(&mut self, _round_id: u64) {
@@ -1351,10 +1379,10 @@ impl FluxAggregator {
         let round_timeout: u64 = detail.timeout;
 
         // commented out for test failure
-        // return started_at > 0
-        //     && round_timeout > 0
-        //     && ((started_at + round_timeout) < env::block_timestamp());
-        return false;
+        return started_at > 0
+            && round_timeout > 0
+            && started_at.saturating_add(round_timeout) < env::block_timestamp();
+        // return false;
     }
 
     fn get_starting_round(&self, _oracle: AccountId) -> u64 {
@@ -1409,10 +1437,13 @@ impl FluxAggregator {
             self.oracles.insert(&_oracle, &oracle);
             self.oracle_addresses.push(_oracle.clone());
         } else {
+            let oracle_unwrapped: OracleStatus = oracle_option.unwrap();
             assert!(
-                oracle_option.unwrap().admin == _admin,
+                &oracle_unwrapped.admin == "" || &oracle_unwrapped.admin == init_admin,
                 "owner cannot overwrite admin"
             );
+            // oracle_option.ending_round = self.get_starting_round(_oracle.clone());
+            // self.oracles.insert(&init_oracle, &oracle_option);
         }
         // Oracle Permissions Updated
         env::log(format!("{}, {}", &init_oracle.clone(), true).as_bytes());
@@ -1443,7 +1474,7 @@ impl FluxAggregator {
         }
         let mut oracle_tail = oracle_tail_option.unwrap();
 
-        oracle.ending_round = (self.reporting_round_id + 1).into();
+        oracle.ending_round = (self.reporting_round_id.saturating_add(1)).into();
         let index: usize = oracle.index.try_into().unwrap();
         oracle_tail.index = index.try_into().unwrap();
         oracle.index = 0_u64;
