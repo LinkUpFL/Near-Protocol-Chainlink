@@ -278,6 +278,8 @@ pub fn init_without_macros() -> (
         to_yocto("1000"), // initial balance
     );
 
+    register_user(&test_helper);
+
     let eddy = root.create_user(
         "eddy".to_string(),
         to_yocto("1000"), // initial balance

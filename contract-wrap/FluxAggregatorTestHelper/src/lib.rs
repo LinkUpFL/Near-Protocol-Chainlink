@@ -31,6 +31,11 @@ impl FluxAggregatorTestHelper {
         result
     }
 
+    pub fn requested_round_id(&self) -> u64{
+        self.requested_round_id
+    }
+
+
     pub fn read_oracle_round_state(&self, _aggregator: AccountId, _oracle: AccountId) {
         let read_oracle_round_state_promise = env::promise_create(
             _aggregator.to_string(),

@@ -387,7 +387,7 @@ impl FluxAggregator {
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
             b"ft_balance_of",
-            json!({ "account_id": env::current_account_id() })
+            json!({ "account_id": "flux_aggregator" })
                 .to_string()
                 .as_bytes(),
             0,
@@ -634,6 +634,7 @@ impl FluxAggregator {
      * @param _recipient is the address to send the LINK to
      * @param _amount is the amount of LINK to send
      */
+    #[payable]
     pub fn withdraw_payment(&mut self, _oracle: AccountId, _recipient: AccountId, _amount: U128) {
         let prepaid_gas = env::prepaid_gas();
 
@@ -669,11 +670,9 @@ impl FluxAggregator {
         );
         env::promise_then(
             ft_transfer,
-            env::current_account_id(),
+            "flux_aggregator".to_string(),
             b"update_available_funds_promise_resolution",
-            json!({"receiver_id": _recipient.clone(), "amount": _amount})
-                .to_string()
-                .as_bytes(),
+            json!({}).to_string().as_bytes(),
             0,
             (prepaid_gas / 6).into(),
         );
@@ -705,11 +704,9 @@ impl FluxAggregator {
         );
         let ft_transfer_resolve = env::promise_then(
             ft_transfer,
-            env::current_account_id(),
+            "flux_aggregator".to_string(),
             b"update_available_funds_promise_resolution",
-            json!({"receiver_id": _recipient.clone(), "amount": _amount})
-                .to_string()
-                .as_bytes(),
+            json!({}).to_string().as_bytes(),
             0,
             (prepaid_gas / 6).into(),
         );
@@ -720,12 +717,12 @@ impl FluxAggregator {
      * @notice recalculate the amount of LINK available for payouts
      */
 
-    pub fn update_available_funds_promise_resolution(&self, receiver_id: AccountId, amount: U128) {
+    pub fn update_available_funds_promise_resolution(&self) {
         let prepaid_gas = env::prepaid_gas();
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
             b"ft_balance_of",
-            json!({ "account_id": env::current_account_id() })
+            json!({ "account_id": "flux_aggregator" })
                 .to_string()
                 .as_bytes(),
             0,
@@ -733,7 +730,7 @@ impl FluxAggregator {
         );
         let get_balance_promise_resolve = env::promise_then(
             get_balance_promise,
-            env::current_account_id(),
+            "flux_aggregator".to_string(),
             b"get_balance_promise_results",
             json!({}).to_string().as_bytes(),
             0,
@@ -878,8 +875,20 @@ impl FluxAggregator {
      * @param _data is mostly ignored. It is checked for length, to be sure
      * nothing strange is passed in.
      */
-    pub fn on_token_transfer(&mut self, _address: AccountId, _num: U128, _data: Base64String) {
-        assert!(_data.len() == 0, "transfer doesn't accept calldata");
+    pub fn on_token_transfer(&mut self, sender_id: AccountId, amount: U128, msg: String) {
+        assert!(msg.len() == 0, "transfer doesn't accept calldata");
+        self.update_available_funds();
+    }
+
+    /**
+     * @notice called through LINK's transferAndCall to update available funds
+     * in the same transaction as the funds were transferred to the aggregator
+     * @param msg is mostly ignored. It is checked for length, to be sure
+     * nothing strange is passed in.
+     */
+    pub fn ft_on_transfer(&mut self, sender_id: AccountId, amount: U128, msg: String) {
+        env::log(format!("{}", "HERE!").as_bytes());
+        assert!(msg.len() == 0, "transfer doesn't accept calldata");
         self.update_available_funds();
     }
 

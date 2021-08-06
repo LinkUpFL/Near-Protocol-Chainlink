@@ -82,11 +82,6 @@ impl Contract {
     fn on_tokens_burned(&mut self, account_id: AccountId, amount: Balance) {
         log!("Account @{} burned {}", account_id, amount);
     }
-
-    // fn transfer_and_call(&mut self, _to: ValidAccountId, value: U128, data: String) {
-    //     self.token.ft_transfer(_to, value, None);
-    //     // log!("{},{},{}", _to, u128::from(value), data);
-    // }
 }
 
 near_contract_standards::impl_fungible_token_core!(Contract, token, on_tokens_burned);
