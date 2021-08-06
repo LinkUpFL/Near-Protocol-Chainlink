@@ -7,18 +7,18 @@ edition = "2018"
 [dev-dependencies]
 near-sdk = { git = "https://github.com/near/near-sdk-rs.git", tag="3.0.1" }
 near-sdk-sim = { git = "https://github.com/near/near-sdk-rs.git", rev="c2771af7fdfe01a4e8414046752ee16fb0d29d39" }
-AccessControlledAggregator = { path = "./AccessControlledAggregator" }
-LinkToken = { path = "./LinkToken" }
-EACAggregatorProxy = { path = "./EACAggregatorProxy" }
-AggregatorVaildatorMock = { path = "./AggregatorVaildatorMock" }
-Flags = { path = "./Flags" }
-FluxAggregator = { path = "./FluxAggregator" }
-Consumer = { path = "./Consumer" }
-SimpleReadAccessController = { path = "./SimpleReadAccessController" }
-SimpleWriteAccessController = { path = "./SimpleWriteAccessController" }
-FlagsTestHelper = { path = "./FlagsTestHelper" }
-FluxAggregatorTestHelper = { path = "./FluxAggregatorTestHelper" }
-MockV3Aggregator = { path = "./MockV3Aggregator" }
+access_controlled_aggregator = { path = "./access_controlled_aggregator" }
+link_token = { path = "./link_token" }
+eac_aggregator_proxy = { path = "./eac_aggregator_proxy" }
+aggregator_vaildator_mock = { path = "./aggregator_vaildator_mock" }
+flags = { path = "./flags" }
+flux_aggregator = { path = "./flux_aggregator" }
+consumer = { path = "./consumer" }
+simple_read_access_controller = { path = "./simple_read_access_controller" }
+simple_write_access_controller = { path = "./simple_write_access_controller" }
+flags_test_helper = { path = "./flags_test_helper" }
+flux_aggregator_test_helper = { path = "./flux_aggregator_test_helper" }
+mock_v3_aggregator = { path = "./mock_v3_aggregator" }
 
 [profile.release]
 codegen-units = 1
@@ -31,14 +31,16 @@ overflow-checks = true
 
 [workspace]
 members = [
-  "AccessControlledAggregator",
-  "LinkToken",
-  "EACAggregatorProxy",
-  "AggregatorVaildatorMock",
-  "Flags",
-  "Consumer",
-  "SimpleWriteAccessController",
-  "SimpleReadAccessController",
-  "FlagsTestHelper",
-  "MockV3Aggregator"
+  "access_controlled_aggregator",
+  "link_token",
+  "eac_aggregator_proxy",
+  "flux_aggregator",
+  "aggregator_vaildator_mock",
+  "flags",
+  "consumer",
+  "simple_write_access_controller",
+  "simple_read_access_controller",
+  "flags_test_helper",
+  "flux_aggregator_test_helper",
+  "mock_v3_aggregator"
 ]

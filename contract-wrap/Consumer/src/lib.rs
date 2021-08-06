@@ -19,7 +19,7 @@ pub trait ExtOracleContract {
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-struct Consumer {
+struct consumer {
     // Note: for this simple demo we'll store the oracle node in state like this
     // There's no reason why client contracts can't call various oracle contracts.
     oracle_account: AccountId,
@@ -27,14 +27,14 @@ struct Consumer {
     received: TreeMap<u128, String>,
 }
 
-impl Default for Consumer {
+impl Default for consumer {
     fn default() -> Self {
-        panic!("Oracle consumer should be initialized before usage")
+        panic!("consumer should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl Consumer {
+impl consumer {
     #[allow(dead_code)]
     #[init]
     pub fn new(oracle_account: AccountId) -> Self {

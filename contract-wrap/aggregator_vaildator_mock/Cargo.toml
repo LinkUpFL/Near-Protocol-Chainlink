@@ -1,5 +1,5 @@
 [package]
-name = "flags"
+name = "aggregator_vaildator_mock"
 version = "0.1.0"
 authors = ["nolanjacobson <nolanjacobson@protonmail.com>", "kwsantiago <kwsantiago@usf.edu>"]
 edition = "2018"

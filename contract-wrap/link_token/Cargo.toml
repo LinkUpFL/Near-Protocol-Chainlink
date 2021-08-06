@@ -1,5 +1,5 @@
 [package]
-name = "flags"
+name = "link_token"
 version = "0.1.0"
 authors = ["nolanjacobson <nolanjacobson@protonmail.com>", "kwsantiago <kwsantiago@usf.edu>"]
 edition = "2018"
@@ -9,4 +9,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 near-sdk = "3.0.1"
-num-traits = "0.2"
+near-contract-standards = "3.1.0"

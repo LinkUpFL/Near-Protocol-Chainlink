@@ -1,5 +1,5 @@
 [package]
-name = "flags"
+name = "flags_test_helper"
 version = "0.1.0"
 authors = ["nolanjacobson <nolanjacobson@protonmail.com>", "kwsantiago <kwsantiago@usf.edu>"]
 edition = "2018"

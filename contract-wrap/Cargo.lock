@@ -3,105 +3,13 @@
 version = 3
 
 [[package]]
-name = "AccessControlledAggregator"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "AggregatorVaildatorMock"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "Consumer"
-version = "0.1.0"
-dependencies = [
- "base64 0.12.3",
- "borsh 0.6.2",
- "near-sdk 0.11.0",
- "serde",
- "serde_json",
- "wee_alloc",
-]
-
-[[package]]
-name = "EACAggregatorProxy"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "Flags"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "FlagsTestHelper"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "FluxAggregator"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "FluxAggregatorTestHelper"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
 name = "Inflector"
 version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3"
 
 [[package]]
-name = "LinkToken"
-version = "0.1.0"
-dependencies = [
- "near-contract-standards",
- "near-sdk 3.1.0",
-]
-
-[[package]]
-name = "MockV3Aggregator"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "SimpleReadAccessController"
-version = "0.1.0"
-dependencies = [
- "near-sdk 3.1.0",
- "num-traits",
-]
-
-[[package]]
-name = "SimpleWriteAccessController"
+name = "access_controlled_aggregator"
 version = "0.1.0"
 dependencies = [
  "near-sdk 3.1.0",
@@ -122,6 +30,14 @@ name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
+
+[[package]]
+name = "aggregator_vaildator_mock"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
 
 [[package]]
 name = "ahash"
@@ -617,23 +533,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
 
 [[package]]
+name = "consumer"
+version = "0.1.0"
+dependencies = [
+ "base64 0.12.3",
+ "borsh 0.6.2",
+ "near-sdk 0.11.0",
+ "serde",
+ "serde_json",
+ "wee_alloc",
+]
+
+[[package]]
 name = "contract-wrap"
 version = "0.1.0"
 dependencies = [
- "AccessControlledAggregator",
- "AggregatorVaildatorMock",
- "Consumer",
- "EACAggregatorProxy",
- "Flags",
- "FlagsTestHelper",
- "FluxAggregator",
- "FluxAggregatorTestHelper",
- "LinkToken",
- "MockV3Aggregator",
- "SimpleReadAccessController",
- "SimpleWriteAccessController",
+ "access_controlled_aggregator",
+ "aggregator_vaildator_mock",
+ "consumer",
+ "eac_aggregator_proxy",
+ "flags",
+ "flags_test_helper",
+ "flux_aggregator",
+ "flux_aggregator_test_helper",
+ "link_token",
+ "mock_v3_aggregator",
  "near-sdk 3.0.1",
  "near-sdk-sim",
+ "simple_read_access_controller",
+ "simple_write_access_controller",
 ]
 
 [[package]]
@@ -1015,6 +943,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "eac_aggregator_proxy"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
+
+[[package]]
 name = "easy-ext"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1172,6 +1108,38 @@ dependencies = [
  "rand 0.8.3",
  "rustc-hex",
  "static_assertions",
+]
+
+[[package]]
+name = "flags"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
+
+[[package]]
+name = "flags_test_helper"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
+
+[[package]]
+name = "flux_aggregator"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
+
+[[package]]
+name = "flux_aggregator_test_helper"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
 ]
 
 [[package]]
@@ -1600,6 +1568,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "link_token"
+version = "0.1.0"
+dependencies = [
+ "near-contract-standards",
+ "near-sdk 3.1.0",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1698,6 +1674,14 @@ checksum = "a92518e98c078586bc6c934028adcca4c92a53d6a958196de835170a01d84e4b"
 dependencies = [
  "adler",
  "autocfg",
+]
+
+[[package]]
+name = "mock_v3_aggregator"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
 ]
 
 [[package]]
@@ -2992,6 +2976,22 @@ name = "signature"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f0242b8e50dd9accdd56170e94ca1ebd223b098eb9c83539a6e367d0f36ae68"
+
+[[package]]
+name = "simple_read_access_controller"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
+
+[[package]]
+name = "simple_write_access_controller"
+version = "0.1.0"
+dependencies = [
+ "near-sdk 3.1.0",
+ "num-traits",
+]
 
 [[package]]
 name = "slab"

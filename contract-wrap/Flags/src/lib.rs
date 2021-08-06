@@ -12,7 +12,7 @@ const DEFAULT_GAS: u64 = 300_000_000_000_000;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct Flags {
+pub struct flags {
     pub raising_access_controller: AccountId,
     pub owner: AccountId,
     pending_owner: AccountId,
@@ -21,14 +21,14 @@ pub struct Flags {
     access_list: LookupMap<AccountId, bool>,
 }
 
-impl Default for Flags {
+impl Default for flags {
     fn default() -> Self {
         panic!("Flags should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl Flags {
+impl flags {
     #[init]
     pub fn new(owner_id: AccountId, rac_address: AccountId) -> Self {
         assert!(
