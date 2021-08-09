@@ -11,18 +11,18 @@ const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct flux_aggregator_test_helper {
+pub struct FluxAggregatorTestHelper {
     pub requested_round_id: u64,
 }
 
-impl Default for flux_aggregator_test_helper {
+impl Default for FluxAggregatorTestHelper {
     fn default() -> Self {
-        panic!("flux_aggregator_test_helper should be initialized before usage")
+        panic!("FluxAggregatorTestHelper should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl flux_aggregator_test_helper {
+impl FluxAggregatorTestHelper {
     #[init]
     pub fn new() -> Self {
         let result = Self {

@@ -8,21 +8,21 @@ static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct simple_read_access_controller {
+pub struct SimpleReadAccessController {
     pub owner: AccountId,
     pending_owner: AccountId,
     pub check_enabled: bool,
     access_list: LookupMap<AccountId, bool>,
 }
 
-impl Default for simple_read_access_controller {
+impl Default for SimpleReadAccessController {
     fn default() -> Self {
-        panic!("simple_read_access_controller should be initialized before usage")
+        panic!("SimpleReadAccessController should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl simple_read_access_controller {
+impl SimpleReadAccessController {
     #[init]
     pub fn new(owner_id: AccountId) -> Self {
         assert!(

@@ -12,18 +12,18 @@ const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct flags_test_helper {
+pub struct FlagsTestHelper {
     pub flags: AccountId,
 }
 
-impl Default for flags_test_helper {
+impl Default for FlagsTestHelper {
     fn default() -> Self {
-        panic!("flags_test_helper should be initialized before usage")
+        panic!("FlagsTestHelper should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl flags_test_helper {
+impl FlagsTestHelper {
     #[init]
     pub fn new(flags_contract: AccountId) -> Self {
         assert!(

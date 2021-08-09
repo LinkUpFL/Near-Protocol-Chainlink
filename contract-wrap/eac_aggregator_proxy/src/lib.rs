@@ -32,7 +32,7 @@ fn find_pow() -> u128 {
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct eac_aggregator_proxy {
+pub struct EACAggregatorProxy {
     pub owner: AccountId,
     pub proposed_aggregator: AccountId,
     pub phase_aggregators: LookupMap<u64, AccountId>,
@@ -40,14 +40,14 @@ pub struct eac_aggregator_proxy {
     current_phase: Phase,
 }
 
-impl Default for eac_aggregator_proxy {
+impl Default for EACAggregatorProxy {
     fn default() -> Self {
-        panic!("eac_aggregator_proxy should be initialized before usage")
+        panic!("EACAggregatorProxy should be initialized before usage")
     }
 }
 
 #[near_bindgen]
-impl eac_aggregator_proxy {
+impl EACAggregatorProxy {
     #[init]
     pub fn new(owner_id: AccountId, _aggregator: AccountId, _access_controller: AccountId) -> Self {
         assert!(

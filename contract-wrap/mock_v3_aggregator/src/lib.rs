@@ -13,7 +13,7 @@ const VERSION: u128 = 0;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct mock_v3_aggregator {
+pub struct MockV3Aggregator {
     pub decimals: u128,
     pub latest_answer: u128,
     pub latest_timestamp: u128,
@@ -23,13 +23,13 @@ pub struct mock_v3_aggregator {
     get_started_at: LookupMap<u128, u128>,
 }
 
-impl Default for mock_v3_aggregator {
+impl Default for MockV3Aggregator {
     fn default() -> Self {
-        panic!("mock_v3_aggregator should be initialized before usage");
+        panic!("MockV3Aggregator should be initialized before usage");
     }
 }
 /**
- * @title mock_v3_aggregator
+ * @title MockV3Aggregator
  * @notice Based on the FluxAggregator contract
  * @notice Use this contract when you need to test
  * other contract's ability to read data from an
@@ -37,7 +37,7 @@ impl Default for mock_v3_aggregator {
  * its answer is unimportant
  */
 #[near_bindgen]
-impl mock_v3_aggregator {
+impl MockV3Aggregator {
     #[init]
     pub fn new(_decimals: U128, _initial_answer: U128) -> Self {
         let mut result = Self {

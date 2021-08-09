@@ -10,17 +10,9 @@ use std::str;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
-
-const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
 pub const DEFAULT_GAS: u64 = 300_000_000_000_000;
-
 pub type Base64String = String;
 
-#[ext_contract(link_token_contract)]
-pub trait LinkTokenContract {
-    fn new(owner_id: AccountId, total_supply: U128);
-    fn transfer(new_owner_id: AccountId, amount: U128);
-}
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -78,7 +70,7 @@ const V3_NO_DATA_ERROR: &str = "No data present";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct flux_aggregator {
+pub struct FluxAggregator {
     pub owner: AccountId,
     pending_owner: AccountId,
     pub link_token: AccountId,
@@ -102,14 +94,14 @@ pub struct flux_aggregator {
     recorded_funds: Funds,
 }
 
-impl Default for flux_aggregator {
+impl Default for FluxAggregator {
     fn default() -> Self {
-        panic!("flux_aggregator should be initialized before usage");
+        panic!("FluxAggregator should be initialized before usage");
     }
 }
 
 #[near_bindgen]
-impl flux_aggregator {
+impl FluxAggregator {
     /**
      * @notice set up the aggregator with initial configuration
      * @param _link The address of the LINK token

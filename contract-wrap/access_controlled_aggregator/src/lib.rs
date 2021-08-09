@@ -72,7 +72,7 @@ const V3_NO_DATA_ERROR: &str = "No data present";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct access_controlled_aggregator {
+pub struct AccessControlledAggregator {
     pub owner: AccountId,
     pending_owner: AccountId,
     pub link_token: AccountId,
@@ -98,14 +98,14 @@ pub struct access_controlled_aggregator {
     recorded_funds: Funds,
 }
 
-impl Default for access_controlled_aggregator {
+impl Default for AccessControlledAggregator {
     fn default() -> Self {
-        panic!("access_controlled_aggregator should be initialized before usage");
+        panic!("AccessControlledAggregator should be initialized before usage");
     }
 }
 
 #[near_bindgen]
-impl access_controlled_aggregator {
+impl AccessControlledAggregator {
     /**
      * @notice set up the aggregator with initial configuration
      * @param _link The address of the LINK token

@@ -10,21 +10,21 @@ use std::str;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
-pub struct aggregator_vaildator_mock {
+pub struct AggregatorValidatorMock {
     pub previous_round_id: u128,
     pub previous_answer: u128,
     pub current_round_id: u128,
     pub current_answer: u128,
 }
 
-impl Default for aggregator_vaildator_mock {
+impl Default for AggregatorValidatorMock {
     fn default() -> Self {
-        panic!("aggregator_vaildator_mock should be initialized before usage");
+        panic!("AggregatorValidatorMock should be initialized before usage");
     }
 }
 
 #[near_bindgen]
-impl aggregator_vaildator_mock {
+impl AggregatorValidatorMock {
 
     #[init]
     pub fn new() -> Self {
