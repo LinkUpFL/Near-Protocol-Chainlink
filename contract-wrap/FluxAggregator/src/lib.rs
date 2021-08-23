@@ -10,17 +10,9 @@ use std::str;
 
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
-
-const SINGLE_CALL_GAS: u64 = 50_000_000_000_000; // 5 x 10^13
 pub const DEFAULT_GAS: u64 = 300_000_000_000_000;
-
 pub type Base64String = String;
 
-#[ext_contract(link_token_contract)]
-pub trait LinkTokenContract {
-    fn new(owner_id: AccountId, total_supply: U128);
-    fn transfer(new_owner_id: AccountId, amount: U128);
-}
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -187,7 +179,7 @@ impl FluxAggregator {
             updated_at: updated_at_insert,
             answered_in_round: 0_u64,
         };
-        result.rounds.insert(&0, &new_round);
+        result.rounds.insert(&1, &new_round);
         result.update_future_rounds(
             U128::from(payment_amount_u128),
             U64::from(0),
@@ -1179,7 +1171,7 @@ impl FluxAggregator {
                 round = round_from_id_option.unwrap();
             }
             _payment_amount = self.payment_amount;
-            _eligible_to_submit = self.delayed(_oracle.to_string(), _round_id);
+            _eligible_to_submit = self.delayed(_oracle.to_string() as AccountId, _round_id);
         } else {
             _round_id = self.reporting_round_id;
 
@@ -1398,7 +1390,7 @@ impl FluxAggregator {
         let current_round: u64 = self.reporting_round_id;
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            return current_round + 1;
+            return current_round
         }
         let oracle = oracle_option.unwrap();
 
@@ -1446,13 +1438,13 @@ impl FluxAggregator {
             self.oracles.insert(&_oracle, &oracle);
             self.oracle_addresses.push(_oracle.clone());
         } else {
-            let oracle_unwrapped: OracleStatus = oracle_option.unwrap();
+            let mut oracle_unwrapped: OracleStatus = oracle_option.unwrap();
             assert!(
                 &oracle_unwrapped.admin == "" || &oracle_unwrapped.admin == init_admin,
                 "owner cannot overwrite admin"
             );
-            // oracle_option.ending_round = self.get_starting_round(_oracle.clone());
-            // self.oracles.insert(&init_oracle, &oracle_option);
+            oracle_unwrapped.ending_round = self.get_starting_round(_oracle.clone()).into();
+            self.oracles.insert(&init_oracle, &oracle_unwrapped);
         }
         // Oracle Permissions Updated
         env::log(format!("{}, {}", &init_oracle.clone(), true).as_bytes());
@@ -1489,8 +1481,9 @@ impl FluxAggregator {
         oracle.index = 0_u64;
         self.oracle_addresses[index] = init_tail.to_string();
         self.oracle_addresses.pop();
-
+        self.oracles.remove(&_oracle);
         self.oracles.insert(&_oracle, &oracle);
+        self.oracles.remove(&tail);
         self.oracles.insert(&tail, &oracle_tail);
         // Oracle Permissions Updated
         env::log(format!("{}, {}", &init_oracle.clone(), false).as_bytes());
@@ -1541,7 +1534,7 @@ impl FluxAggregator {
     fn oracle_enabled(&self, _oracle: AccountId) -> bool {
         let oracle_option = self.oracles.get(&_oracle);
         if oracle_option.is_none() {
-            return false;
+            return false
         }
         let oracle = oracle_option.unwrap();
         oracle.ending_round == ROUND_MAX

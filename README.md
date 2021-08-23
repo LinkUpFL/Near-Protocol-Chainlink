@@ -6,7 +6,7 @@
 - Create a FluxTestHelper contract that matches the one used in ACA tests (FluxTestHelper). (DONE)
 - Create a SimpleReadAccessController contract that matches the one used in EAC tests (SimpleReadAccessController) (DONE). 
 - Create a MockV3Aggregator contract that matches the one used in EAC tests (MockV3Aggregator) (DONE). 
-- Port the rest of Flux Aggregator tests (DONE ~110/148 PASSING)
+- Port the rest of Flux Aggregator tests (DONE ~126/148 PASSING)
 - Port the rest of Flags tests (DONE 30/30 PASSING)
 - Port the rest of AccessControlledAggregator tests (DONE 16/16 PASSING)
 - Port the rest of EACAggregator tests (DONE 2/12 PASSING)
