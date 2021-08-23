@@ -28,7 +28,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let expected_false_value: bool = oracle_three
@@ -103,7 +107,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let tx = oracle_three.call(
@@ -147,7 +155,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -203,7 +215,11 @@
 //         controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -275,7 +291,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let expected_not_allowed_to_raise_flags = oracle_one.call(
@@ -330,7 +350,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let tx = oracle_three.call(
@@ -417,7 +441,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let tx = oracle_three.call(
@@ -497,7 +525,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let expected_false_value: bool = oracle_three
@@ -572,7 +604,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let tx = oracle_three.call(
@@ -616,7 +652,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -672,7 +712,11 @@
 //         controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -744,7 +788,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let expected_not_allowed_to_raise_flags = oracle_one.call(
@@ -798,7 +846,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let tx = oracle_three.call(
@@ -882,7 +934,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     let tx = oracle_three.call(
@@ -962,7 +1018,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1051,7 +1111,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1109,7 +1173,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1179,7 +1247,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1243,7 +1315,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1302,7 +1378,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 //     oracle_three
 //         .call(
@@ -1365,7 +1445,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1418,7 +1502,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1482,7 +1570,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1591,7 +1683,11 @@
 //         _controller,
 //         _controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1657,7 +1753,11 @@
 //         _controller,
 //         controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1765,7 +1865,11 @@
 //         _controller,
 //         controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1827,7 +1931,11 @@
 //         _controller,
 //         controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
@@ -1901,7 +2009,11 @@
 //         _controller,
 //         controller_2,
 //         _flux_aggregator_test_helper_contract,
-//         _eddy
+//         _eddy,
+//         _mock_v3_aggregator,
+//         _mock_v3_aggregator_second,
+//         _read_controller,
+//         _flux_aggregator,
 //     ) = init();
 
 //     oracle_three
