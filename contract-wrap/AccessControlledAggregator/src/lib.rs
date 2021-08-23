@@ -382,35 +382,14 @@ impl AccessControlledAggregator {
 
     pub fn update_available_funds(&self) {
         let prepaid_gas = env::prepaid_gas();
-
-        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
-        // let get_balance_promise = env::promise_create(
-        //     self.link_token.clone(),
-        //     b"get_balance",
-        //     json!({ "owner_id": env::current_account_id() })
-        //         .to_string()
-        //         .as_bytes(),
-        //     0,
-        //     SINGLE_CALL_GAS,
-        // );
-
-        // env::promise_then(
-        //     get_balance_promise,
-        //     env::current_account_id(),
-        //     b"get_balance_promise_results",
-        //     json!({}).to_string().as_bytes(),
-        //     0,
-        //     prepaid_gas / 4,
-        // );
-
         let get_balance_promise = env::promise_create(
             self.link_token.clone(),
             b"ft_balance_of",
-            json!({ "account_id": env::current_account_id() })
+            json!({ "account_id": "aca" })
                 .to_string()
                 .as_bytes(),
             0,
-            SINGLE_CALL_GAS,
+            (prepaid_gas / 6).into(),
         );
 
         env::promise_then(
@@ -419,7 +398,7 @@ impl AccessControlledAggregator {
             b"get_balance_promise_results",
             json!({}).to_string().as_bytes(),
             0,
-            prepaid_gas / 4,
+            (prepaid_gas / 6).into(),
         );
     }
 
@@ -428,16 +407,11 @@ impl AccessControlledAggregator {
         assert_eq!(env::current_account_id(), env::predecessor_account_id());
         assert_eq!(env::promise_results_count(), 1);
         let get_balance_promise_result: Vec<u8> = match env::promise_result(0) {
-            PromiseResult::Successful(_x) => {
-                env::log(b"Check_promise successful");
-                _x
-            }
+            PromiseResult::Successful(_x) => _x,
             _x => panic!("Promise with index 0 failed"),
         };
-        let link_balance_str: String = serde_json::from_slice(&get_balance_promise_result).unwrap();
-        let link_balance: u128 = link_balance_str.parse().unwrap();
-
-        let now_available: u128 = link_balance - funds.allocated;
+        let link_balance: U128 = serde_json::from_slice(&get_balance_promise_result).unwrap();
+        let now_available: u128 = u128::from(link_balance) - funds.allocated;
         if funds.available != now_available {
             self.recorded_funds.available = now_available;
             env::log(format!("{}", now_available).as_bytes());
@@ -657,8 +631,7 @@ impl AccessControlledAggregator {
         let oracle = oracle_option.unwrap();
         oracle.withdrawable
     }
-
-    /**
+   /**
      * @notice transfers the oracle's LINK to another address. Can only be called
      * by the oracle's admin.
      * @param _oracle is the oracle whose LINK is transferred
@@ -690,24 +663,22 @@ impl AccessControlledAggregator {
         self.oracles.insert(&_oracle, &oracle);
         self.recorded_funds.allocated = self.recorded_funds.allocated - amount_u128;
 
-        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
-        // env::promise_create(
-        //     self.link_token.clone(),
-        //     b"transfer",
-        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount.clone()})
-        //         .to_string()
-        //         .as_bytes(),
-        //     36500000000000000000000,
-        //     prepaid_gas / 4,
-        // );
-        env::promise_create(
+        let ft_transfer = env::promise_create(
             self.link_token.clone(),
             b"ft_transfer",
             json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            DEFAULT_GAS.into(),
             1,
+            (prepaid_gas / 6).into(),
+        );
+        env::promise_then(
+            ft_transfer,
+            "aca".to_string(),
+            b"update_available_funds_promise_resolution",
+            json!({}).to_string().as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
         );
     }
 
@@ -719,33 +690,57 @@ impl AccessControlledAggregator {
     #[payable]
     pub fn withdraw_funds(&mut self, _recipient: AccountId, _amount: U128) {
         self.only_owner();
-
+        let prepaid_gas = env::prepaid_gas();
         let available: u128 = self.recorded_funds.available as u128;
         let amount_u128: u128 = _amount.into();
         assert!(
             (available - self.required_reserve(self.payment_amount)) >= amount_u128,
             "insufficient reserve funds"
         );
-        // Breaking change here for replacing previous link token code with NEAR's fungible token standard code.
-        // env::promise_create(
-        //     self.link_token.clone(),
-        //     b"transfer",
-        //     json!({"new_owner_id": _recipient.clone(), "amount": _amount})
-        //         .to_string()
-        //         .as_bytes(),
-        //     36500000000000000000000,
-        //     prepaid_gas / 4,
-        // );
-        env::promise_create(
+        let ft_transfer = env::promise_create(
             self.link_token.clone(),
             b"ft_transfer",
             json!({"receiver_id": _recipient.clone(), "amount": _amount, "memo": "None"})
                 .to_string()
                 .as_bytes(),
-            DEFAULT_GAS.into(),
             1,
+            (prepaid_gas / 6).into(),
         );
-        self.update_available_funds();
+        let ft_transfer_resolve = env::promise_then(
+            ft_transfer,
+            "aca".to_string(),
+            b"update_available_funds_promise_resolution",
+            json!({}).to_string().as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
+        );
+        env::promise_return(ft_transfer_resolve);
+    }
+
+    /**
+     * @notice recalculate the amount of LINK available for payouts
+     */
+
+    pub fn update_available_funds_promise_resolution(&self) {
+        let prepaid_gas = env::prepaid_gas();
+        let get_balance_promise = env::promise_create(
+            self.link_token.clone(),
+            b"ft_balance_of",
+            json!({ "account_id": "aca" })
+                .to_string()
+                .as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
+        );
+        let get_balance_promise_resolve = env::promise_then(
+            get_balance_promise,
+            "aca".to_string(),
+            b"get_balance_promise_results",
+            json!({}).to_string().as_bytes(),
+            0,
+            (prepaid_gas / 6).into(),
+        );
+        env::promise_return(get_balance_promise_resolve);
     }
 
     /**
@@ -884,8 +879,20 @@ impl AccessControlledAggregator {
      * @param _data is mostly ignored. It is checked for length, to be sure
      * nothing strange is passed in.
      */
-    pub fn on_token_transfer(&mut self, _address: AccountId, _num: U128, _data: Base64String) {
-        assert!(_data.len() == 0, "transfer doesn't accept calldata");
+    pub fn on_token_transfer(&mut self, sender_id: AccountId, amount: U128, msg: String) {
+        assert!(msg.len() == 0, "transfer doesn't accept calldata");
+        self.update_available_funds();
+    }
+
+    /**
+     * @notice called through LINK's transferAndCall to update available funds
+     * in the same transaction as the funds were transferred to the aggregator
+     * @param msg is mostly ignored. It is checked for length, to be sure
+     * nothing strange is passed in.
+     */
+    pub fn ft_on_transfer(&mut self, sender_id: AccountId, amount: U128, msg: String) {
+        env::log(format!("{}", "HERE!").as_bytes());
+        assert!(msg.len() == 0, "transfer doesn't accept calldata");
         self.update_available_funds();
     }
 
@@ -1246,18 +1253,49 @@ impl AccessControlledAggregator {
         if av == "" {
             return;
         }
-
+        let _round_id_u128: u128 = _round_id as u128;
+        let prepaid_gas = env::prepaid_gas();
         let prev_round: u64 = _round_id - 1;
+        if prev_round == 0 {
+            // TRY CATCH
 
-        let round_option = self.rounds.get(&_round_id);
-        if round_option.is_none() {
-            env::panic(b"Did not find this round.");
+            env::promise_create(
+                self.validator.clone(),
+                b"validate",
+                json!({ "previous_round_id": U128::from(0),
+                    "previous_answer": U128::from(0),
+                    "current_round_id": U128::from(_round_id_u128),
+                    "current_answer": U128::from(_new_answer)})
+                .to_string()
+                .as_bytes(),
+                0,
+                (prepaid_gas / 2).into(),
+            );
+        } else {
+            let round_option = self.rounds.get(&prev_round);
+            if round_option.is_none() {
+                env::panic(b"Did not find this round.");
+            }
+            let round = round_option.unwrap();
+
+            let prev_answer_round_id: u64 = round.answered_in_round;
+            let prev_answer_round_id_u128: u128 = prev_answer_round_id as u128;
+            let prev_round_answer: u128 = round.answer;
+
+            // TRY CATCH
+            env::promise_create(
+                self.validator.clone(),
+                b"validate",
+                json!({ "previous_round_id": U128::from(prev_answer_round_id_u128),
+                "previous_answer": U128::from(prev_round_answer),
+                "current_round_id": U128::from(_round_id_u128),
+                "current_answer": U128::from(_new_answer)})
+                .to_string()
+                .as_bytes(),
+                0,
+                (prepaid_gas / 2).into(),
+            );
         }
-        let round = round_option.unwrap();
-
-        let prev_answer_round_id: u64 = round.answered_in_round;
-        let prev_round_answer: u128 = round.answer;
-        // TRY CATCH
     }
 
     fn pay_oracle(&mut self, _round_id: u64) {
@@ -1312,6 +1350,15 @@ impl AccessControlledAggregator {
         oracle.latest_submission = _submission;
 
         self.oracles.insert(&env::predecessor_account_id(), &oracle);
+        env::log(
+            format!(
+                "{}, {}, {}",
+                _submission,
+                _round_id,
+                env::predecessor_account_id()
+            )
+            .as_bytes(),
+        );
     }
 
     fn delete_round_details(&mut self, _round_id: u64) {
@@ -1345,10 +1392,10 @@ impl AccessControlledAggregator {
         let round_timeout: u64 = detail.timeout;
 
         // commented out for test failure
-        // return started_at > 0
-        //     && round_timeout > 0
-        //     && ((started_at + round_timeout) < env::block_timestamp());
-        return false;
+        return started_at > 0
+            && round_timeout > 0
+            && started_at.saturating_add(round_timeout) < env::block_timestamp();
+        // return false;
     }
 
     fn get_starting_round(&self, _oracle: AccountId) -> u64 {
@@ -1403,10 +1450,13 @@ impl AccessControlledAggregator {
             self.oracles.insert(&_oracle, &oracle);
             self.oracle_addresses.push(_oracle.clone());
         } else {
+            let oracle_unwrapped: OracleStatus = oracle_option.unwrap();
             assert!(
-                oracle_option.unwrap().admin == _admin,
+                &oracle_unwrapped.admin == "" || &oracle_unwrapped.admin == init_admin,
                 "owner cannot overwrite admin"
             );
+            // oracle_option.ending_round = self.get_starting_round(_oracle.clone());
+            // self.oracles.insert(&init_oracle, &oracle_option);
         }
         // Oracle Permissions Updated
         env::log(format!("{}, {}", &init_oracle.clone(), true).as_bytes());
@@ -1437,7 +1487,7 @@ impl AccessControlledAggregator {
         }
         let mut oracle_tail = oracle_tail_option.unwrap();
 
-        oracle.ending_round = (self.reporting_round_id + 1).into();
+        oracle.ending_round = (self.reporting_round_id.saturating_add(1)).into();
         let index: usize = oracle.index.try_into().unwrap();
         oracle_tail.index = index.try_into().unwrap();
         oracle.index = 0_u64;
